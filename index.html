@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MC Serigrafia - Orçamentador v41.0</title>
+    <title>MC Serigrafia - Orçamentador v42.0</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -212,7 +212,6 @@
             custoFixoLote = (horaEmpresa * tempo) + chapa;
             margemIntegrada = 1 + (parseFloat(document.getElementById('margem').value)||0)/100;
 
-            // Cálculo custo tinta
             const pT = parseFloat(document.getElementById('pTinta').value)||0;
             const rT = parseFloat(document.getElementById('rendTinta').value)||1;
             const cob = (parseFloat(document.getElementById('coberturaTinta').value)||0)/100;
@@ -224,11 +223,28 @@
         }
 
         function calc() {
-            const qInt = parseInt(document.getElementById('qtdInterna').value)||0, L = parseFloat(document.getElementById('lar').value)||1, A = parseFloat(document.getElementById('alt').value)||1;
-            const pResma = parseFloat(document.getElementById('pResma').value)||0, qResma = parseFloat(document.getElementById('qResma').value)||500, qPed = parseInt(document.getElementById('qtdVenda').value)||0;
+            const qInt = parseInt(document.getElementById('qtdInterna').value)||0;
+            const L = parseFloat(document.getElementById('lar').value)||1;
+            const A = parseFloat(document.getElementById('alt').value)||1;
+            const pResma = parseFloat(document.getElementById('pResma').value)||0;
+            const qResma = parseFloat(document.getElementById('qResma').value)||500;
+            const qPed = parseInt(document.getElementById('qtdVenda').value)||0;
             const cores = parseInt(document.getElementById('esquemaCores').value)||4;
 
-            let melhor = { ap: Math.max(Math.floor(88/L)*Math.floor(64/A), Math.floor(96/L)*Math.floor(66/A)), f: "66x96" };
+            // LÓGICA DE MELHOR APROVEITAMENTO CORRIGIDA
+            let formatos = [{n:"64x88", w:88, h:64}, {n:"66x96", w:96, h:66}];
+            let melhor = { ap: 0, f: "" };
+            
+            formatos.forEach(f => {
+                let n1 = Math.floor(f.w / L) * Math.floor(f.h / A);
+                let n2 = Math.floor(f.w / A) * Math.floor(f.h / L);
+                let max = Math.max(n1, n2);
+                if (max > melhor.ap) {
+                    melhor.ap = max;
+                    melhor.f = f.n;
+                }
+            });
+
             document.getElementById('resCorte').innerHTML = `Aproveitamento: <b>${melhor.ap}</b> pçs/fl<br>Papel: <b>${melhor.f}</b>`;
             
             const areaM2Peca = (L * A) / 10000;
