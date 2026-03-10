@@ -10,7 +10,8 @@
             --bg-blue: #005aab; --active-blue: #0078d7; --header-white: #ffffff;
             --text-dark: #333; --green-success: #27ae60; --red-delete: #e74c3c;
         }
-        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background-color: var(--bg-blue); color: white; display: block; min-height: 100vh; overflow-y: auto; padding-bottom: 120px; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background-color: var(--bg-blue); color: white; display: block; min-height: 100vh; overflow-y: auto; padding-bottom: 180px; } /* Padding aumentado para o rodapé mobile */
+        
         .main-container { width: 100%; max-width: 1400px; margin: auto; padding: 10px; box-sizing: border-box; }
         .top-panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; margin-bottom: 10px; }
         .panel { background: white; border-radius: 4px; color: var(--text-dark); display: flex; flex-direction: column; }
@@ -32,14 +33,61 @@
         .price-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
         .price-table th { background: #fce4d6; padding: 5px; border: 1px solid #f4b084; }
         .price-table td { border: 1px solid #f4b084; padding: 5px; text-align: center; background: white; }
-        .footer-floating { position: fixed; bottom: 0; left: 0; width: 100%; background: #2c3e50; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 -5px 15px rgba(0,0,0,0.3); z-index: 999; border-top: 3px solid var(--green-success); box-sizing: border-box; }
-        .final-price-value { font-size: 48px; font-weight: bold; color: #4ade80; text-shadow: 1px 1px 2px black; }
-        .btn-whatsapp { background: #27ae60; color: white; border: none; padding: 12px 35px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 18px; display: flex; align-items: center; gap: 10px; }
+        
+        /* FOOTER RESPONSIVO ATUALIZADO */
+        .footer-floating { 
+            position: fixed; 
+            bottom: 0; 
+            left: 0; 
+            width: 100%; 
+            background: #2c3e50; 
+            padding: 12px 20px; 
+            display: flex; 
+            justify-content: space-around; 
+            align-items: center; 
+            flex-wrap: wrap; /* Permite quebrar linha no mobile */
+            gap: 15px;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.3); 
+            z-index: 9999; 
+            border-top: 4px solid var(--green-success); 
+            box-sizing: border-box; 
+        }
+        .final-price-value { 
+            font-size: clamp(28px, 10vw, 48px); /* Fonte cresce conforme a tela */
+            font-weight: bold; 
+            color: #4ade80; 
+            text-shadow: 1px 1px 2px black; 
+            line-height: 1;
+        }
+        .btn-whatsapp { 
+            background: #27ae60; 
+            color: white; 
+            border: none; 
+            padding: 14px 25px; 
+            border-radius: 6px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            font-size: clamp(14px, 4vw, 18px); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            gap: 10px; 
+            min-width: 220px;
+            transition: 0.2s;
+        }
+        .btn-whatsapp:active { transform: scale(0.96); }
+
         .btn-add { background: var(--bg-blue); color: white; border: none; padding: 2px 5px; border-radius: 3px; cursor: pointer; font-size: 10px; }
         .btn-del { color: var(--red-delete); cursor: pointer; font-size: 10px; margin-left: 5px; }
         .resumo-table { width: 100%; border-collapse: collapse; margin-top: 5px; }
         .resumo-table td { padding: 4px 0; border-bottom: 1px dotted #ccc; font-size: 10px; }
         .resumo-table .val { text-align: right; font-weight: bold; }
+
+        /* Media Query para Celulares pequenos */
+        @media (max-width: 600px) {
+            .footer-floating { padding: 15px; justify-content: center; text-align: center; }
+            .btn-whatsapp { width: 100%; }
+        }
     </style>
 </head>
 <body>
@@ -167,14 +215,15 @@
 </div>
 
 <div class="footer-floating">
-    <div class="final-price-value" id="totalPrice">R$ 0,00</div>
+    <div id="priceWrapper">
+        <div class="final-price-value" id="totalPrice">R$ 0,00</div>
+    </div>
     <button class="btn-whatsapp" onclick="enviarWhatsApp()"><i class="fab fa-whatsapp"></i> ENVIAR WHATSAPP</button>
 </div>
 
 <script>
     let acabamentosAtivos = [];
 
-    // --- FUNÇÃO CORRIGIDA PARA OS BOTÕES ADICIONAR ---
     function addItem(type) {
         const name = prompt("Digite o nome do novo item:");
         if (!name) return;
@@ -211,7 +260,6 @@
         calc();
     }
 
-    // --- FUNÇÃO PARA REMOVER LINHAS ---
     function removeRow(btn) {
         btn.closest('tr').remove();
         syncDropdowns();
@@ -243,7 +291,6 @@
         const luc = (parseFloat(document.getElementById('lucroPorcent').value) || 0) / 100 + 1;
         const gramNum = gramFull.match(/\d+/) ? gramFull.match(/\d+/)[0] : "56";
 
-        // Busca o valor da TINTA do campo de entrada
         const gramasTinta = parseFloat(document.getElementById('gastoTintaGramas').value) || 0;
         const precoTintaKG = parseFloat(document.getElementById('baseTinta').value) || 0;
 
@@ -267,7 +314,6 @@
             const nc = parseInt(document.getElementById('esquemaCores').value);
             const ccha = nc * (parseFloat(document.getElementById('baseChapa').value) || 0);
             
-            // CÁLCULO DA TINTA CORRIGIDO
             const totalTintaGramas = (tpec / 1000) * gramasTinta * nc;
             const ctin = totalTintaGramas * (precoTintaKG / 1000);
             
