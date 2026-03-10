@@ -78,6 +78,7 @@
             <div class="panel-body">
                 <label>Tipo de Papel</label><select id="gramSelect" onchange="saveAndCalc()"></select>
                 <label>Preço Resma</label><input type="number" id="pResma" readonly style="background:#f0f0f0">
+                <label>Tinta KG</label><input type="number" id="pTintaExib" readonly style="background:#f0f0f0">
                 <label>Gasto Tinta (g/1000)</label><input type="number" id="gastoTintaGramas" value="100" oninput="saveAndCalc()">
                 <label>Folhas Resma</label><input type="number" id="qResma" value="500" oninput="saveAndCalc()">
             </div>
@@ -145,8 +146,7 @@
 
 <script>
     let acabamentosAtivos = [];
-    // ATENÇÃO: Substitua o link abaixo pelo URL que termina com /exec
-    const URL_GOOGLE = "https://script.google.com/macros/s/AKfycby4sPqAaaju1NzwWUoRLPcJkuXL4h6GE-y_VQFj3jg/exec";
+    const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbyPKB2h-GL7u6U1gZnHfH5whcuF78aH7x5q1imR94Ny_MuNgAJCSRhbosxzskt8j3BI/exec";
 
     const camposBackup = ['cliNome', 'cliDados', 'tipoServico', 'qtdInterna', 'qtdVenda', 'esquemaCores', 'lar', 'alt', 'lucroPorcent', 'tempoProd', 'proMarcilio', 'proCristiane', 'contasFixas', 'diasUteis', 'horasDia', 'baseChapa', 'baseTinta', 'baseSetup'];
 
@@ -167,7 +167,7 @@
         }
     }
 
-    function novoOrcamento() { if(confirm("Limpar dados da tela?")) { localStorage.removeItem('mc_v17_save'); location.reload(); } }
+    function novoOrcamento() { if(confirm("Deseja limpar todos os dados da tela?")) { localStorage.removeItem('mc_v17_save'); location.reload(); } }
 
     async function sincronizarPrecos() {
         const btn = document.getElementById('btnSync'); btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>'; btn.disabled = true;
@@ -181,23 +181,23 @@
             });
             const tbA = document.getElementById('tbodyAcab'); tbA.innerHTML = "";
             data.acabamentos.forEach(a => {
-                const id = a.serv.replace(/\s/g, '').replace(/[éê]/g,'e').replace(/ç/g,'c');
+                const id = a.serv.replace(/\s/g, '').replace(/[éêè]/g,'e').replace(/ç/g,'c');
                 tbA.insertAdjacentHTML('beforeend', `<tr data-serv="${a.serv}"><td>${a.serv}</td><td><input type="number" id="base_${id}" value="${a.base}" oninput="saveAndCalc()"></td><td><input type="number" id="preMil_${id}" value="${a.mil}" oninput="saveAndCalc()"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>`);
             });
-            alert("Preços atualizados!"); saveAndCalc();
-        } catch(e) { alert("Erro ao sincronizar. Verifique se o link termina em /exec e está publicado como 'Qualquer Pessoa'."); }
+            alert("Sucesso! Preços da planilha carregados."); saveAndCalc();
+        } catch(e) { alert("Erro ao sincronizar. Verifique a internet e a planilha."); }
         finally { btn.innerHTML = '<i class="fa fa-sync"></i> ATUALIZAR'; btn.disabled = false; }
     }
 
     async function enviarWhatsApp() {
         const cli = document.getElementById('cliNome').value || "Cliente", prod = document.getElementById('tipoServico').value;
         const qv = document.getElementById('qtdVenda').value, total = document.getElementById('totalPrice').innerText;
-        const btn = document.getElementById('btnWhats'); btn.innerHTML = '<i class="fa fa-cloud-upload-alt"></i> SALVANDO...';
+        const btn = document.getElementById('btnWhats'); btn.innerHTML = '<i class="fa fa-cloud-upload-alt"></i> A GUARDAR...';
         
         try {
-            // Envia para o histórico na aba "Historico"
+            // Guarda na aba "Historico" da sua planilha do Google
             fetch(URL_GOOGLE, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ cliente: cli, produto: prod, quantidade: qv, total: total }) });
-        } catch(e) { console.error("Erro ao salvar histórico"); }
+        } catch(e) { console.error("Erro ao guardar histórico"); }
         finally { btn.innerHTML = '<i class="fab fa-whatsapp"></i> WHATSAPP'; }
 
         const qInt = document.getElementById('qtdInterna').value;
@@ -262,6 +262,8 @@
         doc.setFillColor(0, 90, 171); doc.rect(0, 0, 210, 40, 'F');
         doc.setTextColor(255, 255, 255); doc.setFontSize(22); doc.text("MC SERIGRAFIA E GRÁFICA", 10, 25);
         doc.setTextColor(0,0,0); doc.setFontSize(12); doc.text(`Cliente: ${cli}`, 10, 55);
+        doc.text("Este é um orçamento preliminar.", 10, 70);
+        doc.text(`Valor Total: ${total}`, 10, 85);
         doc.save(`Orcamento_MC_${cli}.pdf`);
     }
 
@@ -269,7 +271,7 @@
     function renderAcab() { document.getElementById('listaAcab').innerHTML = acabamentosAtivos.map(a => `<div style="color:black; padding:5px; background:#f0f0f0; margin-top:5px; display:flex; justify-content:space-between"><span>${a}</span><i class="fa fa-trash" onclick="acabamentosAtivos.splice(acabamentosAtivos.indexOf('${a}'),1);renderAcab();saveAndCalc();" style="cursor:pointer"></i></div>`).join(''); }
     function removeRow(btn) { btn.closest('tr').remove(); syncDropdowns(); saveAndCalc(); }
     function addItem(type) {
-        const name = prompt("Nome:"); if(!name) return;
+        const name = prompt("Nome do novo item:"); if(!name) return;
         if(type==='papel') document.getElementById('tbodyPapel').insertAdjacentHTML('beforeend', `<tr data-gram="${name}"><td>${name}</td><td><input type="number" value="0"></td><td><input type="number" value="0"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>`);
         else if(type==='acabamento') document.getElementById('tbodyAcab').insertAdjacentHTML('beforeend', `<tr data-serv="${name}"><td>${name}</td><td><input type="number" id="base_${name.replace(/\s/g,'')}" value="0"></td><td><input type="number" id="preMil_${name.replace(/\s/g,'')}" value="0"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>`);
         syncDropdowns(); saveAndCalc();
