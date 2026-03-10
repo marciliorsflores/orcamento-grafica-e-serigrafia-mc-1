@@ -16,7 +16,7 @@
         .main-container { width: 100%; max-width: 1400px; margin: auto; padding: 10px; box-sizing: border-box; }
         .top-panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; margin-bottom: 10px; }
         .panel { background: white; border-radius: 4px; color: var(--text-dark); display: flex; flex-direction: column; }
-        .panel-header { background: var(--bg-blue); color: white; padding: 8px 12px; font-size: 13px; font-weight: bold; font-style: italic; }
+        .panel-header { background: var(--bg-blue); color: white; padding: 8px 12px; font-size: 13px; font-weight: bold; font-style: italic; display: flex; justify-content: space-between; align-items: center; }
         .panel-body { padding: 12px; flex: 1; }
         label { display: block; font-size: 9px; font-weight: bold; color: #666; margin-top: 8px; text-transform: uppercase; }
         select, input { width: 100%; padding: 8px; font-size: 13px; border: 1px solid #ccc; border-radius: 3px; margin-top: 4px; box-sizing: border-box; }
@@ -41,12 +41,8 @@
         .btn-whatsapp { background: #27ae60; color: white; border: none; padding: 12px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; min-width: 140px; justify-content: center;}
         .btn-pdf { background: var(--pdf-red); color: white; border: none; padding: 12px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; min-width: 140px; justify-content: center;}
         .btn-sync { background: var(--sync-orange); color: white; border: none; padding: 12px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; min-width: 140px; justify-content: center;}
+        .btn-limpar { background: #e74c3c; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 10px; font-weight: bold; }
         
-        .btn-add { background: var(--bg-blue); color: white; border: none; padding: 2px 5px; border-radius: 3px; cursor: pointer; font-size: 10px; }
-        .btn-del { color: var(--red-delete); cursor: pointer; font-size: 10px; margin-left: 5px; }
-        .resumo-table { width: 100%; border-collapse: collapse; margin-top: 5px; }
-        .resumo-table td { padding: 4px 0; border-bottom: 1px dotted #ccc; font-size: 10px; }
-        .resumo-table .val { text-align: right; font-weight: bold; }
         @media (max-width: 600px) { .btn-group button { width: 100%; } }
     </style>
 </head>
@@ -55,7 +51,10 @@
 <div class="main-container">
     <div class="top-panels">
         <div class="panel">
-            <div class="panel-header">1. Cliente e Pedido</div>
+            <div class="panel-header">
+                <span>1. Cliente e Pedido</span>
+                <button class="btn-limpar" onclick="novoOrcamento()">LIMPAR TELA</button>
+            </div>
             <div class="panel-body">
                 <label>Nome do Cliente</label><input type="text" id="cliNome" oninput="saveAndCalc()">
                 <label>WhatsApp / CNPJ</label><input type="text" id="cliDados" oninput="saveAndCalc()">
@@ -143,7 +142,7 @@
             <table class="ref-table">
                 <thead><tr><th>Gr</th><th>64x88</th><th>66x96</th><th></th></tr></thead>
                 <tbody id="tbodyPapel">
-                    <tr data-gram="Sulfit 56g"><td>Sulfit 56g</td><td><input type="number" value="180"></td><td><input type="number" value="200"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
+                    <tr data-gram="Sulfit 56g"><td>Sulfit 56g</td><td><input type="number" value="180" oninput="saveAndCalc()"></td><td><input type="number" value="200" oninput="saveAndCalc()"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
                 </tbody>
             </table>
         </div>
@@ -153,7 +152,7 @@
             <table class="ref-table">
                 <thead><tr><th>Serv</th><th>Base</th><th>Mil</th><th></th></tr></thead>
                 <tbody id="tbodyAcab">
-                    <tr data-serv="Refile"><td>Refile</td><td><input type="number" value="10.00"></td><td><input type="number" value="40.00"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
+                    <tr data-serv="Refile"><td>Refile</td><td><input type="number" value="10.00" oninput="saveAndCalc()"></td><td><input type="number" value="40.00" oninput="saveAndCalc()"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
                 </tbody>
             </table>
         </div>
@@ -178,101 +177,85 @@
 
 <script>
     let acabamentosAtivos = [];
-    // LINK MÁGICO DO MARCILIO
+    // LINK DA PLANILHA DO MARCILIO
     const URL_GOOGLE_SHEETS = "https://script.google.com/macros/s/AKfycbyfjM_9ekg-pDzW41cOSTbU4t-OScNXrF53DFMGhltELAR5MlwW9TvhAwue29s5VKvB/exec";
 
-    async function sincronizarPrecos() {
-        const btn = document.getElementById('btnSync');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> LENDO...';
-        btn.disabled = true;
+    // --- SALVAMENTO LOCAL (BACKUP) ---
+    const camposBackup = ['cliNome', 'cliDados', 'tipoServico', 'qtdInterna', 'qtdVenda', 'esquemaCores', 'lar', 'alt', 'lucroPorcent', 'tempoProd'];
 
-        try {
-            const response = await fetch(URL_GOOGLE_SHEETS);
-            const data = await response.json();
+    function salvarBackup() {
+        const dados = {};
+        camposBackup.forEach(id => { dados[id] = document.getElementById(id).value; });
+        localStorage.setItem('mc_backup_v17', JSON.stringify(dados));
+    }
 
-            // Sincroniza Papéis
-            const tbodyPapel = document.getElementById('tbodyPapel');
-            tbodyPapel.innerHTML = "";
-            data.papeis.forEach(p => {
-                const gramNum = p.gram.match(/\d+/) ? p.gram.match(/\d+/)[0] : "56";
-                tbodyPapel.insertAdjacentHTML('beforeend', `
-                    <tr data-gram="${p.gram}">
-                        <td>${p.gram}</td>
-                        <td><input type="number" id="p${gramNum}_64" value="${p.p64}" oninput="calc()"></td>
-                        <td><input type="number" id="p${gramNum}_66" value="${p.p66}" oninput="calc()"></td>
-                        <td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td>
-                    </tr>
-                `);
-            });
-
-            // Sincroniza Acabamentos
-            const tbodyAcab = document.getElementById('tbodyAcab');
-            tbodyAcab.innerHTML = "";
-            data.acabamentos.forEach(a => {
-                const id = a.serv.replace(/\s/g, '').replace('é','e').replace('ç','c').replace('ã','a');
-                tbodyAcab.insertAdjacentHTML('beforeend', `
-                    <tr data-serv="${a.serv}">
-                        <td>${a.serv}</td>
-                        <td><input type="number" id="base_${id}" value="${a.base}" oninput="calc()"></td>
-                        <td><input type="number" id="preMil_${id}" value="${a.mil}" oninput="calc()"></td>
-                        <td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td>
-                    </tr>
-                `);
-            });
-
-            alert("Planilha sincronizada com sucesso!");
-            syncDropdowns();
-            calc();
-        } catch (error) {
-            console.error("Erro:", error);
-            alert("Erro ao ler planilha. Verifique se você publicou o script corretamente.");
-        } finally {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
+    function carregarBackup() {
+        const salvo = localStorage.getItem('mc_backup_v17');
+        if (salvo) {
+            const dados = JSON.parse(salvo);
+            camposBackup.forEach(id => { if (dados[id]) document.getElementById(id).value = dados[id]; });
         }
     }
 
+    function novoOrcamento() {
+        if (confirm("Limpar todos os dados do cliente?")) {
+            localStorage.removeItem('mc_backup_v17');
+            location.reload();
+        }
+    }
+
+    // --- SINCRONIZAÇÃO COM GOOGLE SHEETS ---
+    async function sincronizarPrecos() {
+        const btn = document.getElementById('btnSync');
+        btn.disabled = true; btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> LENDO...';
+        try {
+            const response = await fetch(URL_GOOGLE_SHEETS);
+            const data = await response.json();
+            const tbodyPapel = document.getElementById('tbodyPapel');
+            tbodyPapel.innerHTML = "";
+            data.papeis.forEach(p => {
+                const gNum = p.gram.match(/\d+/)[0];
+                tbodyPapel.insertAdjacentHTML('beforeend', `<tr data-gram="${p.gram}"><td>${p.gram}</td><td><input type="number" id="p${gNum}_64" value="${p.p64}" oninput="saveAndCalc()"></td><td><input type="number" id="p${gNum}_66" value="${p.p66}" oninput="saveAndCalc()"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>`);
+            });
+            const tbodyAcab = document.getElementById('tbodyAcab');
+            tbodyAcab.innerHTML = "";
+            data.acabamentos.forEach(a => {
+                const id = a.serv.replace(/\s/g, '').replace(/[éèê]/g,'e').replace(/[ç]/g,'c');
+                tbodyAcab.insertAdjacentHTML('beforeend', `<tr data-serv="${a.serv}"><td>${a.serv}</td><td><input type="number" id="base_${id}" value="${a.base}" oninput="saveAndCalc()"></td><td><input type="number" id="preMil_${id}" value="${a.mil}" oninput="saveAndCalc()"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>`);
+            });
+            alert("Preços atualizados via Google Sheets!");
+            saveAndCalc();
+        } catch (e) { alert("Erro ao sincronizar planilha!"); }
+        finally { btn.disabled = false; btn.innerHTML = '<i class="fa fa-sync"></i> SINCRONIZAR'; }
+    }
+
+    // --- GERADOR DE PDF ---
     function gerarPDF() {
         const { jsPDF } = window.jspdf; const doc = new jsPDF();
         const cli = document.getElementById('cliNome').value || "Cliente", total = document.getElementById('totalPrice').innerText;
-        const produto = document.getElementById('tipoServico').value, qv = document.getElementById('qtdVenda').value, qInt = document.getElementById('qtdInterna').value;
-        const papel = document.getElementById('gramSelect').value, tamanho = `${document.getElementById('lar').value}x${document.getElementById('alt').value} cm`;
-        const cores = document.getElementById('esquemaCores').options[document.getElementById('esquemaCores').selectedIndex].text;
+        const prod = document.getElementById('tipoServico').value, qv = document.getElementById('qtdVenda').value, qInt = document.getElementById('qtdInterna').value;
         doc.setFillColor(0, 90, 171); doc.rect(0, 0, 210, 40, 'F');
         doc.setTextColor(255, 255, 255); doc.setFontSize(22); doc.text("MC SERIGRAFIA E GRÁFICA", 10, 25);
         doc.setTextColor(0, 0, 0); doc.setFontSize(12); doc.text(`Cliente: ${cli}`, 10, 55);
-        doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 150, 55); doc.line(10, 60, 200, 60);
-        doc.setFont("helvetica", "bold"); doc.text("DESCRIÇÃO DO PRODUTO", 10, 70); doc.setFont("helvetica", "normal");
-        doc.text(`Produto: ${produto}`, 10, 80); doc.text(`Quantidade: ${qv} un (com ${qInt} folhas cada)`, 10, 87);
-        doc.text(`Papel: ${papel}`, 10, 94); doc.text(`Tamanho: ${tamanho}`, 10, 101); doc.text(`Impressão: ${cores}`, 10, 108);
+        doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 150, 55);
         doc.setFont("helvetica", "bold"); doc.text("SUGESTÕES DE PEDIDOS", 10, 130);
         let y = 140; document.querySelectorAll('#tabelaOrcamento tr').forEach(tr => {
             const cols = tr.querySelectorAll('td'); doc.setFont("helvetica", "normal");
-            doc.text(`${cols[0].innerText} un (${qInt} fls)`, 10, y); doc.text(`R$ ${cols[1].innerText}/un`, 70, y); doc.text(`Total: R$ ${cols[2].innerText}`, 130, y); y += 8;
+            doc.text(`${cols[0].innerText} un (${qInt} fls)`, 10, y); doc.text(`Total: R$ ${cols[2].innerText}`, 120, y); y += 8;
         });
         doc.setFillColor(240, 240, 240); doc.rect(10, 240, 190, 30, 'F'); doc.text(`VALOR TOTAL: ${total}`, 15, 258);
         doc.save(`Orcamento_MC_${cli.replace(/\s/g, '_')}.pdf`);
     }
 
-    function addItem(type) {
-        const name = prompt("Nome do item:"); if (!name) return;
-        const id = name.replace(/\s/g, '');
-        if (type === 'setup' || type === 'fixos') {
-            document.getElementById(type === 'setup' ? 'containerSetup' : 'containerFixos').insertAdjacentHTML('beforeend', `<div style="display:flex; justify-content:space-between; align-items:center;"><label>${name}</label><i class="fa fa-trash btn-del" onclick="this.parentElement.nextElementSibling.remove(); this.parentElement.remove(); calc();"></i></div><input type="number" value="0" oninput="calc()">`);
-        } else if (type === 'papel') {
-            document.getElementById('tbodyPapel').insertAdjacentHTML('beforeend', `<tr data-gram="${name}"><td>${name}</td><td><input type="number" value="0" oninput="calc()"></td><td><input type="number" value="0" oninput="calc()"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>`);
-        } else if (type === 'acabamento') {
-            document.getElementById('tbodyAcab').insertAdjacentHTML('beforeend', `<tr data-serv="${name}"><td>${name}</td><td><input type="number" id="base_${id}" value="0" oninput="calc()"></td><td><input type="number" id="preMil_${id}" value="0" oninput="calc()"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>`);
-        }
-        syncDropdowns(); calc();
-    }
-    function removeRow(btn) { btn.closest('tr').remove(); syncDropdowns(); calc(); }
+    // --- CÁLCULOS ---
+    function saveAndCalc() { salvarBackup(); calc(); }
+    
     function syncDropdowns() {
         const gs = document.getElementById('gramSelect'), sa = document.getElementById('selAcab'), gv = gs.value;
         gs.innerHTML = ""; document.querySelectorAll('#tbodyPapel tr').forEach(tr => { let g = tr.dataset.gram; gs.innerHTML += `<option value="${g}">${g}</option>`; }); gs.value = gv;
         sa.innerHTML = '<option value="">-- Selecione --</option>'; document.querySelectorAll('#tbodyAcab tr').forEach(tr => { let s = tr.dataset.serv; sa.innerHTML += `<option value="${s}">${s}</option>`; });
     }
+
     function calc() {
         syncDropdowns();
         let tf = 0; document.querySelectorAll('#containerFixos input').forEach(i => tf += parseFloat(i.value) || 0);
@@ -282,7 +265,6 @@
         const tp = parseFloat(document.getElementById('tempoProd').value) || 0, l = parseFloat(document.getElementById('lar').value) || 1, a = parseFloat(document.getElementById('alt').value) || 1;
         const gramFull = document.getElementById('gramSelect').value || "Sulfit 56g", qr = parseFloat(document.getElementById('qResma').value) || 500;
         const luc = (parseFloat(document.getElementById('lucroPorcent').value) || 0) / 100 + 1, gramNum = gramFull.match(/\d+/) ? gramFull.match(/\d+/)[0] : "56";
-        const gTinta = parseFloat(document.getElementById('gastoTintaGramas').value) || 0, pTinta = parseFloat(document.getElementById('baseTinta').value) || 0;
         const formats = [{n:"64x88", w:64, h:88}, {n:"66x96", w:66, h:96}];
         let mf = formats[0], map = 0, ml = l, ma = a;
         formats.forEach(f => {
@@ -290,20 +272,20 @@
             if(Math.max(ap1, ap2) > map) { map = Math.max(ap1, ap2); mf = f; if(ap2 > ap1) { ml = a; ma = l; } else { ml = l; ma = a; } }
         });
         const pr = Math.max(0, parseFloat(document.getElementById(`p${gramNum}_${mf.n==="64x88"?"64":"66"}`)?.value)||0);
-        document.getElementById('pResma').value = pr; document.getElementById('pTintaExib').value = pTinta;
+        document.getElementById('pResma').value = pr; document.getElementById('pTintaExib').value = document.getElementById('baseTinta').value;
         let scales = [1, 5, 10, 20, 50, 100]; if(!scales.includes(qv)) { scales.push(qv); scales.sort((a,b)=>a-b); }
         let resHtml = "";
         scales.forEach(q => {
-            const tpec = q * qInt, fc = Math.ceil((tpec/map)*1.1) || 0, cpap = (pr/qr)*fc, nc = parseInt(document.getElementById('esquemaCores').value), ccha = nc * (parseFloat(document.getElementById('baseChapa').value) || 0), tTintaG = (tpec / 1000) * gTinta * nc, ctin = tTintaG * (pTinta / 1000);
+            const tpec = q * qInt, fc = Math.ceil((tpec/map)*1.1) || 0, cpap = (pr/qr)*fc, nc = parseInt(document.getElementById('esquemaCores').value), ccha = nc * (parseFloat(document.getElementById('baseChapa').value) || 0);
             let cacab = acabamentosAtivos.reduce((acc,ac) => {
-                let sA = ac.replace(/\s/g, '').replace('é','e').replace('ç','c').replace('ã','a');
+                let sA = ac.replace(/\s/g, '').replace(/[éèê]/g,'e').replace(/[ç]/g,'c');
                 let iB = document.getElementById(`base_${sA}`), iM = document.getElementById(`preMil_${sA}`);
                 return acc + (iB ? parseFloat(iB.value) || 0 : 0) * q + ((iM ? parseFloat(iM.value) || 0 : 0) / 1000) * q;
             }, 0);
-            const cProd = ccha + cpap + ctin + cacab + (hm * tp) + (parseFloat(document.getElementById('baseSetup').value) || 0), final = cProd * luc;
+            const cProd = ccha + cpap + cacab + (hm * tp) + (parseFloat(document.getElementById('baseSetup').value) || 0), final = cProd * luc;
             if(q === qv) {
                 document.getElementById('totalPrice').innerText = final.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-                document.getElementById('tabelaResumoCustos').innerHTML = `<tr><td>Papel (${fc} fls)</td><td class="val">R$ ${cpap.toFixed(2)}</td></tr><tr><td>Chapas (${nc} un)</td><td class="val">R$ ${ccha.toFixed(2)}</td></tr><tr><td>Tinta (${tTintaG.toFixed(1)}g)</td><td class="val">R$ ${ctin.toFixed(2)}</td></tr><tr><td>Acabamentos</td><td class="val">R$ ${cacab.toFixed(2)}</td></tr><tr><td>Mão de Obra (${tp}h)</td><td class="val">R$ ${(hm*tp).toFixed(2)}</td></tr><tr style="color:var(--bg-blue); font-weight:bold;"><td>Total Custo</td><td class="val">R$ ${cProd.toFixed(2)}</td></tr>`;
+                document.getElementById('tabelaResumoCustos').innerHTML = `<tr><td>Papel (${fc} fls)</td><td class="val">R$ ${cpap.toFixed(2)}</td></tr><tr><td>Chapas (${nc} un)</td><td class="val">R$ ${ccha.toFixed(2)}</td></tr><tr><td>Acabamentos</td><td class="val">R$ ${cacab.toFixed(2)}</td></tr><tr style="color:var(--bg-blue); font-weight:bold;"><td>Total Custo</td><td class="val">R$ ${cProd.toFixed(2)}</td></tr>`;
             }
             resHtml += `<tr ${q===qv?'style="background:#d1e7ff;font-weight:bold"':''}><td>${q}</td><td>${(final/q).toFixed(2)}</td><td>${final.toFixed(2)}</td></tr>`;
         });
@@ -314,18 +296,33 @@
         for(let i=0; i<Math.floor(mf.w/ml); i++) for(let j=0; j<Math.floor(mf.h/ma); j++) ct.fillRect(5+(i*ml*s), 5+(j*ma*s), (ml*s)-1, (ma*s)-1);
         document.getElementById('resCorte').innerHTML = `Aproveitamento: <b>${map} pçs/fl</b> | <b>${mf.n}</b>`;
     }
-    function addAcab() { let v = document.getElementById('selAcab').value; if(v && !acabamentosAtivos.includes(v)) { acabamentosAtivos.push(v); renderAcab(); calc(); } document.getElementById('selAcab').value = ""; }
-    function renderAcab() { document.getElementById('listaAcab').innerHTML = acabamentosAtivos.map(a => `<div style="color:black; padding:5px; background:#f0f0f0; margin-top:5px; display:flex; justify-content:space-between"><span>${a}</span><i class="fa fa-trash" onclick="acabamentosAtivos.splice(acabamentosAtivos.indexOf('${a}'),1);renderAcab();calc();" style="cursor:pointer"></i></div>`).join(''); }
+
+    // --- ACABAMENTOS ---
+    function addAcab() { let v = document.getElementById('selAcab').value; if(v && !acabamentosAtivos.includes(v)) { acabamentosAtivos.push(v); renderAcab(); saveAndCalc(); } document.getElementById('selAcab').value = ""; }
+    function renderAcab() { document.getElementById('listaAcab').innerHTML = acabamentosAtivos.map(a => `<div style="color:black; padding:5px; background:#f0f0f0; margin-top:5px; display:flex; justify-content:space-between"><span>${a}</span><i class="fa fa-trash" onclick="acabamentosAtivos.splice(acabamentosAtivos.indexOf('${a}'),1);renderAcab();saveAndCalc();" style="cursor:pointer"></i></div>`).join(''); }
+    function removeRow(btn) { btn.closest('tr').remove(); syncDropdowns(); saveAndCalc(); }
+    function addItem(type) {
+        const name = prompt("Nome do item:"); if (!name) return;
+        if (type === 'papel') {
+            document.getElementById('tbodyPapel').insertAdjacentHTML('beforeend', `<tr data-gram="${name}"><td>${name}</td><td><input type="number" value="0" oninput="saveAndCalc()"></td><td><input type="number" value="0" oninput="saveAndCalc()"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>`);
+        } else if (type === 'acabamento') {
+            const id = name.replace(/\s/g, '').replace(/[éèê]/g,'e').replace(/[ç]/g,'c');
+            document.getElementById('tbodyAcab').insertAdjacentHTML('beforeend', `<tr data-serv="${name}"><td>${name}</td><td><input type="number" id="base_${id}" value="0" oninput="saveAndCalc()"></td><td><input type="number" id="preMil_${id}" value="0" oninput="saveAndCalc()"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>`);
+        }
+        syncDropdowns(); saveAndCalc();
+    }
+
+    // --- WHATSAPP ---
     function enviarWhatsApp() {
         const cli = document.getElementById('cliNome').value || "Cliente", qv = document.getElementById('qtdVenda').value, qInt = document.getElementById('qtdInterna').value, totalFinal = document.getElementById('totalPrice').innerText;
-        let sugestoes = ""; document.querySelectorAll('#tabelaOrcamento tr').forEach(tr => {
-            const cols = tr.querySelectorAll('td'); sugestoes += `* ${cols[0].innerText} un (${qInt} fls) — Total: R$ ${cols[2].innerText}\n`;
+        let sug = ""; document.querySelectorAll('#tabelaOrcamento tr').forEach(tr => {
+            const cols = tr.querySelectorAll('td'); sug += `* ${cols[0].innerText} un (${qInt} fls) — Total: R$ ${cols[2].innerText}\n`;
         });
-        const msg = encodeURIComponent(`- PROPOSTA COMERCIAL - MC SERIGRAFIA\nSUGESTÕES DE PEDIDOS:\n${sugestoes}------------------------------------\nORÇAMENTO: ${cli}\nProduto: ${document.getElementById('tipoServico').value}\nQuantidade: ${qv} un (${qInt} fls cada)\nPix cnpj 46.897.470.0001-09\nContatos: (51) 99971-3739`);
+        const msg = encodeURIComponent(`- PROPOSTA COMERCIAL - MC SERIGRAFIA\nSUGESTÕES DE PEDIDOS:\n${sug}------------------------------------\nCLIENTE: ${cli}\nPRODUTO: ${document.getElementById('tipoServico').value}\nVALOR TOTAL: ${totalFinal}\nPix cnpj 46.897.470.0001-09`);
         window.open(`https://wa.me/5551999713739?text=${msg}`);
     }
-    function saveAndCalc() { calc(); }
-    window.onload = () => { calc(); };
+
+    window.onload = () => { carregarBackup(); calc(); };
 </script>
 </body>
 </html>
