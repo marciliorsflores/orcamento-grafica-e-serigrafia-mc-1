@@ -120,21 +120,21 @@
         <div class="ref-card">
             <h4>Base e Setup <button class="btn-add" onclick="addItem('setup')">+</button></h4>
             <div id="containerSetup">
-                <label>Chapa Ofset (R$)</label><input type="number" id="baseChapa" value="45.00" oninput="saveAndCalc()">
-                <label>Preço Tinta KG (R$)</label><input type="number" id="baseTinta" value="100.00" oninput="saveAndCalc()">
-                <label>Setup Fixo Máquina (R$)</label><input type="number" id="baseSetup" value="40.00" oninput="saveAndCalc()">
+                <label>Chapa Ofset (R$)</label><input type="number" id="baseChapa" value="45.00" min="0" oninput="saveAndCalc()">
+                <label>Preço Tinta KG (R$)</label><input type="number" id="baseTinta" value="100.00" min="0" oninput="saveAndCalc()">
+                <label>Setup Fixo Máquina (R$)</label><input type="number" id="baseSetup" value="40.00" min="0" oninput="saveAndCalc()">
             </div>
         </div>
 
         <div class="ref-card">
             <h4>Custos Fixos <button class="btn-add" onclick="addItem('fixos')">+</button></h4>
             <div id="containerFixos">
-                <label>Pró-labore Marcílio</label><input type="number" id="proMarcilio" value="5000.00" oninput="saveAndCalc()">
-                <label>Pró-labore Cristiane</label><input type="number" id="proCristiane" value="2000.00" oninput="saveAndCalc()">
-                <label>Contas Fixas</label><input type="number" id="contasFixas" value="1000.00" oninput="saveAndCalc()">
+                <label>Pró-labore Marcílio</label><input type="number" id="proMarcilio" value="5000.00" min="0" oninput="saveAndCalc()">
+                <label>Pró-labore Cristiane</label><input type="number" id="proCristiane" value="2000.00" min="0" oninput="saveAndCalc()">
+                <label>Contas Fixas</label><input type="number" id="contasFixas" value="1000.00" min="0" oninput="saveAndCalc()">
                 <div style="display:flex; gap:4px">
-                    <div style="flex:1"><label>Dias</label><input type="number" id="diasUteis" value="22" oninput="saveAndCalc()"></div>
-                    <div style="flex:1"><label>Hrs/Dia</label><input type="number" id="horasDia" value="7" oninput="saveAndCalc()"></div>
+                    <div style="flex:1"><label>Dias</label><input type="number" id="diasUteis" value="22" min="0" oninput="saveAndCalc()"></div>
+                    <div style="flex:1"><label>Hrs/Dia</label><input type="number" id="horasDia" value="7" min="0" oninput="saveAndCalc()"></div>
                 </div>
             </div>
             <div class="cost-total-row">Hora: <b id="valHoraMaquina">R$ 0,00</b></div>
@@ -158,11 +158,11 @@
             <table class="ref-table">
                 <thead><tr><th>Serv</th><th>Base</th><th>Mil</th><th></th></tr></thead>
                 <tbody id="tbodyAcab">
-                    <tr data-serv="Refile"><td>Refile</td><td><input type="number" value="10.00"></td><td><input type="number" value="40.00"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
-                    <tr data-serv="Grampo"><td>Grampo</td><td><input type="number" value="5.00"></td><td><input type="number" value="15.00"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
+                    <tr data-serv="Refile"><td>Refile</td><td><input type="number" value="20.00"></td><td><input type="number" value="40.00"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
+                    <tr data-serv="Grampo"><td>Grampo</td><td><input type="number" value="20.00"></td><td><input type="number" value="15.00"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
                     <tr data-serv="Numeração"><td>Num</td><td><input type="number" value="20.00"></td><td><input type="number" value="45.00"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
-                    <tr data-serv="Blocagem"><td>Bloc</td><td><input type="number" value="15.00"></td><td><input type="number" value="50.00"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
-                    <tr data-serv="Serrilha"><td>Serri</td><td><input type="number" value="10.00"></td><td><input type="number" value="25.00"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
+                    <tr data-serv="Blocagem"><td>Bloc</td><td><input type="number" value="20.00"></td><td><input type="number" value="50.00"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
+                    <tr data-serv="Serrilha"><td>Serri</td><td><input type="number" value="40.00"></td><td><input type="number" value="25.00"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
                 </tbody>
             </table>
         </div>
@@ -361,3 +361,4 @@
 </script>
 </body>
 </html>
+
