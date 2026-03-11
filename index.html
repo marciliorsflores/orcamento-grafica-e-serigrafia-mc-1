@@ -351,12 +351,31 @@
             }
             resHtml += `<tr ${q===qv?'style="background:#d1e7ff;font-weight:bold"':''}><td>${q}</td><td>${(final/q).toFixed(2)}</td><td>${final.toFixed(2)}</td></tr>`;
         });
-        document.getElementById('tabelaOrcamento').innerHTML = resHtml;
-        const cv = document.getElementById('canvasLayout'), ct = cv.getContext('2d');
-        ct.clearRect(0,0,180,120); const s = Math.min(170/mf.w, 110/mf.h);
-        ct.strokeStyle="#ccc"; ct.strokeRect(5,5,mf.w*s,mf.h*s); ct.fillStyle="#ff5252";
-        for(let i=0; i<Math.floor(mf.w/ml); i++) for(let j=0; j<Math.floor(mf.h/ma); j++) ct.fillRect(5+(i*ml*s), 5+(j*ma*s), (ml*s)-1, (ma*s)-1);
-        document.getElementById('resCorte').innerHTML = `Aproveitamento: <b>${map} pçs/fl</b> | <b>${mf.n}</b>`;
+        // Criar a lista detalhada de cada acabamento individual
+            let detalheAcabamentosHtml = "";
+            acabamentosAtivos.forEach(acName => {
+                const trA = Array.from(document.querySelectorAll('#tbodyAcab tr')).find(tr => tr.dataset.serv === acName);
+                if(trA) {
+                    const vBase = parseFloat(trA.cells[1].querySelector('input').value) || 0;
+                    const vMil = parseFloat(trA.cells[2].querySelector('input').value) || 0;
+                    const custoIndividual = (vBase * q) + ((vMil / 1000) * (q * qInt));
+                    detalheAcabamentosHtml += `<tr><td style="padding-left:10px; font-style:italic;">> ${acName}</td><td class="val">R$ ${custoIndividual.toFixed(2)}</td></tr>`;
+                }
+            });
+
+            if(q === qv) {
+                document.getElementById('totalPrice').innerText = final.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+                document.getElementById('tabelaResumoCustos').innerHTML = `
+                    <tr><td>Papel (${fc} fls)</td><td class="val">R$ ${cpap.toFixed(2)}</td></tr>
+                    <tr><td>Chapas (${nc} un)</td><td class="val">R$ ${ccha.toFixed(2)}</td></tr>
+                    <tr><td>Tinta (${tTintaG.toFixed(1)}g)</td><td class="val">R$ ${ctin.toFixed(2)}</td></tr>
+                    <tr style="font-weight:bold; color:#555;"><td>Acabamentos (Detalhado):</td><td class="val">R$ ${cacab.toFixed(2)}</td></tr>
+                    ${detalheAcabamentosHtml}
+                    <tr><td>Mão de Obra</td><td class="val">R$ ${(hm*tp).toFixed(2)}</td></tr>
+                    <tr style="color:var(--bg-blue); font-weight:bold; border-top:2px solid #ccc;"><td>Total Custo</td><td class="val">R$ ${cProd.toFixed(2)}</td></tr>
+                `;
+                document.getElementById('resRetirar').innerHTML = `UTILIZAR: ${Math.ceil(tpec/map)} fls | COMPRAR: ${fc} fls`;
+            }
     }
 
     function addAcab() { let v = document.getElementById('selAcab').value; if(v && !acabamentosAtivos.includes(v)) { acabamentosAtivos.push(v); renderAcab(); saveAndCalc(); } document.getElementById('selAcab').value = ""; }
@@ -366,6 +385,7 @@
 </script>
 </body>
 </html>
+
 
 
 
