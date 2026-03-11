@@ -359,9 +359,33 @@
                 return acc;
             }, 0);
             const cProd = ccha + cpap + ctin + cacab + (hm * tp) + (parseFloat(document.getElementById('baseSetup').value) || 0), final = cProd * luc;
-            if(q === qv) {
+           if(q === qv) {
+                // Gera o HTML individual para cada acabamento selecionado
+                let acabamentosDetalhadoHtml = "";
+                acabamentosAtivos.forEach(acName => {
+                    const trA = Array.from(document.querySelectorAll('#tbodyAcab tr')).find(tr => tr.dataset.serv === acName);
+                    if(trA) {
+                        const base = parseFloat(trA.cells[1].querySelector('input').value) || 0;
+                        const mil = parseFloat(trA.cells[2].querySelector('input').value) || 0;
+                        // Calcula o custo individual seguindo sua lógica atual
+                        const custoIndividual = (base * q) + ((mil / 1000) * q);
+                        acabamentosDetalhadoHtml += `<tr><td style="padding-left:15px; color:#666; font-style:italic;">> ${acName}</td><td class="val" style="color:#666;">R$ ${custoIndividual.toFixed(2)}</td></tr>`;
+                    }
+                });
+
                 document.getElementById('totalPrice').innerText = final.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-                document.getElementById('tabelaResumoCustos').innerHTML = `<tr><td>Papel (${fc} fls)</td><td class="val">R$ ${cpap.toFixed(2)}</td></tr><tr><td>Chapas (${nc} un)</td><td class="val">R$ ${ccha.toFixed(2)}</td></tr><tr><td>Tinta (${tTintaG.toFixed(1)}g)</td><td class="val">R$ ${ctin.toFixed(2)}</td></tr><tr><td>Acabamentos</td><td class="val">R$ ${cacab.toFixed(2)}</td></tr><tr><td>Mão de Obra</td><td class="val">R$ ${(hm*tp).toFixed(2)}</td></tr><tr style="color:var(--bg-blue); font-weight:bold;"><td>Total Custo</td><td class="val">R$ ${cProd.toFixed(2)}</td></tr>`;
+                
+                // Monta a tabela incluindo os acabamentos individualizados
+                document.getElementById('tabelaResumoCustos').innerHTML = `
+                    <tr><td>Papel (${fc} fls)</td><td class="val">R$ ${cpap.toFixed(2)}</td></tr>
+                    <tr><td>Chapas (${nc} un)</td><td class="val">R$ ${ccha.toFixed(2)}</td></tr>
+                    <tr><td>Tinta (${tTintaG.toFixed(1)}g)</td><td class="val">R$ ${ctin.toFixed(2)}</td></tr>
+                    <tr style="font-weight:bold;"><td>Acabamentos (Total)</td><td class="val">R$ ${cacab.toFixed(2)}</td></tr>
+                    ${acabamentosDetalhadoHtml}
+                    <tr><td>Mão de Obra</td><td class="val">R$ ${(hm*tp).toFixed(2)}</td></tr>
+                    <tr style="color:var(--bg-blue); font-weight:bold; border-top: 2px solid #ccc;"><td>Total Custo</td><td class="val">R$ ${cProd.toFixed(2)}</td></tr>
+                `;
+                
                 document.getElementById('resRetirar').innerHTML = `UTILIZAR: ${Math.ceil(tpec/map)} fls | COMPRAR: ${fc} fls`;
             }
             resHtml += `<tr ${q===qv?'style="background:#d1e7ff;font-weight:bold"':''}><td>${q}</td><td>${(final/q).toFixed(2)}</td><td>${final.toFixed(2)}</td></tr>`;
@@ -381,3 +405,4 @@
 </script>
 </body>
 </html>
+
