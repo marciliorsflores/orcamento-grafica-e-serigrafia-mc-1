@@ -1,556 +1,363 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MC Serigrafia - Orçamentador V17.0</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
-    <style>
-        :root { 
-            --bg-blue: #005aab; --active-blue: #0078d7; --header-white: #ffffff;
-            --text-dark: #333; --green-success: #27ae60; --red-delete: #e74c3c; --pdf-red: #c0392b; --sync-orange: #f39c12;
-        }
-        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background-color: var(--bg-blue); color: white; display: block; min-height: 100vh; overflow-y: auto; padding-bottom: 220px; }
-        .main-container { width: 100%; max-width: 1400px; margin: auto; padding: 10px; box-sizing: border-box; }
-        .top-panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; margin-bottom: 10px; }
-        .panel { background: white; border-radius: 4px; color: var(--text-dark); display: flex; flex-direction: column; }
-        .panel-header { background: var(--bg-blue); color: white; padding: 8px 12px; font-size: 13px; font-weight: bold; font-style: italic; display: flex; justify-content: space-between; align-items: center; }
-        .panel-body { padding: 12px; flex: 1; }
-        label { display: block; font-size: 9px; font-weight: bold; color: #666; margin-top: 8px; text-transform: uppercase; }
-        select, input { width: 100%; padding: 8px; font-size: 13px; border: 1px solid #ccc; border-radius: 3px; margin-top: 4px; box-sizing: border-box; }
-        .size-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; }
-        .size-input { background: #eee; border: none; font-size: 22px; font-weight: bold; text-align: center; padding: 10px; border-radius: 4px; color: var(--text-dark); }
-        .info-box { background: #e3f2fd; border: 1px solid #bbdefb; padding: 10px; border-radius: 4px; margin-top: 10px; color: #0d47a1; font-size: 12px; }
-        .buy-box { background: #fff3e0; border: 1px solid #ffe0b2; padding: 10px; border-radius: 4px; margin-top: 10px; color: #e65100; text-align: center; font-weight: bold; font-size: 11px; }
-        .layout-container { margin-top: 10px; text-align: center; background: #f9f9f9; border: 1px dashed #ccc; padding: 5px; border-radius: 4px; }
-        #canvasLayout { max-width: 100%; height: auto; display: block; margin: 0 auto; background: white; }
-        .bottom-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; background: #d1d1d1; padding: 10px; margin-top: 10px; border-radius: 4px; color: black; }
-        .ref-card { background: #e9e9e9; border: 1px solid #999; padding: 10px; font-size: 11px; }
-        .ref-card h4 { margin: 0 0 8px 0; border-bottom: 1px solid #999; padding-bottom: 3px; font-size: 11px; display: flex; justify-content: space-between; align-items: center; }
-        .ref-table { width: 100%; border-collapse: collapse; font-size: 10px; }
-        .ref-table input { padding: 3px; font-size: 10px; margin: 0; text-align: center; border: 1px solid #bbb; }
-        .price-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
-        .price-table th { background: #fce4d6; padding: 5px; border: 1px solid #f4b084; }
-        .price-table td { border: 1px solid #f4b084; padding: 5px; text-align: center; background: white; }
-        .footer-floating { position: fixed; bottom: 0; left: 0; width: 100%; background: #2c3e50; padding: 15px 20px; display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 10px; z-index: 9999; border-top: 4px solid var(--green-success); box-sizing: border-box; }
-        .final-price-value { font-size: clamp(24px, 8vw, 42px); font-weight: bold; color: #4ade80; text-shadow: 1px 1px 2px black; }
-        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
-        .btn-action { border: none; padding: 12px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; min-width: 150px; justify-content: center; color: white; }
-        .btn-whatsapp { background: #27ae60; }
-        .btn-pdf { background: var(--pdf-red); }
-        .btn-sync { background: var(--sync-orange); }
-        .btn-add { background: var(--bg-blue); color: white; border: none; padding: 2px 5px; border-radius: 3px; cursor: pointer; font-size: 10px; }
-        .btn-del { color: var(--red-delete); cursor: pointer; font-size: 10px; margin-left: 5px; }
-        .resumo-table { width: 100%; border-collapse: collapse; margin-top: 5px; }
-        .resumo-table td { padding: 4px 0; border-bottom: 1px dotted #ccc; font-size: 10px; }
-        .resumo-table .val { text-align: right; font-weight: bold; }
-        @media (max-width: 600px) { .btn-action { width: 100%; } }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MC Serigrafia - Orçamentador V17.0</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <style>
+        :root { 
+            --bg-blue: #005aab; --active-blue: #0078d7; --header-white: #ffffff;
+            --text-dark: #333; --green-success: #27ae60; --red-delete: #e74c3c; --pdf-red: #c0392b; --sync-orange: #f39c12;
+        }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background-color: var(--bg-blue); color: white; display: block; min-height: 100vh; overflow-y: auto; padding-bottom: 220px; }
+        .main-container { width: 100%; max-width: 1400px; margin: auto; padding: 10px; box-sizing: border-box; }
+        .top-panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; margin-bottom: 10px; }
+        .panel { background: white; border-radius: 4px; color: var(--text-dark); display: flex; flex-direction: column; }
+        .panel-header { background: var(--bg-blue); color: white; padding: 8px 12px; font-size: 13px; font-weight: bold; font-style: italic; display: flex; justify-content: space-between; align-items: center; }
+        .panel-body { padding: 12px; flex: 1; }
+        label { display: block; font-size: 9px; font-weight: bold; color: #666; margin-top: 8px; text-transform: uppercase; }
+        select, input { width: 100%; padding: 8px; font-size: 13px; border: 1px solid #ccc; border-radius: 3px; margin-top: 4px; box-sizing: border-box; }
+        .size-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; }
+        .size-input { background: #eee; border: none; font-size: 22px; font-weight: bold; text-align: center; padding: 10px; border-radius: 4px; color: var(--text-dark); }
+        .info-box { background: #e3f2fd; border: 1px solid #bbdefb; padding: 10px; border-radius: 4px; margin-top: 10px; color: #0d47a1; font-size: 12px; }
+        .buy-box { background: #fff3e0; border: 1px solid #ffe0b2; padding: 10px; border-radius: 4px; margin-top: 10px; color: #e65100; text-align: center; font-weight: bold; font-size: 11px; }
+        .layout-container { margin-top: 10px; text-align: center; background: #f9f9f9; border: 1px dashed #ccc; padding: 5px; border-radius: 4px; }
+        #canvasLayout { max-width: 100%; height: auto; display: block; margin: 0 auto; background: white; }
+        .bottom-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; background: #d1d1d1; padding: 10px; margin-top: 10px; border-radius: 4px; color: black; }
+        .ref-card { background: #e9e9e9; border: 1px solid #999; padding: 10px; font-size: 11px; }
+        .ref-card h4 { margin: 0 0 8px 0; border-bottom: 1px solid #999; padding-bottom: 3px; font-size: 11px; display: flex; justify-content: space-between; align-items: center; }
+        .ref-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+        .ref-table input { padding: 3px; font-size: 10px; margin: 0; text-align: center; border: 1px solid #bbb; }
+        .price-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+        .price-table th { background: #fce4d6; padding: 5px; border: 1px solid #f4b084; }
+        .price-table td { border: 1px solid #f4b084; padding: 5px; text-align: center; background: white; }
+        .footer-floating { position: fixed; bottom: 0; left: 0; width: 100%; background: #2c3e50; padding: 15px 20px; display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 10px; z-index: 9999; border-top: 4px solid var(--green-success); box-sizing: border-box; }
+        .final-price-value { font-size: clamp(24px, 8vw, 42px); font-weight: bold; color: #4ade80; text-shadow: 1px 1px 2px black; }
+        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+        .btn-action { border: none; padding: 12px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; min-width: 150px; justify-content: center; color: white; }
+        .btn-whatsapp { background: #27ae60; }
+        .btn-pdf { background: var(--pdf-red); }
+        .btn-sync { background: var(--sync-orange); }
+        .btn-add { background: var(--bg-blue); color: white; border: none; padding: 2px 5px; border-radius: 3px; cursor: pointer; font-size: 10px; }
+        .btn-del { color: var(--red-delete); cursor: pointer; font-size: 10px; margin-left: 5px; }
+        .resumo-table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+        .resumo-table td { padding: 4px 0; border-bottom: 1px dotted #ccc; font-size: 10px; }
+        .resumo-table .val { text-align: right; font-weight: bold; }
+        @media (max-width: 600px) { .btn-action { width: 100%; } }
+    </style>
 </head>
 <body>
 
 <div class="main-container">
-    <div class="top-panels">
-        <div class="panel">
-            <div class="panel-header">
-                <span>1. Cliente e Pedido</span>
-                <button onclick="novoOrcamento()" style="background:red; color:white; border:none; padding:2px 5px; cursor:pointer; font-size:10px;">LIMPAR</button>
-            </div>
-            <div class="panel-body">
-                <label>Nome do Cliente</label><input type="text" id="cliNome" oninput="saveAndCalc()">
-                <label>WhatsApp / CNPJ</label><input type="text" id="cliDados" oninput="saveAndCalc()">
-                <label>Produto</label><input list="prod-list" id="tipoServico" value="Blocos / Talonários" oninput="saveAndCalc()">
-                <datalist id="prod-list"><option value="Blocos"><option value="Jogo Americano"><option value="Panfletos"></datalist>
-                <div style="display:flex; gap:5px">
-                    <div style="flex:1"><label>Fls/Bloco</label><input type="number" id="qtdInterna" value="100" min="0" oninput="saveAndCalc()"></div>
-                    <div style="flex:1"><label>Qtd Pedido</label><input type="number" id="qtdVenda" value="1" min="0" oninput="saveAndCalc()" style="border:2px solid var(--active-blue)"></div>
-                </div>
-                <label>Cores (CMYK)</label>
-                <select id="esquemaCores" onchange="saveAndCalc()">
-                    <option value="1">1x0 (Preto / Cor Única)</option>
-                    <option value="4">4x0 (Colorido Frente)</option>
-                    <option value="5">4x1 (Frente Color / Verso PB)</option>
-                    <option value="8">4x4 (Colorido F/V)</option>
-                </select>
-                <label>Tempo Produção (Horas)</label><input type="number" id="tempoProd" value="1" step="0.5" min="0.5" oninput="saveAndCalc()">
-            </div>
-        </div>
+    <div class="top-panels">
+        <div class="panel">
+            <div class="panel-header">
+                <span>1. Cliente e Pedido</span>
+                <button onclick="novoOrcamento()" style="background:red; color:white; border:none; padding:2px 5px; cursor:pointer; font-size:10px;">LIMPAR</button>
+            </div>
+            <div class="panel-body">
+                <label>Nome do Cliente</label><input type="text" id="cliNome" oninput="saveAndCalc()">
+                <label>WhatsApp / CNPJ</label><input type="text" id="cliDados" oninput="saveAndCalc()">
+                <label>Produto</label><input list="prod-list" id="tipoServico" value="Blocos / Talonários" oninput="saveAndCalc()">
+                <datalist id="prod-list"><option value="Blocos"><option value="Jogo Americano"><option value="Panfletos"></datalist>
+                <div style="display:flex; gap:5px">
+                    <div style="flex:1"><label>Fls/Bloco</label><input type="number" id="qtdInterna" value="100" min="1" oninput="saveAndCalc()"></div>
+                    <div style="flex:1"><label>Qtd Pedido</label><input type="number" id="qtdVenda" value="1" min="1" oninput="saveAndCalc()" style="border:2px solid var(--active-blue)"></div>
+                </div>
+                <label>Cores (CMYK)</label>
+                <select id="esquemaCores" onchange="saveAndCalc()">
+                    <option value="1">1x0 (Preto / Cor Única)</option>
+                    <option value="4">4x0 (Colorido Frente)</option>
+                    <option value="5">4x1 (Frente Color / Verso PB)</option>
+                    <option value="8">4x4 (Colorido F/V)</option>
+                </select>
+                <label>Tempo Produção (Horas)</label><input type="number" id="tempoProd" value="1" step="0.5" min="0.5" oninput="saveAndCalc()">
+            </div>
+        </div>
 
-        <div class="panel">
-            <div class="panel-header">2. Tamanho e Corte</div>
-            <div class="panel-body">
-                <div class="size-row">
-                    <input type="number" id="lar" class="size-input" value="41" min="1" oninput="saveAndCalc()">
-                    <span>X</span>
-                    <input type="number" id="alt" class="size-input" value="28" min="1" oninput="saveAndCalc()">
-                </div>
-                <div class="info-box" id="resCorte">Aproveitamento: --</div>
-                <div class="buy-box" id="resRetirar">UTILIZAR: -- | COMPRAR: --</div>
-                <div class="layout-container"><canvas id="canvasLayout" width="180" height="120"></canvas></div>
-            </div>
-        </div>
+        <div class="panel">
+            <div class="panel-header">2. Tamanho e Corte</div>
+            <div class="panel-body">
+                <div class="size-row">
+                    <input type="number" id="lar" class="size-input" value="41" min="1" oninput="saveAndCalc()">
+                    <span>X</span>
+                    <input type="number" id="alt" class="size-input" value="28" min="1" oninput="saveAndCalc()">
+                </div>
+                <div class="info-box" id="resCorte">Aproveitamento: --</div>
+                <div class="buy-box" id="resRetirar">UTILIZAR: -- | COMPRAR: --</div>
+                <div class="layout-container"><canvas id="canvasLayout" width="180" height="120"></canvas></div>
+            </div>
+        </div>
 
-        <div class="panel">
-            <div class="panel-header">3. Papel e Tinta</div>
-            <div class="panel-body">
-                <label>Tipo de Papel</label><select id="gramSelect" onchange="saveAndCalc()"></select>
-                <label>Preço Resma (R$)</label><input type="number" id="pResma" readonly style="background:#f0f0f0">
-                <label>Folhas na Resma</label><input type="number" id="qResma" value="500" min="1" oninput="saveAndCalc()">
-                <label>Tinta (Gramas/1000 pçs)</label><input type="number" id="gastoTintaGramas" value="100" min="1" oninput="saveAndCalc()">
-                <label>Preço Tinta KG</label><input type="number" id="pTintaExib" readonly style="background:#f0f0f0">
-            </div>
-        </div>
+        <div class="panel">
+            <div class="panel-header">3. Papel e Tinta</div>
+            <div class="panel-body">
+                <label>Tipo de Papel</label><select id="gramSelect" onchange="saveAndCalc()"></select>
+                <label>Preço Resma (R$)</label><input type="number" id="pResma" readonly style="background:#f0f0f0">
+                <label>Folhas na Resma</label><input type="number" id="qResma" value="500" min="1" oninput="saveAndCalc()">
+                <label>Tinta (Gramas/1000 pçs)</label><input type="number" id="gastoTintaGramas" value="100" min="1" oninput="saveAndCalc()">
+                <label>Preço Tinta KG</label><input type="number" id="pTintaExib" readonly style="background:#f0f0f0">
+            </div>
+        </div>
 
-        <div class="panel">
-            <div class="panel-header">4. Acabamentos Selecionados</div>
-            <div class="panel-body">
-                <label>Adicionar Serviço</label><select id="selAcab" onchange="addAcab()"></select>
-                <div id="listaAcab"></div>
-                <table class="price-table">
-                    <thead><tr><th>QTD</th><th>UNIT.</th><th>TOTAL</th></tr></thead>
-                    <tbody id="tabelaOrcamento"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+        <div class="panel">
+            <div class="panel-header">4. Acabamentos Selecionados</div>
+            <div class="panel-body">
+                <label>Adicionar Serviço</label><select id="selAcab" onchange="addAcab()"></select>
+                <div id="listaAcab"></div>
+                <table class="price-table">
+                    <thead><tr><th>QTD</th><th>UNIT.</th><th>TOTAL</th></tr></thead>
+                    <tbody id="tabelaOrcamento"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-    <div class="bottom-section">
-        <div class="ref-card">
-            <h4>Base e Setup <button class="btn-add" onclick="addItem('setup')">+</button></h4>
-            <div id="containerSetup">
-                <label>Chapa Ofset (R$)</label><input type="number" id="baseChapa" value="45.00" min="0" oninput="saveAndCalc()">
-                <label>Preço Tinta KG (R$)</label><input type="number" id="baseTinta" value="100.00" min="0" oninput="saveAndCalc()">
-                <label>Setup Fixo Máquina (R$)</label><input type="number" id="baseSetup" value="40.00" min="0" oninput="saveAndCalc()">
-            </div>
-        </div>
+    <div class="bottom-section">
+        <div class="ref-card">
+            <h4>Base e Setup <button class="btn-add" onclick="addItem('setup')">+</button></h4>
+            <div id="containerSetup">
+                <label>Chapa Ofset (R$)</label><input type="number" id="baseChapa" value="45.00" min="0" oninput="saveAndCalc()">
+                <label>Preço Tinta KG (R$)</label><input type="number" id="baseTinta" value="100.00" min="0" oninput="saveAndCalc()">
+                <label>Setup Fixo Máquina (R$)</label><input type="number" id="baseSetup" value="40.00" min="0" oninput="saveAndCalc()">
+            </div>
+        </div>
 
-        <div class="ref-card">
-            <h4>Custos Fixos <button class="btn-add" onclick="addItem('fixos')">+</button></h4>
-            <div id="containerFixos">
-                <label>Pró-labore Marcílio</label><input type="number" id="proMarcilio" value="5000.00" min="0" oninput="saveAndCalc()">
-                <label>Pró-labore Cristiane</label><input type="number" id="proCristiane" value="2000.00" min="0" oninput="saveAndCalc()">
-                <label>Contas Fixas</label><input type="number" id="contasFixas" value="1000.00" min="0" oninput="saveAndCalc()">
-                <div style="display:flex; gap:4px">
-                    <div style="flex:1"><label>Dias</label><input type="number" id="diasUteis" value="22" min="0" oninput="saveAndCalc()"></div>
-                    <div style="flex:1"><label>Hrs/Dia</label><input type="number" id="horasDia" value="7" min="0" oninput="saveAndCalc()"></div>
-                </div>
-            </div>
-            <div class="cost-total-row">Hora: <b id="valHoraMaquina">R$ 0,00</b></div>
-        </div>
+        <div class="ref-card">
+            <h4>Custos Fixos <button class="btn-add" onclick="addItem('fixos')">+</button></h4>
+            <div id="containerFixos">
+                <label>Pró-labore Marcílio</label><input type="number" id="proMarcilio" value="5000.00" min="0" oninput="saveAndCalc()">
+                <label>Pró-labore Cristiane</label><input type="number" id="proCristiane" value="2000.00" min="0" oninput="saveAndCalc()">
+                <label>Contas Fixas</label><input type="number" id="contasFixas" value="1000.00" min="0" oninput="saveAndCalc()">
+                <div style="display:flex; gap:4px">
+                    <div style="flex:1"><label>Dias</label><input type="number" id="diasUteis" value="22" min="0" oninput="saveAndCalc()"></div>
+                    <div style="flex:1"><label>Hrs/Dia</label><input type="number" id="horasDia" value="7" min="0" oninput="saveAndCalc()"></div>
+                </div>
+            </div>
+            <div class="cost-total-row">Hora: <b id="valHoraMaquina">R$ 0,00</b></div>
+        </div>
 
-        <div class="ref-card">
-            <h4>Tabela Papéis <button class="btn-add" onclick="addItem('papel')">+</button></h4>
-            <table class="ref-table">
-                <thead><tr><th>Gr</th><th>64x88</th><th>66x96</th><th></th></tr></thead>
-                <tbody id="tbodyPapel">
-                    <tr data-gram="Sulfit 56g"><td>Sulfit 56g</td><td><input type="number" value="180"></td><td><input type="number" value="200"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
-                    <tr data-gram="Sulfit 64g"><td>Sulfit 64g</td><td><input type="number" value="190"></td><td><input type="number" value="210"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
-                    <tr data-gram="Sulfit 75g"><td>Sulfit 75g</td><td><input type="number" value="210"></td><td><input type="number" value="220"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
-                    <tr data-gram="Sulfit 90g"><td>Sulfit 90g</td><td><input type="number" value="240"></td><td><input type="number" value="280"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
-                </tbody>
-            </table>
-        </div>
+        <div class="ref-card">
+            <h4>Tabela Papéis <button class="btn-add" onclick="addItem('papel')">+</button></h4>
+            <table class="ref-table">
+                <thead><tr><th>Gr</th><th>64x88</th><th>66x96</th><th></th></tr></thead>
+                <tbody id="tbodyPapel">
+                    <tr data-gram="Sulfit 56g"><td>Sulfit 56g</td><td><input type="number" value="180"></td><td><input type="number" value="200"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
+                    <tr data-gram="Sulfit 64g"><td>Sulfit 64g</td><td><input type="number" value="190"></td><td><input type="number" value="210"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
+                    <tr data-gram="Sulfit 75g"><td>Sulfit 75g</td><td><input type="number" value="210"></td><td><input type="number" value="220"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
+                    <tr data-gram="Sulfit 90g"><td>Sulfit 90g</td><td><input type="number" value="240"></td><td><input type="number" value="280"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
+                </tbody>
+            </table>
+        </div>
 
-        <div class="ref-card">
-            <h4>Tabela Acabam. <button class="btn-add" onclick="addItem('acabamento')">+</button></h4>
-            <table class="ref-table">
-                <thead><tr><th>Serv</th><th>Base</th><th>Mil</th><th></th></tr></thead>
-                <tbody id="tbodyAcab">
-                    <tr data-serv="Refile"><td>Refile</td><td><input type="number" value="2.00"></td><td><input type="number" value="20.00"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
-                    <tr data-serv="Grampo"><td>Grampo</td><td><input type="number" value="2.00"></td><td><input type="number" value="20.00"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
-                    <tr data-serv="Numeração"><td>Num</td><td><input type="number" value="4.00"></td><td><input type="number" value="40.00"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
-                    <tr data-serv="Blocagem"><td>Bloc</td><td><input type="number" value="2.00"></td><td><input type="number" value="20.00"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
-                    <tr data-serv="Serrilha"><td>Serri</td><td><input type="number" value="2.00"></td><td><input type="number" value="20.00"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
-                </tbody>
-            </table>
-        </div>
+        <div class="ref-card">
+            <h4>Tabela Acabam. <button class="btn-add" onclick="addItem('acabamento')">+</button></h4>
+            <table class="ref-table">
+                <thead><tr><th>Serv</th><th>Base</th><th>Mil</th><th></th></tr></thead>
+                <tbody id="tbodyAcab">
+                    <tr data-serv="Refile"><td>Refile</td><td><input type="number" value="20.00"></td><td><input type="number" value="40.00"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
+                    <tr data-serv="Grampo"><td>Grampo</td><td><input type="number" value="20.00"></td><td><input type="number" value="15.00"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
+                    <tr data-serv="Numeração"><td>Num</td><td><input type="number" value="20.00"></td><td><input type="number" value="45.00"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
+                    <tr data-serv="Blocagem"><td>Bloc</td><td><input type="number" value="20.00"></td><td><input type="number" value="50.00"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
+                    <tr data-serv="Serrilha"><td>Serri</td><td><input type="number" value="40.00"></td><td><input type="number" value="25.00"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>
+                </tbody>
+            </table>
+        </div>
 
-        <div class="ref-card" style="background:#fff; border-left:5px solid var(--active-blue);">
-            <h4>Conferência Detalhada</h4>
-            <table class="resumo-table" id="tabelaResumoCustos"></table>
-            <label style="color:var(--bg-blue); margin-top:10px;">% LUCRO DESEJADO</label>
-            <input type="number" id="lucroPorcent" value="50" min="0" oninput="saveAndCalc()" style="border:1px solid var(--bg-blue); font-weight:bold;">
-        </div>
-    </div>
+        <div class="ref-card" style="background:#fff; border-left:5px solid var(--active-blue);">
+            <h4>Conferência Detalhada</h4>
+            <table class="resumo-table" id="tabelaResumoCustos"></table>
+            <label style="color:var(--bg-blue); margin-top:10px;">% LUCRO DESEJADO</label>
+            <input type="number" id="lucroPorcent" value="30" oninput="saveAndCalc()" style="border:1px solid var(--bg-blue); font-weight:bold;">
+        </div>
+    </div>
 </div>
 
 <div class="footer-floating">
-    <div class="final-price-value" id="totalPrice">R$ 0,00</div>
-    <div class="btn-group">
-        <button class="btn-action btn-sync" id="btnSync" onclick="sincronizarPrecos()"><i class="fa fa-sync"></i> ATUALIZAR</button>
-        <button class="btn-action btn-pdf" onclick="gerarPDF()"><i class="fa fa-file-pdf"></i> PDF</button>
-        <button class="btn-action btn-whatsapp" id="btnWhats" onclick="processarEnvio()"><i class="fab fa-whatsapp"></i> WHATSAPP</button>
-    </div>
+    <div class="final-price-value" id="totalPrice">R$ 0,00</div>
+    <div class="btn-group">
+        <button class="btn-action btn-sync" id="btnSync" onclick="sincronizarPrecos()"><i class="fa fa-sync"></i> ATUALIZAR</button>
+        <button class="btn-action btn-pdf" onclick="gerarPDF()"><i class="fa fa-file-pdf"></i> PDF</button>
+        <button class="btn-action btn-whatsapp" id="btnWhats" onclick="processarEnvio()"><i class="fab fa-whatsapp"></i> WHATSAPP</button>
+    </div>
 </div>
 
 <script>
-    let acabamentosAtivos = [];
-    const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbyPKB2h-GL7u6U1gZnHfH5whcuF78aH7x5q1imR94Ny_MuNgAJCSRhbosxzskt8j3BI/exec";
+    let acabamentosAtivos = [];
+    const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbyPKB2h-GL7u6U1gZnHfH5whcuF78aH7x5q1imR94Ny_MuNgAJCSRhbosxzskt8j3BI/exec";
 
-    const camposBackup = ['cliNome', 'cliDados', 'tipoServico', 'qtdInterna', 'qtdVenda', 'esquemaCores', 'lar', 'alt', 'lucroPorcent', 'tempoProd', 'proMarcilio', 'proCristiane', 'contasFixas', 'diasUteis', 'horasDia', 'baseChapa', 'baseTinta', 'baseSetup'];
+    const camposBackup = ['cliNome', 'cliDados', 'tipoServico', 'qtdInterna', 'qtdVenda', 'esquemaCores', 'lar', 'alt', 'lucroPorcent', 'tempoProd', 'proMarcilio', 'proCristiane', 'contasFixas', 'diasUteis', 'horasDia', 'baseChapa', 'baseTinta', 'baseSetup'];
 
-    function salvarBackup() {
-        const dados = {};
-        camposBackup.forEach(id => { if(document.getElementById(id)) dados[id] = document.getElementById(id).value; });
-        localStorage.setItem('mc_v17_save', JSON.stringify(dados));
-    }
+    function salvarBackup() {
+        const dados = {};
+        camposBackup.forEach(id => { if(document.getElementById(id)) dados[id] = document.getElementById(id).value; });
+        localStorage.setItem('mc_v17_save', JSON.stringify(dados));
+    }
 
-    function carregarBackup() {
-        const salvo = localStorage.getItem('mc_v17_save');
-        if (salvo) { 
-            const d = JSON.parse(salvo); 
-            camposBackup.forEach(id => { if(d[id] && document.getElementById(id)) document.getElementById(id).value = d[id]; }); 
-        }
-    }
+    function carregarBackup() {
+        const salvo = localStorage.getItem('mc_v17_save');
+        if (salvo) { 
+            const d = JSON.parse(salvo); 
+            camposBackup.forEach(id => { if(d[id] && document.getElementById(id)) document.getElementById(id).value = d[id]; }); 
+        }
+    }
 
-    function novoOrcamento() { if(confirm("Deseja limpar todos os dados da tela?")) { localStorage.removeItem('mc_v17_save'); location.reload(); } }
+    function novoOrcamento() { if(confirm("Deseja limpar todos os dados da tela?")) { localStorage.removeItem('mc_v17_save'); location.reload(); } }
 
-    async function sincronizarPrecos() {
-        const btn = document.getElementById('btnSync'); btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>'; btn.disabled = true;
-        try {
-            const resp = await fetch(URL_GOOGLE); 
-            const data = await resp.json();
-            const tbP = document.getElementById('tbodyPapel'); tbP.innerHTML = "";
-            data.papeis.forEach(p => {
-                tbP.insertAdjacentHTML('beforeend', `<tr data-gram="${p.gram}"><td>${p.gram}</td><td><input type="number" value="${p.p64}" oninput="saveAndCalc()"></td><td><input type="number" value="${p.p66}" oninput="saveAndCalc()"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>`);
-            });
-            const tbA = document.getElementById('tbodyAcab'); tbA.innerHTML = "";
-            data.acabamentos.forEach(a => {
-                tbA.insertAdjacentHTML('beforeend', `<tr data-serv="${a.serv}"><td>${a.serv}</td><td><input type="number" value="${a.base}" oninput="saveAndCalc()"></td><td><input type="number" value="${a.mil}" oninput="saveAndCalc()"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>`);
-            });
-            alert("Preços atualizados via Google!"); saveAndCalc();
-        } catch(e) { alert("Erro ao sincronizar!"); }
-        finally { btn.innerHTML = '<i class="fa fa-sync"></i> ATUALIZAR'; btn.disabled = false; }
-    }
+    async function sincronizarPrecos() {
+        const btn = document.getElementById('btnSync'); btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>'; btn.disabled = true;
+        try {
+            const resp = await fetch(URL_GOOGLE); 
+            const data = await resp.json();
+            const tbP = document.getElementById('tbodyPapel'); tbP.innerHTML = "";
+            data.papeis.forEach(p => {
+                tbP.insertAdjacentHTML('beforeend', `<tr data-gram="${p.gram}"><td>${p.gram}</td><td><input type="number" value="${p.p64}" oninput="saveAndCalc()"></td><td><input type="number" value="${p.p66}" oninput="saveAndCalc()"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>`);
+            });
+            const tbA = document.getElementById('tbodyAcab'); tbA.innerHTML = "";
+            data.acabamentos.forEach(a => {
+                tbA.insertAdjacentHTML('beforeend', `<tr data-serv="${a.serv}"><td>${a.serv}</td><td><input type="number" value="${a.base}" oninput="saveAndCalc()"></td><td><input type="number" value="${a.mil}" oninput="saveAndCalc()"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>`);
+            });
+            alert("Preços atualizados via Google!"); saveAndCalc();
+        } catch(e) { alert("Erro ao sincronizar!"); }
+        finally { btn.innerHTML = '<i class="fa fa-sync"></i> ATUALIZAR'; btn.disabled = false; }
+    }
 
-    async function processarEnvio() {
-        const cli = document.getElementById('cliNome').value || "Cliente";
-        const prod = document.getElementById('tipoServico').value;
-        const qv = document.getElementById('qtdVenda').value;
-        const total = document.getElementById('totalPrice').innerText;
-        
-        try {
-            fetch(URL_GOOGLE, { 
-                method: 'POST', 
-                mode: 'no-cors', 
-                body: JSON.stringify({ cliente: cli, produto: prod, quantidade: qv, total: total }) 
-            });
-        } catch(e) { console.error("Erro ao salvar histórico."); }
+    async function processarEnvio() {
+        const cli = document.getElementById('cliNome').value || "Cliente";
+        const prod = document.getElementById('tipoServico').value;
+        const qv = document.getElementById('qtdVenda').value;
+        const total = document.getElementById('totalPrice').innerText;
+        
+        try {
+            fetch(URL_GOOGLE, { 
+                method: 'POST', 
+                mode: 'no-cors', 
+                body: JSON.stringify({ cliente: cli, produto: prod, quantidade: qv, total: total }) 
+            });
+        } catch(e) { console.error("Erro ao salvar histórico."); }
 
-        const qInt = document.getElementById('qtdInterna').value;
-        const coresText = document.getElementById('esquemaCores').options[document.getElementById('esquemaCores').selectedIndex].text.split(' ')[0];
-        let sug = ""; document.querySelectorAll('#tabelaOrcamento tr').forEach(tr => {
-            const cols = tr.querySelectorAll('td'); if(cols.length > 0) sug += `* ${cols[0].innerText} un (${qInt} fls) — Total: R$ ${cols[2].innerText}\n`;
-        });
-        const msg = encodeURIComponent(`- PROPOSTA MC SERIGRAFIA -\nSUGESTÕES:\n${sug}--------------------------\nCLIENTE: ${cli}\nPRODUTO: ${prod}\nQUANTIDADE: ${qv} un (${qInt} fls cada)\nCORES: ${coresText}\nTOTAL: ${total}\nPix cnpj 46.897.470.0001-09`);
-        window.open(`https://wa.me/5551999713739?text=${msg}`);
-    }
+        const qInt = document.getElementById('qtdInterna').value;
+        const coresText = document.getElementById('esquemaCores').options[document.getElementById('esquemaCores').selectedIndex].text.split(' ')[0];
+        let sug = ""; document.querySelectorAll('#tabelaOrcamento tr').forEach(tr => {
+            const cols = tr.querySelectorAll('td'); if(cols.length > 0) sug += `* ${cols[0].innerText} un (${qInt} fls) — Total: R$ ${cols[2].innerText}\n`;
+        });
+        const msg = encodeURIComponent(`- PROPOSTA MC SERIGRAFIA -\nSUGESTÕES:\n${sug}--------------------------\nCLIENTE: ${cli}\nPRODUTO: ${prod}\nQUANTIDADE: ${qv} un (${qInt} fls cada)\nCORES: ${coresText}\nTOTAL: ${total}\nPix cnpj 46.897.470.0001-09`);
+        window.open(`https://wa.me/5551999713739?text=${msg}`);
+    }
 
-    function gerarPDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const cli = document.getElementById('cliNome').value || "Cliente";
-        const prod = document.getElementById('tipoServico').value;
-        const qv = document.getElementById('qtdVenda').value;
-        const qInt = document.getElementById('qtdInterna').value;
-        const papel = document.getElementById('gramSelect').value;
-        const corTexto = document.getElementById('esquemaCores').options[document.getElementById('esquemaCores').selectedIndex].text;
-        const tam = `${document.getElementById('lar').value}x${document.getElementById('alt').value} cm`;
-        const totalFinal = document.getElementById('totalPrice').innerText;
-        const acabamentos = acabamentosAtivos.join(', ') || 'Padrão';
+    function gerarPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const cli = document.getElementById('cliNome').value || "Cliente";
+        const prod = document.getElementById('tipoServico').value;
+        const qv = document.getElementById('qtdVenda').value;
+        const qInt = document.getElementById('qtdInterna').value;
+        const papel = document.getElementById('gramSelect').value;
+        const corTexto = document.getElementById('esquemaCores').options[document.getElementById('esquemaCores').selectedIndex].text;
+        const tam = `${document.getElementById('lar').value}x${document.getElementById('alt').value} cm`;
+        const totalFinal = document.getElementById('totalPrice').innerText;
+        const acabamentos = acabamentosAtivos.join(', ') || 'Padrão';
 
-        doc.setFillColor(0, 90, 171); doc.rect(0, 0, 210, 40, 'F');
-        doc.setTextColor(255, 255, 255); doc.setFontSize(22); doc.text("MC SERIGRAFIA E GRÁFICA", 10, 25);
-        doc.setFontSize(10); doc.text("Orçamento Comercial | Porto Alegre - RS", 10, 32);
+        doc.setFillColor(0, 90, 171); doc.rect(0, 0, 210, 40, 'F');
+        doc.setTextColor(255, 255, 255); doc.setFontSize(22); doc.text("MC SERIGRAFIA E GRÁFICA", 10, 25);
+        doc.setFontSize(10); doc.text("Orçamento Comercial | Porto Alegre - RS", 10, 32);
 
-        doc.setTextColor(0, 0, 0); doc.setFontSize(12); doc.setFont("helvetica", "bold"); doc.text(`Cliente: ${cli}`, 10, 55);
-        doc.setFont("helvetica", "normal"); doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 160, 55); doc.line(10, 60, 200, 60);
+        doc.setTextColor(0, 0, 0); doc.setFontSize(12); doc.setFont("helvetica", "bold"); doc.text(`Cliente: ${cli}`, 10, 55);
+        doc.setFont("helvetica", "normal"); doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 160, 55); doc.line(10, 60, 200, 60);
 
-        doc.setFont("helvetica", "bold"); doc.text("ESPECIFICAÇÕES DO PEDIDO:", 10, 75);
-        doc.setFont("helvetica", "normal");
-        doc.text(`• Produto: ${prod}`, 10, 85);
-        doc.text(`• Formato: ${tam}`, 10, 92);
-        doc.text(`• Papel: ${papel}`, 10, 99);
-        doc.text(`• Impressão: ${corTexto}`, 10, 106);
-        doc.text(`• Acabamentos: ${acabamentos}`, 10, 113);
-        doc.text(`• Quantidade: ${qv} un (com ${qInt} folhas cada)`, 10, 120);
+        doc.setFont("helvetica", "bold"); doc.text("ESPECIFICAÇÕES DO PEDIDO:", 10, 75);
+        doc.setFont("helvetica", "normal");
+        doc.text(`• Produto: ${prod}`, 10, 85);
+        doc.text(`• Formato: ${tam}`, 10, 92);
+        doc.text(`• Papel: ${papel}`, 10, 99);
+        doc.text(`• Impressão: ${corTexto}`, 10, 106);
+        doc.text(`• Acabamentos: ${acabamentos}`, 10, 113);
+        doc.text(`• Quantidade: ${qv} un (com ${qInt} folhas cada)`, 10, 120);
 
-        doc.setFont("helvetica", "bold"); doc.text("SUGESTÕES DE PEDIDOS:", 10, 140);
-        let y = 152;
-        document.querySelectorAll('#tabelaOrcamento tr').forEach(tr => {
-            const cols = tr.querySelectorAll('td');
-            if(cols.length > 0) { doc.text(`${cols[0].innerText} un - Total: R$ ${cols[2].innerText}`, 15, y); y += 8; }
-        });
+        doc.setFont("helvetica", "bold"); doc.text("SUGESTÕES DE PEDIDOS:", 10, 140);
+        let y = 152;
+        document.querySelectorAll('#tabelaOrcamento tr').forEach(tr => {
+            const cols = tr.querySelectorAll('td');
+            if(cols.length > 0) { doc.text(`${cols[0].innerText} un - Total: R$ ${cols[2].innerText}`, 15, y); y += 8; }
+        });
 
-        doc.setFillColor(245, 245, 245); doc.rect(10, 235, 190, 20, 'F');
-        doc.setFontSize(16); doc.setTextColor(0, 90, 171); doc.text(`TOTAL DO PEDIDO: ${totalFinal}`, 15, 248);
-        doc.save(`Orcamento_MC_${cli.replace(/\s/g, '_')}.pdf`);
-    }
+        doc.setFillColor(245, 245, 245); doc.rect(10, 235, 190, 20, 'F');
+        doc.setFontSize(16); doc.setTextColor(0, 90, 171); doc.text(`TOTAL DO PEDIDO: ${totalFinal}`, 15, 248);
+        doc.save(`Orcamento_MC_${cli.replace(/\s/g, '_')}.pdf`);
+    }
 
-    function addItem(type) {
-        const name = prompt("Nome:"); if(!name) return;
-        if(type==='setup'||type==='fixos') document.getElementById(type==='setup'?'containerSetup':'containerFixos').insertAdjacentHTML('beforeend', `<div style="display:flex; justify-content:space-between; align-items:center;"><label>${name}</label><i class="fa fa-trash btn-del" onclick="this.parentElement.nextElementSibling.remove(); this.parentElement.remove(); calc();"></i></div><input type="number" value="0" oninput="calc()">`);
-        else if(type==='papel') document.getElementById('tbodyPapel').insertAdjacentHTML('beforeend', `<tr data-gram="${name}"><td>${name}</td><td><input type="number" value="0"></td><td><input type="number" value="0"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>`);
-        else if(type==='acabamento') document.getElementById('tbodyAcab').insertAdjacentHTML('beforeend', `<tr data-serv="${name}"><td>${name}</td><td><input type="number" value="0"></td><td><input type="number" value="0"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>`);
-        syncDropdowns(); saveAndCalc();
-    }
+    function addItem(type) {
+        const name = prompt("Nome:"); if(!name) return;
+        if(type==='setup'||type==='fixos') document.getElementById(type==='setup'?'containerSetup':'containerFixos').insertAdjacentHTML('beforeend', `<div style="display:flex; justify-content:space-between; align-items:center;"><label>${name}</label><i class="fa fa-trash btn-del" onclick="this.parentElement.nextElementSibling.remove(); this.parentElement.remove(); calc();"></i></div><input type="number" value="0" oninput="calc()">`);
+        else if(type==='papel') document.getElementById('tbodyPapel').insertAdjacentHTML('beforeend', `<tr data-gram="${name}"><td>${name}</td><td><input type="number" value="0"></td><td><input type="number" value="0"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>`);
+        else if(type==='acabamento') document.getElementById('tbodyAcab').insertAdjacentHTML('beforeend', `<tr data-serv="${name}"><td>${name}</td><td><input type="number" value="0"></td><td><input type="number" value="0"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>`);
+        syncDropdowns(); saveAndCalc();
+    }
 
-    function removeRow(btn) { btn.closest('tr').remove(); syncDropdowns(); saveAndCalc(); }
+    function removeRow(btn) { btn.closest('tr').remove(); syncDropdowns(); saveAndCalc(); }
 
-    function syncDropdowns() {
-        const gs = document.getElementById('gramSelect'), sa = document.getElementById('selAcab');
-        if(!gs || !sa) return;
-        const gv = gs.value;
-        gs.innerHTML = ""; document.querySelectorAll('#tbodyPapel tr').forEach(tr => { let g = tr.dataset.gram; gs.innerHTML += `<option value="${g}">${g}</option>`; }); gs.value = gv;
-        sa.innerHTML = '<option value="">-- Selecione --</option>'; document.querySelectorAll('#tbodyAcab tr').forEach(tr => { let s = tr.dataset.serv; sa.innerHTML += `<option value="${s}">${s}</option>`; });
-    }
+    function syncDropdowns() {
+        const gs = document.getElementById('gramSelect'), sa = document.getElementById('selAcab');
+        if(!gs || !sa) return;
+        const gv = gs.value;
+        gs.innerHTML = ""; document.querySelectorAll('#tbodyPapel tr').forEach(tr => { let g = tr.dataset.gram; gs.innerHTML += `<option value="${g}">${g}</option>`; }); gs.value = gv;
+        sa.innerHTML = '<option value="">-- Selecione --</option>'; document.querySelectorAll('#tbodyAcab tr').forEach(tr => { let s = tr.dataset.serv; sa.innerHTML += `<option value="${s}">${s}</option>`; });
+    }
 
-    function calc() {
-        syncDropdowns();
-        let tf = 0; ['proMarcilio', 'proCristiane', 'contasFixas'].forEach(id => { const el = document.getElementById(id); if(el) tf += parseFloat(el.value) || 0; });
-        const hm = Math.max(0, tf / ((parseFloat(document.getElementById('diasUteis').value) || 1) * (parseFloat(document.getElementById('horasDia').value) || 1)));
-        document.getElementById('valHoraMaquina').innerText = hm.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-        
-        const qv = Math.max(1, parseInt(document.getElementById('qtdVenda').value) || 1), qInt = Math.max(1, parseInt(document.getElementById('qtdInterna').value) || 1);
-        const tp = Math.max(0, parseFloat(document.getElementById('tempoProd').value) || 0), l = Math.max(1, parseFloat(document.getElementById('lar').value) || 1), a = Math.max(1, parseFloat(document.getElementById('alt').value) || 1);
-        const gramFull = document.getElementById('gramSelect').value || "Sulfit 56g", qr = Math.max(1, parseFloat(document.getElementById('qResma').value) || 500, luc = (parseFloat(document.getElementById('lucroPorcent').value) || 0) / 100 + 1);
-        
-        const formats = [{n:"64x88", w:64, h:88}, {n:"66x96", w:66, h:96}];
-        let mf = formats[0], map = 0, ml = l, ma = a;
-        formats.forEach(f => {
-            let ap1 = Math.floor(f.w/l)*Math.floor(f.h/a), ap2 = Math.floor(f.w/a)*Math.floor(f.h/l);
-            if(Math.max(ap1, ap2) > map) { map = Math.max(ap1, ap2); mf = f; if(ap2 > ap1) { ml = a; ma = l; } else { ml = l; ma = a; } }
-        });
+    function calc() {
+        syncDropdowns();
+        let tf = 0; ['proMarcilio', 'proCristiane', 'contasFixas'].forEach(id => { const el = document.getElementById(id); if(el) tf += parseFloat(el.value) || 0; });
+        const hm = Math.max(0, tf / ((parseFloat(document.getElementById('diasUteis').value) || 1) * (parseFloat(document.getElementById('horasDia').value) || 1)));
+        document.getElementById('valHoraMaquina').innerText = hm.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+        
+        const qv = Math.max(1, parseInt(document.getElementById('qtdVenda').value) || 1), qInt = Math.max(1, parseInt(document.getElementById('qtdInterna').value) || 1);
+        const tp = Math.max(0, parseFloat(document.getElementById('tempoProd').value) || 0), l = Math.max(1, parseFloat(document.getElementById('lar').value) || 1), a = Math.max(1, parseFloat(document.getElementById('alt').value) || 1);
+        const gramFull = document.getElementById('gramSelect').value || "Sulfit 56g", qr = Math.max(1, parseFloat(document.getElementById('qResma').value) || 500, luc = (parseFloat(document.getElementById('lucroPorcent').value) || 0) / 100 + 1);
+        
+        const formats = [{n:"64x88", w:64, h:88}, {n:"66x96", w:66, h:96}];
+        let mf = formats[0], map = 0, ml = l, ma = a;
+        formats.forEach(f => {
+            let ap1 = Math.floor(f.w/l)*Math.floor(f.h/a), ap2 = Math.floor(f.w/a)*Math.floor(f.h/l);
+            if(Math.max(ap1, ap2) > map) { map = Math.max(ap1, ap2); mf = f; if(ap2 > ap1) { ml = a; ma = l; } else { ml = l; ma = a; } }
+        });
 
-        const trP = Array.from(document.querySelectorAll('#tbodyPapel tr')).find(tr => tr.dataset.gram === gramFull);
-        const pr = trP ? (mf.n === "64x88" ? parseFloat(trP.cells[1].querySelector('input').value) : parseFloat(trP.cells[2].querySelector('input').value)) : 0;
-        document.getElementById('pResma').value = pr; 
-        document.getElementById('pTintaExib').value = document.getElementById('baseTinta').value;
+        const trP = Array.from(document.querySelectorAll('#tbodyPapel tr')).find(tr => tr.dataset.gram === gramFull);
+        const pr = trP ? (mf.n === "64x88" ? parseFloat(trP.cells[1].querySelector('input').value) : parseFloat(trP.cells[2].querySelector('input').value)) : 0;
+        document.getElementById('pResma').value = pr; 
+        document.getElementById('pTintaExib').value = document.getElementById('baseTinta').value;
 
-        let scales = [1, 5, 10, 20, 50, 100]; if(!scales.includes(qv)) { scales.push(qv); scales.sort((a,b)=>a-b); }
-        let resHtml = "";
-        scales.forEach(q => {
-            const tpec = q * qInt, fc = Math.ceil((tpec/map)*1.1) || 0, cpap = (pr/qr)*fc, nc = parseInt(document.getElementById('esquemaCores').value), ccha = nc * (parseFloat(document.getElementById('baseChapa').value) || 0), tTintaG = (tpec / 1000) * (parseFloat(document.getElementById('gastoTintaGramas').value) || 0) * nc, ctin = tTintaG * (parseFloat(document.getElementById('baseTinta').value)/1000);
-            let cacab = acabamentosAtivos.reduce((acc, acName) => {
-                const trA = Array.from(document.querySelectorAll('#tbodyAcab tr')).find(tr => tr.dataset.serv === acName);
-                if(trA) { 
-                    const precoBase = parseFloat(trA.cells[1].querySelector('input').value) || 0;
-                    const precoMil = parseFloat(trA.cells[2].querySelector('input').value) || 0;
-                    // CORREÇÃO: Multiplica o preço do milheiro pelo total de folhas (quantidade * folhas interna)
-                    return acc + (precoBase * q) + ((precoMil / 1000) * (q * qInt)); 
-                }
-                return acc;
-            }, 0);
-            const cProd = ccha + cpap + ctin + cacab + (hm * tp) + (parseFloat(document.getElementById('baseSetup').value) || 0), final = cProd * (parseFloat(document.getElementById('lucroPorcent').value)/100 + 1);
-            if(q === qv) {
-                document.getElementById('totalPrice').innerText = final.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-                document.getElementById('tabelaResumoCustos').innerHTML = `<tr><td>Papel (${fc} fls)</td><td class="val">R$ ${cpap.toFixed(2)}</td></tr><tr><td>Chapas (${nc} un)</td><td class="val">R$ ${ccha.toFixed(2)}</td></tr><tr><td>Tinta (${tTintaG.toFixed(1)}g)</td><td class="val">R$ ${ctin.toFixed(2)}</td></tr><tr><td>Acabamentos</td><td class="val">R$ ${cacab.toFixed(2)}</td></tr><tr><td>Mão de Obra</td><td class="val">R$ ${(hm*tp).toFixed(2)}</td></tr><tr style="color:var(--bg-blue); font-weight:bold;"><td>Total Custo</td><td class="val">R$ ${cProd.toFixed(2)}</td></tr>`;
-                document.getElementById('resRetirar').innerHTML = `UTILIZAR: ${Math.ceil(tpec/map)} fls | COMPRAR: ${fc} fls`;
-            }
-            resHtml += `<tr ${q===qv?'style="background:#d1e7ff;font-weight:bold"':''}><td>${q}</td><td>${(final/q).toFixed(2)}</td><td>${final.toFixed(2)}</td></tr>`;
-        });
-        // Criar a lista detalhada de cada acabamento individual
-           let acabamentosAtivos = [];
-    const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbyPKB2h-GL7u6U1gZnHfH5whcuF78aH7x5q1imR94Ny_MuNgAJCSRhbosxzskt8j3BI/exec";
+        let scales = [1, 5, 10, 20, 50, 100]; if(!scales.includes(qv)) { scales.push(qv); scales.sort((a,b)=>a-b); }
+        let resHtml = "";
+        scales.forEach(q => {
+            const tpec = q * qInt, fc = Math.ceil((tpec/map)*1.1) || 0, cpap = (pr/qr)*fc, nc = parseInt(document.getElementById('esquemaCores').value), ccha = nc * (parseFloat(document.getElementById('baseChapa').value) || 0), tTintaG = (tpec / 1000) * (parseFloat(document.getElementById('gastoTintaGramas').value) || 0) * nc, ctin = tTintaG * (parseFloat(document.getElementById('baseTinta').value)/1000);
+            let cacab = acabamentosAtivos.reduce((acc, acName) => {
+                const trA = Array.from(document.querySelectorAll('#tbodyAcab tr')).find(tr => tr.dataset.serv === acName);
+                if(trA) { return acc + (parseFloat(trA.cells[1].querySelector('input').value)*q) + ((parseFloat(trA.cells[2].querySelector('input').value)/1000)*q); }
+                return acc;
+            }, 0);
+            const cProd = ccha + cpap + ctin + cacab + (hm * tp) + (parseFloat(document.getElementById('baseSetup').value) || 0), final = cProd * (parseFloat(document.getElementById('lucroPorcent').value)/100 + 1);
+            if(q === qv) {
+                document.getElementById('totalPrice').innerText = final.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+                document.getElementById('tabelaResumoCustos').innerHTML = `<tr><td>Papel (${fc} fls)</td><td class="val">R$ ${cpap.toFixed(2)}</td></tr><tr><td>Chapas (${nc} un)</td><td class="val">R$ ${ccha.toFixed(2)}</td></tr><tr><td>Tinta (${tTintaG.toFixed(1)}g)</td><td class="val">R$ ${ctin.toFixed(2)}</td></tr><tr><td>Acabamentos</td><td class="val">R$ ${cacab.toFixed(2)}</td></tr><tr><td>Mão de Obra</td><td class="val">R$ ${(hm*tp).toFixed(2)}</td></tr><tr style="color:var(--bg-blue); font-weight:bold;"><td>Total Custo</td><td class="val">R$ ${cProd.toFixed(2)}</td></tr>`;
+                document.getElementById('resRetirar').innerHTML = `UTILIZAR: ${Math.ceil(tpec/map)} fls | COMPRAR: ${fc} fls`;
+            }
+            resHtml += `<tr ${q===qv?'style="background:#d1e7ff;font-weight:bold"':''}><td>${q}</td><td>${(final/q).toFixed(2)}</td><td>${final.toFixed(2)}</td></tr>`;
+        });
+        document.getElementById('tabelaOrcamento').innerHTML = resHtml;
+        const cv = document.getElementById('canvasLayout'), ct = cv.getContext('2d');
+        ct.clearRect(0,0,180,120); const s = Math.min(170/mf.w, 110/mf.h);
+        ct.strokeStyle="#ccc"; ct.strokeRect(5,5,mf.w*s,mf.h*s); ct.fillStyle="#ff5252";
+        for(let i=0; i<Math.floor(mf.w/ml); i++) for(let j=0; j<Math.floor(mf.h/ma); j++) ct.fillRect(5+(i*ml*s), 5+(j*ma*s), (ml*s)-1, (ma*s)-1);
+        document.getElementById('resCorte').innerHTML = `Aproveitamento: <b>${map} pçs/fl</b> | <b>${mf.n}</b>`;
+    }
 
-    const camposBackup = ['cliNome', 'cliDados', 'tipoServico', 'qtdInterna', 'qtdVenda', 'esquemaCores', 'lar', 'alt', 'lucroPorcent', 'tempoProd', 'proMarcilio', 'proCristiane', 'contasFixas', 'diasUteis', 'horasDia', 'baseChapa', 'baseTinta', 'baseSetup'];
-
-    function salvarBackup() {
-        const dados = {};
-        camposBackup.forEach(id => { if(document.getElementById(id)) dados[id] = document.getElementById(id).value; });
-        localStorage.setItem('mc_v17_save', JSON.stringify(dados));
-    }
-
-    function carregarBackup() {
-        const salvo = localStorage.getItem('mc_v17_save');
-        if (salvo) { 
-            const d = JSON.parse(salvo); 
-            camposBackup.forEach(id => { if(d[id] && document.getElementById(id)) document.getElementById(id).value = d[id]; }); 
-        }
-    }
-
-    function novoOrcamento() { if(confirm("Deseja limpar todos os dados da tela?")) { localStorage.removeItem('mc_v17_save'); location.reload(); } }
-
-    async function sincronizarPrecos() {
-        const btn = document.getElementById('btnSync'); btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>'; btn.disabled = true;
-        try {
-            const resp = await fetch(URL_GOOGLE); 
-            const data = await resp.json();
-            const tbP = document.getElementById('tbodyPapel'); tbP.innerHTML = "";
-            data.papeis.forEach(p => {
-                tbP.insertAdjacentHTML('beforeend', `<tr data-gram="${p.gram}"><td>${p.gram}</td><td><input type="number" value="${p.p64}" oninput="saveAndCalc()"></td><td><input type="number" value="${p.p66}" oninput="saveAndCalc()"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>`);
-            });
-            const tbA = document.getElementById('tbodyAcab'); tbA.innerHTML = "";
-            data.acabamentos.forEach(a => {
-                tbA.insertAdjacentHTML('beforeend', `<tr data-serv="${a.serv}"><td>${a.serv}</td><td><input type="number" value="${a.base}" oninput="saveAndCalc()"></td><td><input type="number" value="${a.mil}" oninput="saveAndCalc()"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>`);
-            });
-            alert("Preços atualizados via Google!"); saveAndCalc();
-        } catch(e) { alert("Erro ao sincronizar!"); }
-        finally { btn.innerHTML = '<i class="fa fa-sync"></i> ATUALIZAR'; btn.disabled = false; }
-    }
-
-    async function processarEnvio() {
-        const cli = document.getElementById('cliNome').value || "Cliente";
-        const prod = document.getElementById('tipoServico').value;
-        const qv = document.getElementById('qtdVenda').value;
-        const total = document.getElementById('totalPrice').innerText;
-        
-        try {
-            fetch(URL_GOOGLE, { 
-                method: 'POST', 
-                mode: 'no-cors', 
-                body: JSON.stringify({ cliente: cli, produto: prod, quantidade: qv, total: total }) 
-            });
-        } catch(e) { console.error("Erro ao salvar histórico."); }
-
-        const qInt = document.getElementById('qtdInterna').value;
-        const coresText = document.getElementById('esquemaCores').options[document.getElementById('esquemaCores').selectedIndex].text.split(' ')[0];
-        let sug = ""; document.querySelectorAll('#tabelaOrcamento tr').forEach(tr => {
-            const cols = tr.querySelectorAll('td'); if(cols.length > 0) sug += `* ${cols[0].innerText} un (${qInt} fls) — Total: R$ ${cols[2].innerText}\n`;
-        });
-        const msg = encodeURIComponent(`- PROPOSTA MC SERIGRAFIA -\nSUGESTÕES:\n${sug}--------------------------\nCLIENTE: ${cli}\nPRODUTO: ${prod}\nQUANTIDADE: ${qv} un (${qInt} fls cada)\nCORES: ${coresText}\nTOTAL: ${total}\nPix cnpj 46.897.470.0001-09`);
-        window.open(`https://wa.me/5551999713739?text=${msg}`);
-    }
-
-    function gerarPDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const cli = document.getElementById('cliNome').value || "Cliente";
-        const prod = document.getElementById('tipoServico').value;
-        const qv = document.getElementById('qtdVenda').value;
-        const qInt = document.getElementById('qtdInterna').value;
-        const papel = document.getElementById('gramSelect').value;
-        const corTexto = document.getElementById('esquemaCores').options[document.getElementById('esquemaCores').selectedIndex].text;
-        const tam = `${document.getElementById('lar').value}x${document.getElementById('alt').value} cm`;
-        const totalFinal = document.getElementById('totalPrice').innerText;
-        const acabamentos = acabamentosAtivos.join(', ') || 'Padrão';
-
-        doc.setFillColor(0, 90, 171); doc.rect(0, 0, 210, 40, 'F');
-        doc.setTextColor(255, 255, 255); doc.setFontSize(22); doc.text("MC SERIGRAFIA E GRÁFICA", 10, 25);
-        doc.setFontSize(10); doc.text("Orçamento Comercial | Porto Alegre - RS", 10, 32);
-
-        doc.setTextColor(0, 0, 0); doc.setFontSize(12); doc.setFont("helvetica", "bold"); doc.text(`Cliente: ${cli}`, 10, 55);
-        doc.setFont("helvetica", "normal"); doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 160, 55); doc.line(10, 60, 200, 60);
-
-        doc.setFont("helvetica", "bold"); doc.text("ESPECIFICAÇÕES DO PEDIDO:", 10, 75);
-        doc.setFont("helvetica", "normal");
-        doc.text(`• Produto: ${prod}`, 10, 85);
-        doc.text(`• Formato: ${tam}`, 10, 92);
-        doc.text(`• Papel: ${papel}`, 10, 99);
-        doc.text(`• Impressão: ${corTexto}`, 10, 106);
-        doc.text(`• Acabamentos: ${acabamentos}`, 10, 113);
-        doc.text(`• Quantidade: ${qv} un (com ${qInt} folhas cada)`, 10, 120);
-
-        doc.setFont("helvetica", "bold"); doc.text("SUGESTÕES DE PEDIDOS:", 10, 140);
-        let y = 152;
-        document.querySelectorAll('#tabelaOrcamento tr').forEach(tr => {
-            const cols = tr.querySelectorAll('td');
-            if(cols.length > 0) { doc.text(`${cols[0].innerText} un - Total: R$ ${cols[2].innerText}`, 15, y); y += 8; }
-        });
-
-        doc.setFillColor(245, 245, 245); doc.rect(10, 235, 190, 20, 'F');
-        doc.setFontSize(16); doc.setTextColor(0, 90, 171); doc.text(`TOTAL DO PEDIDO: ${totalFinal}`, 15, 248);
-        doc.save(`Orcamento_MC_${cli.replace(/\s/g, '_')}.pdf`);
-    }
-
-    function addItem(type) {
-        const name = prompt("Nome:"); if(!name) return;
-        if(type==='setup'||type==='fixos') document.getElementById(type==='setup'?'containerSetup':'containerFixos').insertAdjacentHTML('beforeend', `<div style="display:flex; justify-content:space-between; align-items:center;"><label>${name}</label><i class="fa fa-trash btn-del" onclick="this.parentElement.nextElementSibling.remove(); this.parentElement.remove(); calc();"></i></div><input type="number" value="0" oninput="calc()">`);
-        else if(type==='papel') document.getElementById('tbodyPapel').insertAdjacentHTML('beforeend', `<tr data-gram="${name}"><td>${name}</td><td><input type="number" value="0"></td><td><input type="number" value="0"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>`);
-        else if(type==='acabamento') document.getElementById('tbodyAcab').insertAdjacentHTML('beforeend', `<tr data-serv="${name}"><td>${name}</td><td><input type="number" value="0"></td><td><input type="number" value="0"></td><td><i class="fa fa-trash btn-del" onclick="removeRow(this)"></i></td></tr>`);
-        syncDropdowns(); saveAndCalc();
-    }
-
-    function removeRow(btn) { btn.closest('tr').remove(); syncDropdowns(); saveAndCalc(); }
-
-    function syncDropdowns() {
-        const gs = document.getElementById('gramSelect'), sa = document.getElementById('selAcab');
-        if(!gs || !sa) return;
-        const gv = gs.value;
-        gs.innerHTML = ""; document.querySelectorAll('#tbodyPapel tr').forEach(tr => { let g = tr.dataset.gram; gs.innerHTML += `<option value="${g}">${g}</option>`; }); gs.value = gv;
-        sa.innerHTML = '<option value="">-- Selecione --</option>'; document.querySelectorAll('#tbodyAcab tr').forEach(tr => { let s = tr.dataset.serv; sa.innerHTML += `<option value="${s}">${s}</option>`; });
-    }
-
-    function calc() {
-        syncDropdowns();
-        let tf = 0; ['proMarcilio', 'proCristiane', 'contasFixas'].forEach(id => { const el = document.getElementById(id); if(el) tf += parseFloat(el.value) || 0; });
-        const hm = Math.max(0, tf / ((parseFloat(document.getElementById('diasUteis').value) || 1) * (parseFloat(document.getElementById('horasDia').value) || 1)));
-        document.getElementById('valHoraMaquina').innerText = hm.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-        
-        const qv = Math.max(1, parseInt(document.getElementById('qtdVenda').value) || 1), qInt = Math.max(1, parseInt(document.getElementById('qtdInterna').value) || 1);
-        const tp = Math.max(0, parseFloat(document.getElementById('tempoProd').value) || 0), l = Math.max(1, parseFloat(document.getElementById('lar').value) || 1), a = Math.max(1, parseFloat(document.getElementById('alt').value) || 1);
-        const gramFull = document.getElementById('gramSelect').value || "Sulfit 56g", qr = Math.max(1, parseFloat(document.getElementById('qResma').value) || 500);
-        
-        const formats = [{n:"64x88", w:64, h:88}, {n:"66x96", w:66, h:96}];
-        let mf = formats[0], map = 0, ml = l, ma = a;
-        formats.forEach(f => {
-            let ap1 = Math.floor(f.w/l)*Math.floor(f.h/a), ap2 = Math.floor(f.w/a)*Math.floor(f.h/l);
-            if(Math.max(ap1, ap2) > map) { map = Math.max(ap1, ap2); mf = f; if(ap2 > ap1) { ml = a; ma = l; } else { ml = l; ma = a; } }
-        });
-
-        const trP = Array.from(document.querySelectorAll('#tbodyPapel tr')).find(tr => tr.dataset.gram === gramFull);
-        const pr = trP ? (mf.n === "64x88" ? parseFloat(trP.cells[1].querySelector('input').value) : parseFloat(trP.cells[2].querySelector('input').value)) : 0;
-        document.getElementById('pResma').value = pr; 
-        document.getElementById('pTintaExib').value = document.getElementById('baseTinta').value;
-
-        let scales = [1, 5, 10, 20, 50, 100]; if(!scales.includes(qv)) { scales.push(qv); scales.sort((a,b)=>a-b); }
-        let resHtml = "";
-
-        scales.forEach(q => {
-            const tpec = q * qInt, fc = Math.ceil((tpec/map)*1.1) || 0, cpap = (pr/qr)*fc, nc = parseInt(document.getElementById('esquemaCores').value), ccha = nc * (parseFloat(document.getElementById('baseChapa').value) || 0), tTintaG = (tpec / 1000) * (parseFloat(document.getElementById('gastoTintaGramas').value) || 0) * nc, ctin = tTintaG * (parseFloat(document.getElementById('baseTinta').value)/1000);
-            
-            // CÁLCULO DE ACABAMENTOS (CORRIGIDO)
-            let cacab = acabamentosAtivos.reduce((acc, acName) => {
-                const trA = Array.from(document.querySelectorAll('#tbodyAcab tr')).find(tr => tr.dataset.serv === acName);
-                if(trA) { 
-                    const precoBase = parseFloat(trA.cells[1].querySelector('input').value) || 0;
-                    const precoMil = parseFloat(trA.cells[2].querySelector('input').value) || 0;
-                    return acc + (precoBase * q) + ((precoMil / 1000) * (q * qInt)); 
-                }
-                return acc;
-            }, 0);
-
-            const cProd = ccha + cpap + ctin + cacab + (hm * tp) + (parseFloat(document.getElementById('baseSetup').value) || 0), final = cProd * (parseFloat(document.getElementById('lucroPorcent').value)/100 + 1);
-            
-            if(q === qv) {
-                // GERA DETALHAMENTO INDIVIDUAL PARA O RESUMO
-                let detalheAcabamentosHtml = "";
-                acabamentosAtivos.forEach(acName => {
-                    const trA = Array.from(document.querySelectorAll('#tbodyAcab tr')).find(tr => tr.dataset.serv === acName);
-                    if(trA) {
-                        const vBase = parseFloat(trA.cells[1].querySelector('input').value) || 0;
-                        const vMil = parseFloat(trA.cells[2].querySelector('input').value) || 0;
-                        const custoIndividual = (vBase * q) + ((vMil / 1000) * (q * qInt));
-                        detalheAcabamentosHtml += `<tr><td style="padding-left:10px; font-style:italic; font-size:9px;">> ${acName}</td><td class="val">R$ ${custoIndividual.toFixed(2)}</td></tr>`;
-                    }
-                });
-
-                document.getElementById('totalPrice').innerText = final.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-                document.getElementById('tabelaResumoCustos').innerHTML = `
-                    <tr><td>Papel (${fc} fls)</td><td class="val">R$ ${cpap.toFixed(2)}</td></tr>
-                    <tr><td>Chapas (${nc} un)</td><td class="val">R$ ${ccha.toFixed(2)}</td></tr>
-                    <tr><td>Tinta (${tTintaG.toFixed(1)}g)</td><td class="val">R$ ${ctin.toFixed(2)}</td></tr>
-                    <tr style="font-weight:bold; color:#555;"><td>Acabamentos (Total):</td><td class="val">R$ ${cacab.toFixed(2)}</td></tr>
-                    ${detalheAcabamentosHtml}
-                    <tr><td>Mão de Obra</td><td class="val">R$ ${(hm*tp).toFixed(2)}</td></tr>
-                    <tr style="color:var(--bg-blue); font-weight:bold; border-top:2px solid #ccc;"><td>Total Custo</td><td class="val">R$ ${cProd.toFixed(2)}</td></tr>
-                `;
-                document.getElementById('resRetirar').innerHTML = `UTILIZAR: ${Math.ceil(tpec/map)} fls | COMPRAR: ${fc} fls`;
-            }
-            resHtml += `<tr ${q===qv?'style="background:#d1e7ff;font-weight:bold"':''}><td>${q}</td><td>${(final/q).toFixed(2)}</td><td>${final.toFixed(2)}</td></tr>`;
-        });
-        
-        document.getElementById('tabelaOrcamento').innerHTML = resHtml;
-        const cv = document.getElementById('canvasLayout'), ct = cv.getContext('2d');
-        ct.clearRect(0,0,180,120); const s = Math.min(170/mf.w, 110/mf.h);
-        ct.strokeStyle="#ccc"; ct.strokeRect(5,5,mf.w*s,mf.h*s); ct.fillStyle="#ff5252";
-        for(let i=0; i<Math.floor(mf.w/ml); i++) for(let j=0; j<Math.floor(mf.h/ma); j++) ct.fillRect(5+(i*ml*s), 5+(j*ma*s), (ml*s)-1, (ma*s)-1);
-        document.getElementById('resCorte').innerHTML = `Aproveitamento: <b>${map} pçs/fl</b> | <b>${mf.n}</b>`;
-    }
-
-    function addAcab() { let v = document.getElementById('selAcab').value; if(v && !acabamentosAtivos.includes(v)) { acabamentosAtivos.push(v); renderAcab(); saveAndCalc(); } document.getElementById('selAcab').value = ""; }
-    function renderAcab() { document.getElementById('listaAcab').innerHTML = acabamentosAtivos.map(a => `<div style="color:black; padding:5px; background:#f0f0f0; margin-top:5px; display:flex; justify-content:space-between"><span>${a}</span><i class="fa fa-trash" onclick="acabamentosAtivos.splice(acabamentosAtivos.indexOf('${a}'),1);renderAcab();saveAndCalc();" style="cursor:pointer"></i></div>`).join(''); }
-    function saveAndCalc() { salvarBackup(); calc(); }
-    window.onload = () => { carregarBackup(); calc(); };
+    function addAcab() { let v = document.getElementById('selAcab').value; if(v && !acabamentosAtivos.includes(v)) { acabamentosAtivos.push(v); renderAcab(); saveAndCalc(); } document.getElementById('selAcab').value = ""; }
+    function renderAcab() { document.getElementById('listaAcab').innerHTML = acabamentosAtivos.map(a => `<div style="color:black; padding:5px; background:#f0f0f0; margin-top:5px; display:flex; justify-content:space-between"><span>${a}</span><i class="fa fa-trash" onclick="acabamentosAtivos.splice(acabamentosAtivos.indexOf('${a}'),1);renderAcab();saveAndCalc();" style="cursor:pointer"></i></div>`).join(''); }
+    function saveAndCalc() { salvarBackup(); calc(); }
+    window.onload = () => { carregarBackup(); calc(); };
+</script>
+</body>
+</html>
