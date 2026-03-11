@@ -345,10 +345,10 @@
 
             const cProd = ccha + cpap + ctin + cacab + (hm * tp) + (parseFloat(document.getElementById('baseSetup').value) || 0);
 
-            // CORREÇÃO: LÓGICA DE MARGEM REAL SOLICITADA
-            const margemDesejada = parseFloat(document.getElementById('lucroPorcent').value) || 0;
-            const divisor = (100 - margemDesejada) / 100;
-            const final = divisor > 0 ? (cProd / divisor) : cProd; 
+           // CORREÇÃO: LÓGICA DE MARGEM REAL SOLICITADA
+const margemDesejada = parseFloat(document.getElementById('lucroPorcent').value) || 0;
+const divisor = (100 - margemDesejada) / 100; // Aqui ele cria o fator (ex: 0.80 para 20%)
+const final = divisor > 0 ? (cProd / divisor) : cProd; // Aqui ele divide o custo pelo fator
 
             if(q === qv) {
                 let detalheAcabHtml = "";
@@ -417,3 +417,4 @@
 </script>
 </body>
 </html>
+
