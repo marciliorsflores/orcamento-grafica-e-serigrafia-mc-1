@@ -335,7 +335,12 @@
             const tpec = q * qInt, fc = Math.ceil((tpec/map)*1.1) || 0, cpap = (pr/qr)*fc, nc = parseInt(document.getElementById('esquemaCores').value), ccha = nc * (parseFloat(document.getElementById('baseChapa').value) || 0), tTintaG = (tpec / 1000) * (parseFloat(document.getElementById('gastoTintaGramas').value) || 0) * nc, ctin = tTintaG * (parseFloat(document.getElementById('baseTinta').value)/1000);
             let cacab = acabamentosAtivos.reduce((acc, acName) => {
                 const trA = Array.from(document.querySelectorAll('#tbodyAcab tr')).find(tr => tr.dataset.serv === acName);
-                if(trA) { return acc + (parseFloat(trA.cells[1].querySelector('input').value)*q) + ((parseFloat(trA.cells[2].querySelector('input').value)/1000)*q); }
+                if(trA) { 
+                    const precoBase = parseFloat(trA.cells[1].querySelector('input').value) || 0;
+                    const precoMil = parseFloat(trA.cells[2].querySelector('input').value) || 0;
+                    // CORREÇÃO: Multiplica o preço do milheiro pelo total de folhas (quantidade * folhas interna)
+                    return acc + (precoBase * q) + ((precoMil / 1000) * (q * qInt)); 
+                }
                 return acc;
             }, 0);
             const cProd = ccha + cpap + ctin + cacab + (hm * tp) + (parseFloat(document.getElementById('baseSetup').value) || 0), final = cProd * (parseFloat(document.getElementById('lucroPorcent').value)/100 + 1);
@@ -361,4 +366,5 @@
 </script>
 </body>
 </html>
+
 
