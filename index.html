@@ -10,7 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         /* =========================================
            VARIÁVEIS E BASE
@@ -1013,7 +1013,21 @@
                         <tbody id="tbodyAcab"></tbody>
                     </table>
                 </div>
-                
+                <div class="ref-card" style="grid-column: 1 / -1; background: #e3f2fd; border: 2px dashed #005aab; text-align: center; padding: 20px;">
+                    <h4 style="justify-content: center; color: var(--bg-blue); border-bottom: none; font-size: 14px; margin-bottom: 5px;">
+                        <i class="fa fa-file-excel"></i> Cadastro em Massa (Excel)
+                    </h4>
+                    <p style="font-size: 11px; color: #666; margin-top: 0;">Baixe a planilha modelo, cadastre seus papéis, produtos e acabamentos no PC e importe aqui.</p>
+                    
+                    <button class="btn-action btn-save-plan" onclick="baixarModeloExcel()" style="display: inline-block; margin: 5px;">
+                        <i class="fa fa-download"></i> BAIXAR MODELO
+                    </button>
+                    <button class="btn-action btn-whatsapp" onclick="document.getElementById('fileImportExcel').click()" style="display: inline-block; margin: 5px; background: #27ae60;">
+                        <i class="fa fa-upload"></i> IMPORTAR PLANILHA PREENCHIDA
+                    </button>
+                    
+                    <input type="file" id="fileImportExcel" accept=".xlsx, .xls" style="display:none;" onchange="processarImportacaoExcel(event)">
+                </div>
                 <div class="ref-card" style="background:#fff; border-left:5px solid var(--active-blue);">
                     <h4 style="color:var(--text-dark); border-bottom:2px solid var(--active-blue);">Conferência Detalhada</h4>
                     <table class="resumo-table" id="tabelaResumoCustos"></table>
@@ -3197,7 +3211,224 @@
             document.getElementById('cliNome').focus();
         }
     }
+// =========================================================================
+    // INTEGRAÇÃO COM EXCEL (IMPORTAR E EXPORTAR CADASTROS)
+    // =========================================================================
+    
+    function baixarModeloExcel() {
+        const wb = XLSX.utils.book_new();
+        
+        // Cabeçalho da grelha
+        const ws_data = [
+            ["TIPO", "NOME", "VALOR_1", "VALOR_2"]
+        ];
 
+        // 1. Extrair os Produtos atuais
+        document.querySelectorAll('#tbodyProduto tr').forEach(tr => {
+            let nome = tr.dataset.nome || "";
+            if (nome) ws_data.push(["PRODUTO", nome, 0, 0]);
+        });
+
+        // 2. Extrair os Papéis/Mídias com os respetivos preços
+        document.querySelectorAll('#tbodyPapel tr').forEach(tr => {
+            let nome = tr.dataset.gram || "";
+            let val1 = parseFloat(tr.cells[1].querySelector('input').value) || 0;
+            let val2 = parseFloat(tr.cells[2].querySelector('input').value) || 0;
+            if (nome) ws_data.push(["PAPEL", nome, val1, val2]);
+        });
+
+        // 3. Extrair os Acabamentos/Serviços com os respetivos preços
+        document.querySelectorAll('#tbodyAcab tr').forEach(tr => {
+            let nome = tr.dataset.serv || "";
+            let val1 = parseFloat(tr.cells[1].querySelector('input').value) || 0;
+            let val2 = parseFloat(tr.cells[2].querySelector('input').value) || 0;
+            if (nome) ws_data.push(["ACABAMENTO", nome, val1, val2]);
+        });
+
+        // Se o sistema estiver completamente vazio (primeiro uso), envia um exemplo
+        if (ws_data.length === 1) {
+            ws_data.push(["PRODUTO", "Cartão de Visita", 0, 0]);
+            ws_data.push(["PAPEL", "Couché 250g", 150.00, 180.00]);
+            ws_data.push(["ACABAMENTO", "Laminação BOPP", 40.00, 30.00]);
+        }
+
+        // Criar e descarregar o ficheiro Excel
+        const ws = XLSX.utils.aoa_to_sheet(ws_data);
+        XLSX.utils.book_append_sheet(wb, ws, "Tabela_Atual_MC");
+        XLSX.writeFile(wb, "Tabela_Precos_MC.xlsx");
+    }
+
+    // =========================================================================
+    // INTEGRAÇÃO COM EXCEL (EXPORTAR 4 ABAS E IMPORTAR)
+    // =========================================================================
+    
+    async function baixarModeloExcel() {
+        const user = auth.currentUser;
+        if (!user) {
+            alert("Aguarde o sistema conectar na nuvem ou faça login primeiro.");
+            return;
+        }
+
+        // Mostra na tela que está processando (pode demorar um segundo se tiver muitos pedidos)
+        const oldText = document.getElementById('totalPrice').innerText;
+        document.getElementById('totalPrice').innerText = "GERANDO EXCEL...";
+
+        try {
+            const wb = XLSX.utils.book_new();
+
+            // --- ABA 1: PRODUTOS ---
+            const ws_prod_data = [["TIPO", "NOME", "VALOR_1", "VALOR_2"]];
+            document.querySelectorAll('#tbodyProduto tr').forEach(tr => {
+                let nome = tr.dataset.nome || "";
+                if (nome) ws_prod_data.push(["PRODUTO", nome, 0, 0]);
+            });
+            const ws_prod = XLSX.utils.aoa_to_sheet(ws_prod_data);
+            XLSX.utils.book_append_sheet(wb, ws_prod, "Produtos");
+
+            // --- ABA 2: PAPÉIS E MÍDIAS ---
+            const ws_papel_data = [["TIPO", "NOME", "VALOR_1", "VALOR_2"]];
+            document.querySelectorAll('#tbodyPapel tr').forEach(tr => {
+                let nome = tr.dataset.gram || "";
+                let val1 = parseFloat(tr.cells[1].querySelector('input').value) || 0;
+                let val2 = parseFloat(tr.cells[2].querySelector('input').value) || 0;
+                if (nome) ws_papel_data.push(["PAPEL", nome, val1, val2]);
+            });
+            const ws_papel = XLSX.utils.aoa_to_sheet(ws_papel_data);
+            XLSX.utils.book_append_sheet(wb, ws_papel, "Papeis");
+
+            // --- ABA 3: ACABAMENTOS ---
+            const ws_acab_data = [["TIPO", "NOME", "VALOR_1", "VALOR_2"]];
+            document.querySelectorAll('#tbodyAcab tr').forEach(tr => {
+                let nome = tr.dataset.serv || "";
+                let val1 = parseFloat(tr.cells[1].querySelector('input').value) || 0;
+                let val2 = parseFloat(tr.cells[2].querySelector('input').value) || 0;
+                if (nome) ws_acab_data.push(["ACABAMENTO", nome, val1, val2]);
+            });
+            const ws_acab = XLSX.utils.aoa_to_sheet(ws_acab_data);
+            XLSX.utils.book_append_sheet(wb, ws_acab, "Acabamentos");
+
+            // --- ABA 4: PEDIDOS SALVOS (Direto da Nuvem) ---
+            const ws_pedidos_data = [["DATA_HORA", "CLIENTE", "QTD_ITENS_CARRINHO", "CUSTO_VARIAVEL", "VALOR_TOTAL_VENDA", "MARGEM_GERADA"]];
+            
+            // Busca os pedidos ordenados do mais novo para o mais velho
+            const snapshot = await db.collection("usuarios").doc(user.uid).collection("vendas").orderBy("data_venda", "desc").get();
+            
+            snapshot.forEach(doc => {
+                let d = doc.data();
+                let dataObj = new Date(d.data_venda);
+                let dataFormatada = dataObj.toLocaleDateString('pt-BR') + " " + dataObj.toLocaleTimeString('pt-BR');
+                
+                ws_pedidos_data.push([
+                    dataFormatada,
+                    d.cliente || "Balcão",
+                    d.itens_qtd || 0,
+                    d.custo_variavel || 0,
+                    d.valor_total || 0,
+                    d.margem_contribuicao || 0
+                ]);
+            });
+
+            if (ws_pedidos_data.length === 1) {
+                ws_pedidos_data.push(["Nenhum pedido registrado ainda", "", "", "", "", ""]);
+            }
+
+            const ws_pedidos = XLSX.utils.aoa_to_sheet(ws_pedidos_data);
+            XLSX.utils.book_append_sheet(wb, ws_pedidos, "Pedidos_Salvos");
+
+            // Baixa o arquivo pronto para o computador
+            XLSX.writeFile(wb, "Dados_MC_Serigrafia.xlsx");
+            
+            // Restaura o visual do preço na tela
+            document.getElementById('totalPrice').innerText = oldText;
+            calc();
+
+        } catch (error) {
+            console.error(error);
+            alert("Erro ao gerar o Excel: " + error.message);
+            document.getElementById('totalPrice').innerText = oldText;
+            calc();
+        }
+    }
+
+    async function processarImportacaoExcel(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const oldText = document.getElementById('totalPrice').innerText;
+        document.getElementById('totalPrice').innerText = "LENDO PLANILHA...";
+
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                
+                let importados = 0;
+
+                // O sistema agora vai ler TODAS as abas do Excel uma por uma
+                workbook.SheetNames.forEach(sheetName => {
+                    // Ignora a aba de Pedidos, pois ela é só para seu controle financeiro, não para importar
+                    if (sheetName === "Pedidos_Salvos") return;
+
+                    const worksheet = workbook.Sheets[sheetName];
+                    const json = XLSX.utils.sheet_to_json(worksheet);
+
+                    json.forEach(row => {
+                        const tipo = row['TIPO'] ? row['TIPO'].toString().trim().toUpperCase() : '';
+                        const nome = row['NOME'] ? row['NOME'].toString().trim() : '';
+                        const val1 = parseFloat(row['VALOR_1']) || 0;
+                        const val2 = parseFloat(row['VALOR_2']) || 0;
+
+                        if (nome !== "") {
+                            if (tipo === 'PRODUTO' || tipo === 'PRODUTOS') {
+                                let exists = document.querySelector(`#tbodyProduto tr[data-nome="${nome}"]`);
+                                if (!exists) {
+                                    document.getElementById('tbodyProduto').insertAdjacentHTML('beforeend', `<tr data-nome="${nome}"><td>${nome}</td><td style="text-align:right;"><i class="fa fa-trash btn-del-trash" onclick="removeRow(this)"></i></td></tr>`);
+                                    importados++;
+                                }
+                            }
+                            else if (tipo === 'PAPEL' || tipo === 'PAPEIS' || tipo === 'MÍDIA' || tipo === 'MIDIA') {
+                                let exists = document.querySelector(`#tbodyPapel tr[data-gram="${nome}"]`);
+                                if (exists) {
+                                    exists.cells[1].querySelector('input').value = val1;
+                                    exists.cells[2].querySelector('input').value = val2;
+                                    importados++;
+                                } else {
+                                    document.getElementById('tbodyPapel').insertAdjacentHTML('beforeend', `<tr data-gram="${nome}"><td>${nome}</td><td><input type="number" value="${val1}" oninput="saveAndCalc()"></td><td><input type="number" value="${val2}" oninput="saveAndCalc()"></td><td><i class="fa fa-trash btn-del-trash" onclick="removeRow(this)"></i></td></tr>`);
+                                    importados++;
+                                }
+                            }
+                            else if (tipo === 'ACABAMENTO' || tipo === 'SERVIÇO' || tipo === 'SERVICO') {
+                                let exists = document.querySelector(`#tbodyAcab tr[data-serv="${nome}"]`);
+                                if (exists) {
+                                    exists.cells[1].querySelector('input').value = val1;
+                                    exists.cells[2].querySelector('input').value = val2;
+                                    importados++;
+                                } else {
+                                    document.getElementById('tbodyAcab').insertAdjacentHTML('beforeend', `<tr data-serv="${nome}"><td>${nome}</td><td><input type="number" value="${val1}" oninput="saveAndCalc()"></td><td><input type="number" value="${val2}" oninput="saveAndCalc()"></td><td><i class="fa fa-trash btn-del-trash" onclick="removeRow(this)"></i></td></tr>`);
+                                    importados++;
+                                }
+                            }
+                        }
+                    });
+                });
+
+                // Sincroniza as listas, recalcula e salva na nuvem silenciosamente
+                syncDropdowns();
+                saveAndCalc();
+                await saveToCloud(false); 
+                
+                alert(`✅ Sucesso! ${importados} itens foram integrados/atualizados e salvos na nuvem.`);
+            } catch (error) {
+                alert("Erro ao ler a planilha. Verifique se o formato está correto e se você não apagou os cabeçalhos (TIPO, NOME, VALOR_1, VALOR_2).");
+            }
+            
+            event.target.value = ''; 
+            document.getElementById('totalPrice').innerText = oldText;
+            calc();
+        };
+        reader.readAsArrayBuffer(file);
+    }
     // Inicialização quando a página carrega
     window.onload = () => { 
         carregarBackup(); 
