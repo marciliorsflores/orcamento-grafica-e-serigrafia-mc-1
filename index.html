@@ -16,7 +16,7 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: #005aab; display: flex; align-items: center; justify-content: center; z-index: 10000; 
         }
-        .auth-box { background: white; padding: 30px; border-radius: 8px; width: 300px; text-align: center; color: #333; }
+        .auth-box { background: white; padding: 30px; border-radius: 8px; width: 300px; text-align: center; color: #333; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
         .auth-box input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
         .auth-btn { width: 100%; padding: 12px; background: #005aab; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
         
@@ -326,6 +326,16 @@
                     </div>
                 </div>
             </div>
+
+            <div style="text-align: center; margin-top: 30px; padding: 20px; font-size: 13px; color: #fff; background: rgba(0,0,0,0.15); border-radius: 8px; border: 1px dashed rgba(255,255,255,0.3);">
+                <p style="margin: 0 0 8px 0;">💻 Este programa foi desenvolvido por <b>Marcilio Flores</b> da MC Serigrafia e Gráfica.</p>
+                <p style="margin: 0 0 15px 0;">Se o sistema ajudou no seu dia a dia e você quiser contribuir com qualquer quantia, sinta-se à vontade para fazer um PIX para o desenvolvedor.</p>
+                <div style="display: inline-block; background: #fff; color: #333; padding: 10px 20px; border-radius: 6px; font-weight: bold; font-size: 15px; margin-bottom: 12px; border: 2px solid #f1c40f;">
+                    💳 Chave PIX (CPF): <span style="color: #005aab;">96274956034</span>
+                </div>
+                <p style="margin: 0; font-style: italic; color: #4ade80; font-weight: bold; font-size: 14px;">"Deus abençoe sua vida e seu negócio sempre!!! 🙏"</p>
+            </div>
+
         </div>
 
         <div class="footer-floating">
@@ -364,6 +374,7 @@
     // AQUI FICA O SEU E-MAIL DE ADMINISTRADOR
     const EMAIL_ADMIN = "serigrafiaegraficamc@gmail.com";
 
+    // NOVO FLUXO DE BOTÃO DO WHATSAPP AQUI
     async function handleAuth() {
         const e = document.getElementById('auth-email').value, p = document.getElementById('auth-pass').value;
         try {
@@ -374,7 +385,16 @@
                     status: "pendente", 
                     data_cadastro: new Date().toLocaleDateString('pt-BR') 
                 }, { merge: true });
-                alert("✅ Conta criada com sucesso!\n\n⛔ Porém, seu acesso está BLOQUEADO na Sala de Espera.\nPor favor, chame o administrador (Marcilio) no WhatsApp para solicitar a liberação do sistema.");
+                
+                const msgZap = encodeURIComponent(`Olá Marcilio! Acabei de criar uma conta no Orçamentador Inteligente com o e-mail: ${e}. Pode liberar meu acesso, por favor?`);
+                document.querySelector('.auth-box').innerHTML = `
+                    <h2 style="color: #27ae60; margin-top: 0;"><i class="fa fa-check-circle"></i> Conta Criada!</h2>
+                    <p style="font-size: 13px; margin-bottom: 20px; color: #333;">Sua conta foi registrada, mas está <b>aguardando liberação</b> na sala de espera.</p>
+                    <a href="https://wa.me/5551999713739?text=${msgZap}" target="_blank" style="display: block; background: #25D366; color: white; padding: 12px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-bottom: 10px;">
+                        <i class="fab fa-whatsapp" style="font-size: 16px;"></i> SOLICITAR ACESSO AGORA
+                    </a>
+                    <p style="font-size: 11px; color: #005aab; cursor: pointer; font-weight: bold;" onclick="location.reload()">Voltar para o Login</p>
+                `;
                 auth.signOut(); 
             } else {
                 await auth.signInWithEmailAndPassword(e, p);
@@ -384,12 +404,24 @@
 
     auth.onAuthStateChanged(async (user) => {
         if(user) {
-            if (user.email === EMAIL_ADMIN) {
+            const emailLogado = user.email ? user.email.toLowerCase().trim() : "";
+            const emailChefe = EMAIL_ADMIN.toLowerCase().trim();
+
+            if (emailLogado === emailChefe) {
                 liberarAcessoTotal(true);
             } else {
                 const docSnap = await db.collection("usuarios").doc(user.uid).get();
                 if (!docSnap.exists || docSnap.data().status !== 'aprovado') {
-                    alert("Acesso Bloqueado ⛔\nSua conta está aguardando liberação do administrador Marcilio. Chame no WhatsApp!");
+                    
+                    const msgZap = encodeURIComponent(`Olá Marcilio! Meu e-mail (${user.email}) está aguardando aprovação no Orçamentador. Pode me liberar?`);
+                    document.querySelector('.auth-box').innerHTML = `
+                        <h2 style="color: #e74c3c; margin-top: 0;"><i class="fa fa-lock"></i> Acesso Bloqueado</h2>
+                        <p style="font-size: 13px; margin-bottom: 20px; color: #333;">Sua conta ainda não foi aprovada pelo administrador.</p>
+                        <a href="https://wa.me/5551999713739?text=${msgZap}" target="_blank" style="display: block; background: #25D366; color: white; padding: 12px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-bottom: 10px;">
+                            <i class="fab fa-whatsapp" style="font-size: 16px;"></i> CHAMAR ADMIN NO WHATSAPP
+                        </a>
+                        <p style="font-size: 11px; color: #005aab; cursor: pointer; font-weight: bold;" onclick="location.reload()">Tentar Novamente</p>
+                    `;
                     auth.signOut();
                     return; 
                 }
@@ -782,7 +814,6 @@
         let map = 0; let mf = formats[0]; let ml = l, ma = a; let ap64 = 0, ap66 = 0;
         let setupMult = 1; let mapFundo = 0, mapTampa = 0; let isCaixaConjunta = false;
 
-        // CALCULANDO CUSTOS EXTRAS ADICIONADOS PELO USUÁRIO (NOVA FUNÇÃO BLINDADA)
         let dynSetupTotal = 0; document.querySelectorAll('.dyn-setup').forEach(i => dynSetupTotal += parseFloat(i.value) || 0);
         let dynFixosTotal = 0; document.querySelectorAll('.dyn-fixo').forEach(i => dynFixosTotal += parseFloat(i.value) || 0);
 
@@ -851,7 +882,6 @@
         const qv = parseFloat(document.getElementById('qtdVenda').value) || 0; const qInt = parseFloat(document.getElementById('qtdInterna').value) || 0;
         if (qv <= 0 || qInt <= 0) { document.getElementById('totalPrice').innerText = "R$ 0,00"; document.getElementById('tabelaOrcamento').innerHTML = ""; document.getElementById('tabelaResumoCustos').innerHTML = "<tr><td colspan='2' style='text-align:center;'>Aguardando quantidades válidas...</td></tr>"; return; }
 
-        // AQUI ESTÁ A CORREÇÃO DA MATEMÁTICA DOS CUSTOS
         const pro = parseFloat(document.getElementById('proMarcilio').value) || 0; 
         const fix = (parseFloat(document.getElementById('contasFixas').value) || 0) + dynFixosTotal; 
         const sal = parseFloat(document.getElementById('salarioColab').value) || 0; 
@@ -897,7 +927,6 @@
                 ctin = (tpecReal/1000) * gTintaProd * (pTintaKg/1000) * (nc > 4 ? 2 : 1) * setupMult; 
                 cCoresExtrasAuto = isSacolaPlastica ? (extraCoresPassadas * 220.00 * (tpec / 1000)) : 0;
                 
-                // CORREÇÃO: ADICIONA SETUPS DINÂMICOS
                 const baseSetupFix = ((parseFloat(document.getElementById('baseSetup').value) || 0) + dynSetupTotal) * setupMult;
                 cFrete = isSacolaPlastica ? 150 : 0;
 
@@ -1169,7 +1198,6 @@
     function renderAcab() { document.getElementById('listaAcab').innerHTML = acabamentosAtivos.map(a => `<div style="color:black; padding:5px; background:#f0f0f0; margin-top:5px; display:flex; justify-content:space-between"><span>${a}</span><i class="fa fa-trash" onclick="acabamentosAtivos.splice(acabamentosAtivos.indexOf('${a}'),1);renderAcab();saveAndCalc();" style="cursor:pointer"></i></div>`).join(''); }
     function removeRow(btn) { btn.closest('tr').remove(); syncDropdowns(); saveAndCalc(); }
     
-    // CORREÇÃO: ADICIONANDO CLASSES (dyn-setup e dyn-fixo) PARA PEGAR NA MATEMÁTICA E NA NUVEM
     function addItem(type) {
         const name = prompt("Nome:"); if(!name) return;
         if(type==='setup') document.getElementById('containerSetup').insertAdjacentHTML('beforeend', `<div style="display:flex; justify-content:space-between; align-items:center;"><label>${name}</label><i class="fa fa-trash btn-del-trash" onclick="this.parentElement.nextElementSibling.remove(); this.parentElement.remove(); saveAndCalc();"></i></div><input type="number" class="dyn-setup" data-nome="${name}" value="0" oninput="saveAndCalc()">`);
@@ -1205,7 +1233,6 @@
             produtos.push(tr.dataset.nome);
         });
 
-        // CORREÇÃO: COLETANDO OS CAMPOS DINÂMICOS
         const dynSetup = [];
         document.querySelectorAll('.dyn-setup').forEach(i => dynSetup.push({ n: i.dataset.nome, v: i.value }));
         const dynFixos = [];
@@ -1300,7 +1327,6 @@
                     document.getElementById('logoPreview').style.display = 'block';
                 }
 
-                // CORREÇÃO: RECONSTRUINDO OS CAMPOS DINÂMICOS
                 document.querySelectorAll('.dyn-setup').forEach(i => { i.previousElementSibling.remove(); i.remove(); });
                 document.querySelectorAll('.dyn-fixo').forEach(i => { i.previousElementSibling.remove(); i.remove(); });
 
