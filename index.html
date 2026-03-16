@@ -2575,29 +2575,43 @@
         let textoEspecificacao = ""; 
         let mioloTexto = ""; 
         
-        let nomeVisualFormato = window.isBoxMode && window.boxData ? `${window.boxData.wf}x${window.boxData.hf}` : (window.isBagMode && window.bagData ? `${window.bagData.wf}x${window.bagData.hf}` : `${lar}x${alt}`); 
+        // --- AQUI ESTÁ A MÁGICA NOVA DAS MEDIDAS 3D ---
+        let nomeVisualFormato = "";
         
-        if (window.isBagMode && window.bagData && window.bagData.isDupla) {
-            nomeVisualFormato = `${window.bagData.wf_metade}x${window.bagData.hf_metade} (2 partes/sacola)`; 
+        if (window.isBoxMode && window.boxData) {
+            let bd = window.boxData;
+            let altFinal = bd.hF !== undefined ? bd.hF : bd.h;
+            nomeVisualFormato = `Montada: ${bd.c}x${bd.l}x${altFinal}cm (Plano: ${bd.wf.toFixed(1)}x${bd.hf.toFixed(1)}cm)`;
+        } 
+        else if (window.isBagMode && window.bagData) {
+            let bd = window.bagData;
+            let wfFinal = bd.isDupla ? bd.wf_metade : bd.wf;
+            let hfFinal = bd.isDupla ? bd.hf_metade : bd.hf;
+            let partesStr = bd.isDupla ? " - 2 partes" : "";
+            nomeVisualFormato = `Montada: ${bd.c}x${bd.l}x${bd.a}cm (Plano: ${wfFinal.toFixed(1)}x${hfFinal.toFixed(1)}cm${partesStr})`;
+        } 
+        else {
+            nomeVisualFormato = `${lar}x${alt}cm`;
         }
-        
+        // ----------------------------------------------
+
         if (isSacolaPlastica) { 
-            textoEspecificacao = `${lar}x${alt}cm | ${pap} | Total Sacolas: ${miolo} | ${cor} | Acab: ${acabados}`; 
+            textoEspecificacao = `${nomeVisualFormato} | ${pap} | Total Sacolas: ${miolo} | ${cor} | Acab: ${acabados}`; 
             mioloTexto = "Total de Sacolas"; 
         } else if (isM2) { 
-            textoEspecificacao = `${lar}x${alt}cm | Material/Base: ${pap} | Total Pedido: ${qVendaFinal} un. | Acab: ${acabados}`; 
+            textoEspecificacao = `${nomeVisualFormato} | Material/Base: ${pap} | Total Pedido: ${qVendaFinal} un. | Acab: ${acabados}`; 
             mioloTexto = "Comunicação Visual / Serviço"; 
         } else if (isBloco) { 
-            textoEspecificacao = `${lar}x${alt}cm | ${pap} | Miolo: ${miolo} fls/vias | ${cor} | Acab: ${acabados}`; 
+            textoEspecificacao = `${nomeVisualFormato} | ${pap} | Miolo: ${miolo} fls/vias | ${cor} | Acab: ${acabados}`; 
             mioloTexto = `${miolo} folhas cada`; 
         } else { 
-            textoEspecificacao = `Formato Plano: ${nomeVisualFormato}cm | ${pap} | Rendim.: ${mapGlobal} pçs/fl | Comprar: ${miolo} fls | ${cor} | Acab: ${acabados}`; 
+            textoEspecificacao = `Formato: ${nomeVisualFormato} | ${pap} | Rendim.: ${mapGlobal} pçs/fl | Comprar: ${miolo} fls | ${cor} | Acab: ${acabados}`; 
             mioloTexto = `Comprar ${miolo} fls`; 
         } 
         
         const specsObj = { 
             produto: prod, 
-            formato: `${nomeVisualFormato} cm`, 
+            formato: nomeVisualFormato, 
             papel: pap || "Nenhum material", 
             impressao: isM2 ? "Digital / Instal." : cor, 
             acabamentos: acabados || "Nenhum", 
@@ -2624,6 +2638,7 @@
         renderizarPedido(); 
         alert("Item adicionado ao pedido com sucesso!"); 
         
+        // Limpa os campos após adicionar ao pedido
         document.getElementById('lar').value = "15"; 
         document.getElementById('alt').value = "21"; 
         document.getElementById('qtdInterna').value = "100"; 
