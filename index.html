@@ -3,130 +3,670 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MC Serigrafia - Orçamentador V24.3 (Definitiva)</title>
+    <title>MC Serigrafia - Orçamentador V24.4 (Gestão Completa)</title>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
     <style>
-        /* Base e Autenticação */
-        #main-app { display: none; }
-        #auth-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #005aab; display: flex; align-items: center; justify-content: center; z-index: 10000; }
-        .auth-box { background: white; padding: 30px; border-radius: 8px; width: 300px; text-align: center; color: #333; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        .auth-box input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .auth-btn { width: 100%; padding: 12px; background: #005aab; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        
-        /* Modais */
-        .modal-bg { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:20000; align-items:center; justify-content:center; }
-        .modal-box { background:white; padding:20px; border-radius:8px; width:95%; max-width:800px; color:black; max-height:85vh; overflow-y:auto; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        
-        /* Dashboard - Visual Estilo Original */
-        .dash-section { background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 20px; }
-        .dash-section-title { font-size: 16px; font-weight: bold; color: var(--bg-blue); border-bottom: 2px solid var(--bg-blue); padding-bottom: 8px; margin-bottom: 15px; }
-        .dash-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
-        .card { padding: 20px; border-radius: 10px; text-align: center; color: white; font-weight: bold; }
+        /* =========================================
+           VARIÁVEIS E BASE
+        ========================================= */
+        :root { 
+            --bg-blue: #005aab; 
+            --active-blue: #0078d7; 
+            --text-dark: #333; 
+            --green-success: #27ae60; 
+            --red-delete: #e74c3c; 
+            --pdf-red: #c0392b; 
+            --sync-orange: #f39c12;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            margin: 0; 
+            background-color: var(--bg-blue); 
+            color: white; 
+            min-height: 100vh; 
+            padding-bottom: 220px; 
+        }
+
+        .main-container { 
+            width: 100%; 
+            max-width: 1400px; 
+            margin: auto; 
+            padding: 10px; 
+            box-sizing: border-box; 
+        }
+
+        /* =========================================
+           TELA DE LOGIN E AUTENTICAÇÃO
+        ========================================= */
+        #main-app { 
+            display: none; 
+        }
+
+        #auth-container { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: #005aab; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 10000; 
+        }
+
+        .auth-box { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 8px; 
+            width: 300px; 
+            text-align: center; 
+            color: #333; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
+        }
+
+        .auth-box input { 
+            width: 100%; 
+            padding: 10px; 
+            margin: 5px 0; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+            box-sizing: border-box; 
+        }
+
+        .auth-btn { 
+            width: 100%; 
+            padding: 12px; 
+            background: #005aab; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            margin-top: 10px; 
+        }
+
+        /* =========================================
+           MODAIS (ADMIN E DASHBOARD)
+        ========================================= */
+        .modal-bg { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.8); 
+            z-index: 20000; 
+            align-items: center; 
+            justify-content: center; 
+        }
+
+        .modal-box { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            width: 95%; 
+            max-width: 800px; 
+            color: black; 
+            max-height: 85vh; 
+            overflow-y: auto; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5); 
+        }
+
+        .admin-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 15px; 
+            font-size: 13px; 
+        }
+
+        .admin-table th { 
+            background: var(--bg-blue); 
+            color: white; 
+            padding: 10px; 
+            text-align: left; 
+        }
+
+        .admin-table td { 
+            padding: 10px; 
+            border-bottom: 1px solid #ddd; 
+        }
+
+        .btn-aprovar { 
+            background: #27ae60; 
+            color: white; 
+            border: none; 
+            padding: 5px 10px; 
+            border-radius: 3px; 
+            cursor: pointer; 
+            font-weight: bold; 
+        }
+
+        .btn-bloquear { 
+            background: #e74c3c; 
+            color: white; 
+            border: none; 
+            padding: 5px 10px; 
+            border-radius: 3px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            margin-left: 5px; 
+        }
+
+        /* =========================================
+           DASHBOARD DE GESTÃO E VENDAS
+        ========================================= */
+        .dash-section { 
+            background: white; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+            padding: 20px; 
+            margin-bottom: 20px; 
+        }
+
+        .dash-section-title { 
+            font-size: 16px; 
+            font-weight: bold; 
+            color: var(--bg-blue); 
+            border-bottom: 2px solid var(--bg-blue); 
+            padding-bottom: 8px; 
+            margin-bottom: 15px; 
+        }
+
+        .dash-cards { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 15px; 
+            margin-bottom: 20px; 
+        }
+
+        .card { 
+            padding: 20px; 
+            border-radius: 10px; 
+            text-align: center; 
+            color: white; 
+            font-weight: bold; 
+        }
+
         .card-faturamento { background: #3498db; }
         .card-custos { background: #2ecc71; }
         .card-lucro { background: #27ae60; }
-        .card-title { font-size: 13px; text-transform: uppercase; margin-bottom: 8px; opacity: 0.9; }
-        .card-value { font-size: 24px; }
-        
-        .dash-progresso-container { background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 5px solid var(--bg-blue); margin-top: 15px; }
-        .progress-bar-bg { background: #e0e0e0; height: 30px; border-radius: 15px; overflow: hidden; margin-top: 10px; position: relative; }
-        .progress-bar-fill { height: 100%; width: 0%; transition: width 0.5s; display: flex; align-items: center; justify-content: center; color: white; font-size: 13px; font-weight: bold; }
-        .status-text { font-size: 16px; font-weight: bold; margin-top: 10px; text-align: center; }
 
-        .hist-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
-        .hist-table th { background: var(--bg-blue); color: white; padding: 8px; text-align: left; }
-        .hist-table td { padding: 8px; border-bottom: 1px solid #eee; }
-
-        .admin-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
-        .admin-table th { background: var(--bg-blue); color: white; padding: 10px; text-align: left; }
-        .admin-table td { padding: 10px; border-bottom: 1px solid #ddd; }
-        .btn-aprovar { background: #27ae60; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-weight: bold; }
-        .btn-bloquear { background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-weight: bold; margin-left: 5px; }
-
-        /* Variáveis e Estrutura Principal */
-        :root { 
-            --bg-blue: #005aab; --active-blue: #0078d7; --text-dark: #333; 
-            --green-success: #27ae60; --red-delete: #e74c3c; --pdf-red: #c0392b; --sync-orange: #f39c12;
+        .card-title { 
+            font-size: 13px; 
+            text-transform: uppercase; 
+            margin-bottom: 8px; 
+            opacity: 0.9; 
         }
-        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background-color: var(--bg-blue); color: white; min-height: 100vh; padding-bottom: 220px; }
-        .main-container { width: 100%; max-width: 1400px; margin: auto; padding: 10px; box-sizing: border-box; }
-        .top-panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px; margin-bottom: 10px; }
-        .panel { background: white; border-radius: 4px; color: var(--text-dark); display: flex; flex-direction: column; border: 1px solid #ccc; }
-        .panel-header { background: var(--bg-blue); color: white; padding: 8px 12px; font-size: 13px; font-weight: bold; font-style: italic; display: flex; justify-content: space-between; align-items: center; }
-        .panel-body { padding: 12px; flex: 1; }
-        label { display: block; font-size: 9px; font-weight: bold; color: #666; margin-top: 8px; text-transform: uppercase; }
-        select, input { width: 100%; padding: 8px; font-size: 13px; border: 1px solid #ccc; border-radius: 3px; margin-top: 4px; box-sizing: border-box; }
-        
-        .price-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; color: #333; }
-        .price-table th { background: #fce4d6; padding: 8px; border: 1px solid #f4b084; font-weight: bold; text-align: center; }
-        .price-table td { padding: 6px; border: 1px solid #f4b084; text-align: center; background: white; }
-        .row-active { font-weight: bold; background-color: #f1f1f1 !important; }
 
-        .size-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; }
-        .size-input { background: #eee; border: none; font-size: 22px; font-weight: bold; text-align: center; padding: 10px; border-radius: 4px; color: var(--text-dark); }
-        .info-box { background: #e3f2fd; border: 1px solid #bbdefb; padding: 10px; border-radius: 4px; margin-top: 10px; color: #0d47a1; font-size: 12px; text-align: center; }
-        .buy-box { background: #fff3e0; border: 1px solid #ffe0b2; padding: 10px; border-radius: 4px; margin-top: 10px; color: #e65100; text-align: center; font-weight: bold; font-size: 11px; }
-        .layout-container { margin-top: 10px; text-align: center; background: #f9f9f9; border: 1px dashed #ccc; padding: 10px; border-radius: 4px; position: relative; }
-        #canvasLayout { max-width: 100%; height: auto; display: block; margin: 0 auto; background: white; border-radius: 4px; box-shadow: inset 0 0 5px rgba(0,0,0,0.1); }
+        .card-value { 
+            font-size: 24px; 
+        }
         
-        .box-calculator { background: #e8f4f8; border: 1px solid #b3e5fc; padding: 10px; border-radius: 4px; margin-top: 15px; }
-        .bag-calculator { background: #fdf5e6; border: 1px solid #f4c284; padding: 10px; border-radius: 4px; margin-top: 15px; }
-        .box-title { font-size: 11px; font-weight: bold; color: var(--bg-blue); margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
-        .bag-title { font-size: 11px; font-weight: bold; color: #d35400; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 5px; }
+        .dash-progresso-container { 
+            background: #f8f9fa; 
+            padding: 15px; 
+            border-radius: 8px; 
+            border-left: 5px solid var(--bg-blue); 
+            margin-top: 15px; 
+        }
+
+        .progress-bar-bg { 
+            background: #e0e0e0; 
+            height: 30px; 
+            border-radius: 15px; 
+            overflow: hidden; 
+            margin-top: 10px; 
+            position: relative; 
+        }
+
+        .progress-bar-fill { 
+            height: 100%; 
+            width: 0%; 
+            transition: width 0.5s; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            color: white; 
+            font-size: 13px; 
+            font-weight: bold; 
+        }
+
+        .status-text { 
+            font-size: 16px; 
+            font-weight: bold; 
+            margin-top: 10px; 
+            text-align: center; 
+        }
+
+        .hist-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 12px; 
+            margin-top: 10px; 
+        }
+
+        .hist-table th { 
+            background: var(--bg-blue); 
+            color: white; 
+            padding: 8px; 
+            text-align: left; 
+        }
+
+        .hist-table td { 
+            padding: 8px; 
+            border-bottom: 1px solid #eee; 
+        }
+
+        .btn-gerenciar { 
+            padding: 5px 10px; 
+            border: none; 
+            border-radius: 4px; 
+            color: white; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 11px; 
+            margin-right: 5px; 
+        }
+
+        .btn-edit-venda { background: #f39c12; }
+        .btn-del-venda { background: #e74c3c; }
+
+        /* =========================================
+           PAINÉIS DE ORÇAMENTO
+        ========================================= */
+        .top-panels { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            gap: 10px; 
+            margin-bottom: 10px; 
+        }
+
+        .panel { 
+            background: white; 
+            border-radius: 4px; 
+            color: var(--text-dark); 
+            display: flex; 
+            flex-direction: column; 
+            border: 1px solid #ccc; 
+        }
+
+        .panel-header { 
+            background: var(--bg-blue); 
+            color: white; 
+            padding: 8px 12px; 
+            font-size: 13px; 
+            font-weight: bold; 
+            font-style: italic; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+
+        .panel-body { 
+            padding: 12px; 
+            flex: 1; 
+        }
+
+        label { 
+            display: block; 
+            font-size: 9px; 
+            font-weight: bold; 
+            color: #666; 
+            margin-top: 8px; 
+            text-transform: uppercase; 
+        }
+
+        select, input { 
+            width: 100%; 
+            padding: 8px; 
+            font-size: 13px; 
+            border: 1px solid #ccc; 
+            border-radius: 3px; 
+            margin-top: 4px; 
+            box-sizing: border-box; 
+        }
+
+        /* Tabelas Internas */
+        .price-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 15px; 
+            font-size: 13px; 
+            color: #333; 
+        }
+
+        .price-table th { 
+            background: #fce4d6; 
+            padding: 8px; 
+            border: 1px solid #f4b084; 
+            font-weight: bold; 
+            text-align: center; 
+        }
+
+        .price-table td { 
+            padding: 6px; 
+            border: 1px solid #f4b084; 
+            text-align: center; 
+            background: white; 
+        }
+
+        .row-active { 
+            font-weight: bold; 
+            background-color: #f1f1f1 !important; 
+        }
+
+        /* Displays de Tamanho e Layout */
+        .size-row { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            gap: 10px; 
+            margin-top: 10px; 
+        }
+
+        .size-input { 
+            background: #eee; 
+            border: none; 
+            font-size: 22px; 
+            font-weight: bold; 
+            text-align: center; 
+            padding: 10px; 
+            border-radius: 4px; 
+            color: var(--text-dark); 
+        }
+
+        .info-box { 
+            background: #e3f2fd; 
+            border: 1px solid #bbdefb; 
+            padding: 10px; 
+            border-radius: 4px; 
+            margin-top: 10px; 
+            color: #0d47a1; 
+            font-size: 12px; 
+            text-align: center; 
+        }
+
+        .buy-box { 
+            background: #fff3e0; 
+            border: 1px solid #ffe0b2; 
+            padding: 10px; 
+            border-radius: 4px; 
+            margin-top: 10px; 
+            color: #e65100; 
+            text-align: center; 
+            font-weight: bold; 
+            font-size: 11px; 
+        }
+
+        .layout-container { 
+            margin-top: 10px; 
+            text-align: center; 
+            background: #f9f9f9; 
+            border: 1px dashed #ccc; 
+            padding: 10px; 
+            border-radius: 4px; 
+            position: relative; 
+        }
+
+        #canvasLayout { 
+            max-width: 100%; 
+            height: auto; 
+            display: block; 
+            margin: 0 auto; 
+            background: white; 
+            border-radius: 4px; 
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.1); 
+        }
+
+        /* Calculadoras Especiais */
+        .box-calculator { 
+            background: #e8f4f8; 
+            border: 1px solid #b3e5fc; 
+            padding: 10px; 
+            border-radius: 4px; 
+            margin-top: 15px; 
+        }
+
+        .bag-calculator { 
+            background: #fdf5e6; 
+            border: 1px solid #f4c284; 
+            padding: 10px; 
+            border-radius: 4px; 
+            margin-top: 15px; 
+        }
+
+        .box-title { 
+            font-size: 11px; 
+            font-weight: bold; 
+            color: var(--bg-blue); 
+            margin-bottom: 8px; 
+            display: flex; 
+            align-items: center; 
+            gap: 5px; 
+        }
+
+        .bag-title { 
+            font-size: 11px; 
+            font-weight: bold; 
+            color: #d35400; 
+            margin-bottom: 8px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            gap: 5px; 
+        }
+
         .box-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
         .bag-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
         .box-grid label, .bag-grid label { font-size: 8px; margin-top: 0; }
         .box-grid input, .bag-grid input { padding: 4px; font-size: 12px; text-align: center; }
+        
         .box-buttons { display: flex; gap: 5px; margin-top: 8px; }
         .btn-box { flex: 1; border: none; padding: 8px; font-size: 11px; font-weight: bold; border-radius: 3px; cursor: pointer; color: white; text-transform: uppercase; background: var(--bg-blue); }
         .btn-bag { flex: 1; border: none; padding: 8px; font-size: 11px; font-weight: bold; border-radius: 3px; cursor: pointer; color: white; text-transform: uppercase; background: #d35400; margin-top: 8px; }
-        .btn-box:hover { background: var(--active-blue); } .btn-bag:hover { background: #e67e22; }
-        
-        .bottom-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; background: #d1d1d1; padding: 15px; margin-top: 10px; border-radius: 4px; color: black; }
-        .ref-card { background: #e9e9e9; border: 1px solid #999; padding: 10px; font-size: 11px; }
-        .ref-card h4 { margin: 0 0 8px 0; border-bottom: 2px solid var(--bg-blue); padding-bottom: 3px; font-size: 11px; display: flex; justify-content: space-between; align-items: center; color: #333; }
-        .ref-table { width: 100%; border-collapse: collapse; font-size: 10px; }
-        .ref-table input { padding: 3px; font-size: 10px; text-align: center; border: 1px solid #bbb; }
-        
-        .resumo-table { width: 100%; border-collapse: collapse; margin-top: 5px; }
-        .resumo-table th { padding: 4px 0; border-bottom: 1px solid #ccc; font-weight: bold; text-align: left; }
-        .resumo-table td { padding: 4px 0; border-bottom: 1px dotted #999; font-size: 10px; }
-        .resumo-table .val { text-align: right; font-weight: bold; }
-        .resumo-table .total-line { color: var(--active-blue); font-weight: bold; border-top: 1px solid #999; }
+        .btn-box:hover { background: var(--active-blue); } 
+        .btn-bag:hover { background: #e67e22; }
 
-        @media (min-width: 900px) { .cart-card { grid-column: span 2; } }
+        /* =========================================
+           SEÇÃO INFERIOR E CONFIGURAÇÕES
+        ========================================= */
+        .bottom-section { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); 
+            gap: 10px; 
+            background: #d1d1d1; 
+            padding: 15px; 
+            margin-top: 10px; 
+            border-radius: 4px; 
+            color: black; 
+        }
 
-        .footer-floating { position: fixed; bottom: 0; left: 0; width: 100%; background: #2c3e50; padding: 20px; display: flex; justify-content: space-between; align-items: center; z-index: 9999; border-top: 4px solid var(--green-success); box-sizing: border-box; }
-        .final-price-value { font-size: 52px; font-weight: bold; color: #4ade80; text-shadow: 2px 2px 4px black; }
-        .btn-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-        .btn-action { border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px; display: flex; align-items: center; gap: 6px; color: white; text-transform: uppercase; }
-        .btn-add-pedido { background: #e67e22; } .btn-save-hist { background: #8e44ad; } .btn-save-plan { background: #3498db; } .btn-pdf { background: var(--pdf-red); } .btn-whatsapp { background: var(--green-success); } .btn-dash { background: #00bcd4; color: black; }
-        .btn-blue-add { background: var(--bg-blue); color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer; font-size: 12px; font-weight: bold; }
-        .btn-del-trash { color: var(--red-delete); cursor: pointer; font-size: 11px; margin-left: 5px; }
-        .input-locked { background-color: #e9ecef; border: 1px solid #ccc; color: #666; cursor: not-allowed; }
+        .ref-card { 
+            background: #e9e9e9; 
+            border: 1px solid #999; 
+            padding: 10px; 
+            font-size: 11px; 
+        }
+
+        .ref-card h4 { 
+            margin: 0 0 8px 0; 
+            border-bottom: 2px solid var(--bg-blue); 
+            padding-bottom: 3px; 
+            font-size: 11px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            color: #333; 
+        }
+
+        .ref-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 10px; 
+        }
+
+        .ref-table input { 
+            padding: 3px; 
+            font-size: 10px; 
+            text-align: center; 
+            border: 1px solid #bbb; 
+        }
+
+        .resumo-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 5px; 
+        }
+
+        .resumo-table th { 
+            padding: 4px 0; 
+            border-bottom: 1px solid #ccc; 
+            font-weight: bold; 
+            text-align: left; 
+        }
+
+        .resumo-table td { 
+            padding: 4px 0; 
+            border-bottom: 1px dotted #999; 
+            font-size: 10px; 
+        }
+
+        .resumo-table .val { 
+            text-align: right; 
+            font-weight: bold; 
+        }
+
+        .resumo-table .total-line { 
+            color: var(--active-blue); 
+            font-weight: bold; 
+            border-top: 1px solid #999; 
+        }
+
+        @media (min-width: 900px) { 
+            .cart-card { grid-column: span 2; } 
+        }
+
+        /* =========================================
+           RODAPÉ FLUTUANTE
+        ========================================= */
+        .footer-floating { 
+            position: fixed; 
+            bottom: 0; 
+            left: 0; 
+            width: 100%; 
+            background: #2c3e50; 
+            padding: 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            z-index: 9999; 
+            border-top: 4px solid var(--green-success); 
+            box-sizing: border-box; 
+        }
+
+        .final-price-value { 
+            font-size: 52px; 
+            font-weight: bold; 
+            color: #4ade80; 
+            text-shadow: 2px 2px 4px black; 
+        }
+
+        .btn-group { 
+            display: flex; 
+            gap: 8px; 
+            align-items: center; 
+            flex-wrap: wrap; 
+        }
+
+        .btn-action { 
+            border: none; 
+            padding: 10px 15px; 
+            border-radius: 6px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            font-size: 11px; 
+            display: flex; 
+            align-items: center; 
+            gap: 6px; 
+            color: white; 
+            text-transform: uppercase; 
+        }
+
+        .btn-add-pedido { background: #e67e22; } 
+        .btn-save-hist { background: #8e44ad; } 
+        .btn-save-plan { background: #3498db; } 
+        .btn-pdf { background: var(--pdf-red); } 
+        .btn-whatsapp { background: var(--green-success); } 
+        .btn-dash { background: #00bcd4; color: black; }
+
+        .btn-blue-add { 
+            background: var(--bg-blue); 
+            color: white; 
+            border: none; 
+            padding: 2px 6px; 
+            border-radius: 3px; 
+            cursor: pointer; 
+            font-size: 12px; 
+            font-weight: bold; 
+        }
+
+        .btn-del-trash { 
+            color: var(--red-delete); 
+            cursor: pointer; 
+            font-size: 11px; 
+            margin-left: 5px; 
+        }
+
+        .input-locked { 
+            background-color: #e9ecef; 
+            border: 1px solid #ccc; 
+            color: #666; 
+            cursor: not-allowed; 
+        }
     </style>
 </head>
 <body>
 
     <div id="admin-modal" class="modal-bg">
         <div class="modal-box">
-            <h2 style="margin-top:0; color:var(--bg-blue); border-bottom: 2px solid var(--bg-blue); padding-bottom: 10px;"><i class="fa fa-users-cog"></i> Controle de Usuários</h2>
+            <h2 style="margin-top:0; color:var(--bg-blue); border-bottom: 2px solid var(--bg-blue); padding-bottom: 10px;">
+                <i class="fa fa-users-cog"></i> Controle de Usuários
+            </h2>
             <p style="font-size: 12px; color: #666;">Aprove ou bloqueie quem pode acessar o sistema.</p>
             <table class="admin-table">
-                <thead><tr><th>E-mail</th><th>Status</th><th>Ações</th></tr></thead>
-                <tbody id="listaUsuariosAdmin"><tr><td colspan="3" style="text-align:center;">Carregando usuários...</td></tr></tbody>
+                <thead>
+                    <tr>
+                        <th>E-mail</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="listaUsuariosAdmin">
+                    <tr>
+                        <td colspan="3" style="text-align:center;">Carregando usuários...</td>
+                    </tr>
+                </tbody>
             </table>
-            <div style="text-align: right; margin-top: 20px;"><button onclick="document.getElementById('admin-modal').style.display='none'" style="padding:10px 15px; background:#95a5a6; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">FECHAR</button></div>
+            <div style="text-align: right; margin-top: 20px;">
+                <button onclick="document.getElementById('admin-modal').style.display='none'" style="padding:10px 15px; background:#95a5a6; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">FECHAR</button>
+            </div>
         </div>
     </div>
 
     <div id="dashboard-modal" class="modal-bg">
         <div class="modal-box">
-            <h2 style="margin-top:0; color:var(--bg-blue); border-bottom: 2px solid var(--bg-blue); padding-bottom: 10px;"><i class="fa fa-chart-line"></i> Saúde Financeira e Gestão</h2>
+            <h2 style="margin-top:0; color:var(--bg-blue); border-bottom: 2px solid var(--bg-blue); padding-bottom: 10px;">
+                <i class="fa fa-chart-line"></i> Saúde Financeira e Gestão
+            </h2>
             
             <div class="dash-section">
                 <div class="dash-section-title">Termômetro do Mês Atual</div>
@@ -172,6 +712,24 @@
                 </table>
             </div>
 
+            <div class="dash-section">
+                <div class="dash-section-title"><i class="fa fa-list"></i> Últimos Pedidos Registrados</div>
+                <table class="hist-table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Cliente</th>
+                            <th>Qtd Itens</th>
+                            <th>Valor Total</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listaPedidosRecentes">
+                        <tr><td colspan="5" style="text-align:center;">Carregando pedidos...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
             <div style="text-align: right; margin-top: 20px;">
                 <button onclick="document.getElementById('dashboard-modal').style.display='none'" style="padding:10px 15px; background:#95a5a6; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">FECHAR DASHBOARD</button>
             </div>
@@ -190,27 +748,62 @@
 
     <div id="main-app">
         <div class="main-container">
+            <div id="avisoEdicao" style="display:none; background:#f39c12; color:white; padding:10px; text-align:center; font-weight:bold; border-radius:4px; margin-bottom:10px;">
+                <i class="fa fa-exclamation-triangle"></i> VOCÊ ESTÁ EDITANDO UM PEDIDO EXISTENTE. Ao fechar, o pedido original será atualizado.
+                <button onclick="cancelarEdicao()" style="margin-left:15px; background:#c0392b; color:white; border:none; padding:4px 8px; border-radius:3px; cursor:pointer;">Cancelar Edição</button>
+            </div>
+
             <div class="top-panels">
                 <div class="panel">
-                    <div class="panel-header"><span>1. Cliente e Pedido</span><button onclick="novoOrcamento()" style="background:red; color:white; border:none; padding:2px 6px; cursor:pointer; font-size:10px; border-radius:3px;">LIMPAR TUDO</button></div>
+                    <div class="panel-header">
+                        <span>1. Cliente e Pedido</span>
+                        <button onclick="novoOrcamento()" style="background:red; color:white; border:none; padding:2px 6px; cursor:pointer; font-size:10px; border-radius:3px;">LIMPAR TUDO</button>
+                    </div>
                     <div class="panel-body">
-                        <label>Nome do Cliente</label><input type="text" id="cliNome" oninput="saveAndCalc()">
+                        <label>Nome do Cliente</label>
+                        <input type="text" id="cliNome" oninput="saveAndCalc()">
+                        
                         <div style="display:flex; gap:5px">
-                            <div style="flex:1"><label>WhatsApp/CNPJ</label><input type="text" id="cliDados" oninput="saveAndCalc()"></div>
-                            <div style="flex:1"><label>E-mail</label><input type="email" id="cliEmail" oninput="saveAndCalc()"></div>
-                        </div>
-                        <div style="display:flex; gap:5px">
-                            <div style="flex:1"><label>CEP</label><input type="text" id="cliCep" maxlength="9" onblur="buscarEndereco()" placeholder="00000-000"></div>
-                            <div style="flex:2"><label>Endereço</label><input type="text" id="cliEndereco" oninput="saveAndCalc()"></div>
-                            <div style="flex:0.5"><label>Nº</label><input type="text" id="cliNum" oninput="saveAndCalc()"></div>
+                            <div style="flex:1">
+                                <label>WhatsApp/CNPJ</label>
+                                <input type="text" id="cliDados" oninput="saveAndCalc()">
+                            </div>
+                            <div style="flex:1">
+                                <label>E-mail</label>
+                                <input type="email" id="cliEmail" oninput="saveAndCalc()">
+                            </div>
                         </div>
                         
-                        <label>Produto / Serviço <button class="btn-blue-add" onclick="addProdutoLista()" style="padding:1px 5px; font-size:10px;" title="Adicionar novo produto a esta lista">+</button></label>
+                        <div style="display:flex; gap:5px">
+                            <div style="flex:1">
+                                <label>CEP</label>
+                                <input type="text" id="cliCep" maxlength="9" onblur="buscarEndereco()" placeholder="00000-000">
+                            </div>
+                            <div style="flex:2">
+                                <label>Endereço</label>
+                                <input type="text" id="cliEndereco" oninput="saveAndCalc()">
+                            </div>
+                            <div style="flex:0.5">
+                                <label>Nº</label>
+                                <input type="text" id="cliNum" oninput="saveAndCalc()">
+                            </div>
+                        </div>
+                        
+                        <label>
+                            Produto / Serviço 
+                            <button class="btn-blue-add" onclick="addProdutoLista()" style="padding:1px 5px; font-size:10px;" title="Adicionar novo produto a esta lista">+</button>
+                        </label>
                         <select id="tipoServico" onchange="verificarProduto(false); saveAndCalc()"></select>
                         
                         <div style="display:flex; gap:5px">
-                            <div style="flex:1"><label id="lblQtdInterna" style="color:var(--bg-blue);">Fls/Bloco</label><input type="number" id="qtdInterna" value="100" oninput="saveAndCalc()" style="border:1px solid var(--bg-blue); font-weight:bold;"></div>
-                            <div style="flex:1"><label id="lblQtdVenda">Qtd Pedido</label><input type="number" id="qtdVenda" value="1" step="any" oninput="saveAndCalc()"></div>
+                            <div style="flex:1">
+                                <label id="lblQtdInterna" style="color:var(--bg-blue);">Fls/Bloco</label>
+                                <input type="number" id="qtdInterna" value="100" oninput="saveAndCalc()" style="border:1px solid var(--bg-blue); font-weight:bold;">
+                            </div>
+                            <div style="flex:1">
+                                <label id="lblQtdVenda">Qtd Pedido</label>
+                                <input type="number" id="qtdVenda" value="1" step="any" oninput="saveAndCalc()">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -263,7 +856,9 @@
 
                         <div class="info-box" id="resCorte">Aproveitamento: --</div>
                         <div class="buy-box" id="resRetirar">UTILIZAR: -- | COMPRAR: --</div>
-                        <div class="layout-container"><canvas id="canvasLayout" width="240" height="140"></canvas></div>
+                        <div class="layout-container">
+                            <canvas id="canvasLayout" width="240" height="140"></canvas>
+                        </div>
                     </div>
                 </div>
 
@@ -291,11 +886,14 @@
                             </select>
                         </div>
                         <div id="wrapConfigsPapel">
-                            <label>Preço Base Resma (R$)</label><input type="number" id="pResma" readonly style="background:#f0f0f0">
-                            <label>Folhas na Resma</label><input type="number" id="qResma" value="500" oninput="saveAndCalc()">
+                            <label>Preço Base Resma (R$)</label>
+                            <input type="number" id="pResma" readonly style="background:#f0f0f0">
+                            <label>Folhas na Resma</label>
+                            <input type="number" id="qResma" value="500" oninput="saveAndCalc()">
                         </div>
                         <div id="wrapSerigrafiaGasto">
-                            <label>Gasto Tinta (g/1000 pçs)</label><input type="number" id="gastoTintaGramas" value="100" oninput="saveAndCalc()">
+                            <label>Gasto Tinta (g/1000 pçs)</label>
+                            <input type="number" id="gastoTintaGramas" value="100" oninput="saveAndCalc()">
                         </div>
                         <label>Tempo Produção Total do Pedido (Horas) - Digite 0 para zerar Mão de Obra</label>
                         <input type="number" id="tempoProd" value="0" step="0.5" oninput="saveAndCalc()">
@@ -305,10 +903,17 @@
                 <div class="panel">
                     <div class="panel-header">4. Acabamentos Selecionados</div>
                     <div class="panel-body">
-                        <label>Adicionar Serviço Extra</label><select id="selAcab" onchange="addAcab()"></select>
+                        <label>Adicionar Serviço Extra</label>
+                        <select id="selAcab" onchange="addAcab()"></select>
                         <div id="listaAcab" style="margin-bottom:10px;"></div>
                         <table class="price-table">
-                            <thead><tr><th>QTD</th><th>UNIT.</th><th>TOTAL</th></tr></thead>
+                            <thead>
+                                <tr>
+                                    <th>QTD</th>
+                                    <th>UNIT.</th>
+                                    <th>TOTAL</th>
+                                </tr>
+                            </thead>
                             <tbody id="tabelaOrcamento"></tbody>
                         </table>
                     </div>
@@ -320,29 +925,47 @@
                     <h4>Base e Setup <button class="btn-blue-add" onclick="addItem('setup')">+</button></h4>
                     <div id="containerSetup">
                         <div id="wrapSetupSerigrafia">
-                            <label>Chapa/Tela (R$)</label><input type="number" id="baseChapa" value="45.00" oninput="saveAndCalc()">
-                            <label>Tinta KG (R$)</label><input type="number" id="baseTinta" value="100.00" oninput="saveAndCalc()">
+                            <label>Chapa/Tela (R$)</label>
+                            <input type="number" id="baseChapa" value="45.00" oninput="saveAndCalc()">
+                            <label>Tinta KG (R$)</label>
+                            <input type="number" id="baseTinta" value="100.00" oninput="saveAndCalc()">
                         </div>
-                        <label>Setup Fixo (R$)</label><input type="number" id="baseSetup" value="40.00" oninput="saveAndCalc()">
+                        <label>Setup Fixo (R$)</label>
+                        <input type="number" id="baseSetup" value="40.00" oninput="saveAndCalc()">
                     </div>
                 </div>
+                
                 <div class="ref-card">
                     <h4>Custos Fixos da Empresa <button class="btn-blue-add" onclick="addItem('fixos')">+</button></h4>
                     <div id="containerFixos">
                         <label style="color:var(--bg-blue);">Nome Fantasia (Aparece no PDF)</label>
                         <input type="text" id="cfgEmpresa" value="MC SERIGRAFIA" oninput="saveAndCalc()">
+                        
                         <label style="color:var(--bg-blue);">Logomarca (PNG ou JPG)</label>
                         <input type="file" id="logoUpload" accept="image/*" style="font-size: 11px; padding: 4px;" onchange="processarLogo(event)">
                         <img id="logoPreview" style="max-height: 40px; margin-top: 5px; display: none; border: 1px solid #ccc; border-radius: 4px; background: white; padding: 2px;">
+                        
                         <label style="color:var(--bg-blue);">Chave PIX (Aparece no PDF)</label>
                         <input type="text" id="cfgPix" value="46.897.470/0001-09" oninput="saveAndCalc()">
+                        
                         <hr style="border:0; border-top:1px solid #ccc; margin:8px 0;">
-                        <label>Pró-labore Mensal</label><input type="number" id="proMarcilio" value="5000.00" oninput="saveAndCalc()">
-                        <label>Contas Fixas</label><input type="number" id="contasFixas" value="1000.00" oninput="saveAndCalc()">
-                        <label style="color:var(--bg-blue);">Salário Colaboradores</label><input type="number" id="salarioColab" value="0.00" oninput="saveAndCalc()" style="border:1px solid var(--bg-blue);">
+                        
+                        <label>Pró-labore Mensal</label>
+                        <input type="number" id="proMarcilio" value="5000.00" oninput="saveAndCalc()">
+                        <label>Contas Fixas</label>
+                        <input type="number" id="contasFixas" value="1000.00" oninput="saveAndCalc()">
+                        <label style="color:var(--bg-blue);">Salário Colaboradores</label>
+                        <input type="number" id="salarioColab" value="0.00" oninput="saveAndCalc()" style="border:1px solid var(--bg-blue);">
+                        
                         <div style="display:flex; gap:4px">
-                            <div style="flex:1"><label>Dias/Mês</label><input type="number" id="diasUteis" value="22" oninput="saveAndCalc()"></div>
-                            <div style="flex:1"><label>Hrs/Dia</label><input type="number" id="horasDia" value="7" oninput="saveAndCalc()"></div>
+                            <div style="flex:1">
+                                <label>Dias/Mês</label>
+                                <input type="number" id="diasUteis" value="22" oninput="saveAndCalc()">
+                            </div>
+                            <div style="flex:1">
+                                <label>Hrs/Dia</label>
+                                <input type="number" id="horasDia" value="7" oninput="saveAndCalc()">
+                            </div>
                         </div>
                         <div style="font-size: 10px; margin-top: 5px;">Hora da Empresa: <b id="valHoraMaquina">R$ 0,00</b></div>
                     </div>
@@ -351,31 +974,76 @@
                 <div class="ref-card">
                     <h4>Tabela Produtos <button class="btn-blue-add" onclick="addItem('produto')" title="Adicionar Novo Produto">+</button></h4>
                     <table class="ref-table">
-                        <thead><tr><th>Nome do Produto/Serviço</th><th></th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th>Nome do Produto/Serviço</th>
+                                <th></th>
+                            </tr>
+                        </thead>
                         <tbody id="tbodyProduto"></tbody>
                     </table>
                 </div>
 
-                <div class="ref-card"><h4>Tabela Papéis / Mídias <button class="btn-blue-add" onclick="addItem('papel')">+</button></h4><table class="ref-table"><thead><tr><th>Gr/Modelo/Mídia</th><th>64x88 (ou M²)</th><th>66x96</th><th></th></tr></thead><tbody id="tbodyPapel"></tbody></table></div>
-                <div class="ref-card"><h4>Tabela Acabam. <button class="btn-blue-add" onclick="addItem('acabamento')">+</button></h4><table class="ref-table"><thead><tr><th>Serv</th><th>Base</th><th>Mil</th><th></th></tr></thead><tbody id="tbodyAcab"></tbody></table></div>
+                <div class="ref-card">
+                    <h4>Tabela Papéis / Mídias <button class="btn-blue-add" onclick="addItem('papel')">+</button></h4>
+                    <table class="ref-table">
+                        <thead>
+                            <tr>
+                                <th>Gr/Modelo/Mídia</th>
+                                <th>64x88 (ou M²)</th>
+                                <th>66x96</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyPapel"></tbody>
+                    </table>
+                </div>
+                
+                <div class="ref-card">
+                    <h4>Tabela Acabam. <button class="btn-blue-add" onclick="addItem('acabamento')">+</button></h4>
+                    <table class="ref-table">
+                        <thead>
+                            <tr>
+                                <th>Serv</th>
+                                <th>Base</th>
+                                <th>Mil</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyAcab"></tbody>
+                    </table>
+                </div>
                 
                 <div class="ref-card" style="background:#fff; border-left:5px solid var(--active-blue);">
                     <h4 style="color:var(--text-dark); border-bottom:2px solid var(--active-blue);">Conferência Detalhada</h4>
                     <table class="resumo-table" id="tabelaResumoCustos"></table>
                     <hr>
-                    <label style="color:var(--active-blue);">% LUCRO REAL</label><input type="number" id="lucroPorcent" value="30" oninput="saveAndCalc()" title="Você pode alterar este valor livremente">
-                    <label style="color:var(--sync-orange);">% IMPOSTO (NF)</label><input type="number" id="impostoPorcent" value="0" oninput="saveAndCalc()">
-                    <label style="color:#8e44ad;">% COMISSÃO</label><input type="number" id="comissaoPorcent" value="0" oninput="saveAndCalc()">
+                    <label style="color:var(--active-blue);">% LUCRO REAL</label>
+                    <input type="number" id="lucroPorcent" value="30" oninput="saveAndCalc()" title="Você pode alterar este valor livremente">
+                    
+                    <label style="color:var(--sync-orange);">% IMPOSTO (NF)</label>
+                    <input type="number" id="impostoPorcent" value="0" oninput="saveAndCalc()">
+                    
+                    <label style="color:#8e44ad;">% COMISSÃO</label>
+                    <input type="number" id="comissaoPorcent" value="0" oninput="saveAndCalc()">
                 </div>
 
                 <div class="ref-card cart-card" style="background:#fff; border:2px solid var(--green-success);">
                     <h4 style="color:var(--green-success); border-bottom:2px solid var(--green-success);"><i class="fa fa-shopping-cart"></i> Lista de Itens do Pedido</h4>
                     <table class="resumo-table" style="width: 100%; margin-top: 5px;">
                         <thead>
-                            <tr><th>Produto / Specs</th><th style="text-align:center;">Qtd</th><th style="text-align:center;">Unit.</th><th style="text-align:right;">Total</th><th></th></tr>
+                            <tr>
+                                <th>Produto / Specs</th>
+                                <th style="text-align:center;">Qtd</th>
+                                <th style="text-align:center;">Unit.</th>
+                                <th style="text-align:right;">Total</th>
+                                <th></th>
+                            </tr>
                         </thead>
                         <tbody id="tbodyPedidoItens">
-                            <tr><td colspan="5" style="text-align:center; color:#999; padding: 15px;">Nenhum item adicionado ao pedido ainda.</td></tr>
+                            <tr>
+                                <td colspan="5" style="text-align:center; color:#999; padding: 15px;">Nenhum item adicionado ao pedido ainda.</td>
+                            </tr>
                         </tbody>
                     </table>
                     <div style="text-align: right; margin-top: 15px; font-size: 16px; font-weight: bold; color: var(--text-dark);">
@@ -399,23 +1067,51 @@
             <div class="final-price-value" id="totalPrice" style="font-size: 32px;">R$ 0,00</div>
             
             <div class="btn-group">
-                <button class="btn-action btn-add-pedido" title="Adicionar ao Carrinho" onclick="adicionarAoPedido()"><i class="fa fa-cart-plus"></i> ADD ITEM AO PEDIDO</button>
-                <button class="btn-action btn-dash" onclick="abrirDashboard()"><i class="fa fa-chart-bar"></i> DASHBOARD MENSAL</button>
-                <button class="btn-action btn-save-hist" onclick="registrarVenda()"><i class="fa fa-handshake"></i> FECHAR PEDIDO</button>
-                <button class="btn-action" id="btnPainelAdmin" onclick="abrirPainelAdmin()" style="display:none; background:#c0392b;"><i class="fa fa-cogs"></i> ADM</button>
-                
-                <button class="btn-action" style="background:#107c41" onclick="baixarExcel()"><i class="fa fa-file-excel"></i> EXCEL</button>
-                <button class="btn-action btn-save-plan" onclick="saveToCloud()"><i class="fa fa-cloud-upload"></i> SALVAR NUVEM</button>
-                <button class="btn-action btn-pdf" onclick="gerarPDF()"><i class="fa fa-file-pdf"></i> PDF</button>
-                <button class="btn-action btn-whatsapp" onclick="enviarWhatsApp()"><i class="fab fa-whatsapp"></i> ZAP</button>
+                <button class="btn-action btn-add-pedido" title="Adicionar ao Carrinho" onclick="adicionarAoPedido()">
+                    <i class="fa fa-cart-plus"></i> ADD ITEM AO PEDIDO
+                </button>
+                <button class="btn-action btn-dash" onclick="abrirDashboard()">
+                    <i class="fa fa-chart-bar"></i> DASHBOARD MENSAL
+                </button>
+                <button class="btn-action btn-save-hist" id="btnFecharPedido" onclick="registrarVenda()">
+                    <i class="fa fa-handshake"></i> FECHAR PEDIDO
+                </button>
+                <button class="btn-action" id="btnPainelAdmin" onclick="abrirPainelAdmin()" style="display:none; background:#c0392b;">
+                    <i class="fa fa-cogs"></i> ADM
+                </button>
+                <button class="btn-action" style="background:#107c41" onclick="baixarExcel()">
+                    <i class="fa fa-file-excel"></i> EXCEL
+                </button>
+                <button class="btn-action btn-save-plan" onclick="saveToCloud()">
+                    <i class="fa fa-cloud-upload"></i> SALVAR NUVEM
+                </button>
+                <button class="btn-action btn-pdf" onclick="gerarPDF()">
+                    <i class="fa fa-file-pdf"></i> PDF
+                </button>
+                <button class="btn-action btn-whatsapp" onclick="enviarWhatsApp()">
+                    <i class="fab fa-whatsapp"></i> ZAP
+                </button>
             </div>
         </div>
     </div>
 
 <script>
-    // --------------------------------------------------------------------------------------
+    // =========================================================================
+    // VARIÁVEIS GLOBAIS
+    // =========================================================================
+    window.vendaEditandoId = null;
+    window.vendasMemoria = {};
+    let acabamentosAtivos = []; 
+    let pedidoItens = []; 
+    const camposConfig = [
+        'lucroPorcent', 'impostoPorcent', 'comissaoPorcent', 'proMarcilio', 
+        'contasFixas', 'salarioColab', 'diasUteis', 'horasDia', 'baseChapa', 
+        'baseTinta', 'baseSetup', 'gastoTintaGramas', 'qResma'
+    ];
+
+    // =========================================================================
     // 1. CONFIGURAÇÃO FIREBASE E AUTENTICAÇÃO
-    // --------------------------------------------------------------------------------------
+    // =========================================================================
     const firebaseConfig = {
         apiKey: "AIzaSyBa15QojIYjCm5dTqzLXHa4R_myAzYrPEw", 
         authDomain: "precifica-7e047.firebaseapp.com", 
@@ -435,9 +1131,11 @@
     async function handleAuth() {
         const e = document.getElementById('auth-email').value;
         const p = document.getElementById('auth-pass').value;
+        
         try {
-            if(isReg) {
+            if (isReg) {
                 const cred = await auth.createUserWithEmailAndPassword(e, p);
+                
                 await db.collection("usuarios").doc(cred.user.uid).set({ 
                     email: e, 
                     status: "pendente", 
@@ -445,23 +1143,25 @@
                 }, { merge: true });
                 
                 const msgZap = encodeURIComponent(`Olá Marcilio! Acabei de criar uma conta no Orçamentador Inteligente com o e-mail: ${e}. Pode liberar meu acesso?`);
+                
                 document.querySelector('.auth-box').innerHTML = `
                     <h2><i class="fa fa-check-circle"></i> Conta Criada!</h2>
                     <p>Aguardando liberação na sala de espera.</p>
                     <a href="https://wa.me/5551999713739?text=${msgZap}" target="_blank" style="display:block; background:#25D366; color:white; padding:10px; border-radius:5px; text-decoration:none;">SOLICITAR ACESSO AGORA</a>
                     <p onclick="location.reload()" style="cursor:pointer; font-weight:bold; color:#005aab; margin-top:10px;">Voltar para o Login</p>
                 `;
+                
                 auth.signOut(); 
             } else { 
                 await auth.signInWithEmailAndPassword(e, p); 
             }
-        } catch(err) { 
+        } catch (err) { 
             alert(err.message); 
         }
     }
 
     auth.onAuthStateChanged(async (user) => {
-        if(user) {
+        if (user) {
             const emailLogado = user.email ? user.email.toLowerCase().trim() : "";
             const emailChefe = EMAIL_ADMIN.toLowerCase().trim();
             
@@ -469,16 +1169,20 @@
                 liberarAcessoTotal(true); 
             } else {
                 const docSnap = await db.collection("usuarios").doc(user.uid).get();
+                
                 if (!docSnap.exists || docSnap.data().status !== 'aprovado') {
                     const msgZap = encodeURIComponent(`Olá Marcilio! Meu e-mail (${user.email}) está aguardando aprovação. Pode me liberar?`);
+                    
                     document.querySelector('.auth-box').innerHTML = `
                         <h2><i class="fa fa-lock"></i> Acesso Bloqueado</h2>
                         <a href="https://wa.me/5551999713739?text=${msgZap}" target="_blank" style="display:block; background:#25D366; color:white; padding:10px; border-radius:5px; text-decoration:none;">CHAMAR ADMIN NO WHATSAPP</a>
                         <p onclick="location.reload()" style="cursor:pointer; font-weight:bold; color:#005aab; margin-top:10px;">Tentar Novamente</p>
                     `;
+                    
                     auth.signOut(); 
                     return; 
                 }
+                
                 liberarAcessoTotal(false);
             }
         } else { 
@@ -490,11 +1194,13 @@
     function liberarAcessoTotal(isAdmin) { 
         document.getElementById('auth-container').style.display = 'none'; 
         document.getElementById('main-app').style.display = 'block'; 
+        
         if (isAdmin) {
             document.getElementById('btnPainelAdmin').style.display = 'flex'; 
         } else {
             document.getElementById('btnPainelAdmin').style.display = 'none'; 
         }
+        
         loadFromCloud(); 
     }
 
@@ -502,16 +1208,29 @@
         document.getElementById('admin-modal').style.display = 'flex';
         const tbody = document.getElementById('listaUsuariosAdmin'); 
         tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Buscando...</td></tr>';
+        
         try {
             const snapshot = await db.collection("usuarios").get(); 
             tbody.innerHTML = '';
+            
             snapshot.forEach(doc => {
                 const data = doc.data(); 
-                if(!data.email) return; 
+                if (!data.email) return; 
+                
                 let corStatus = data.status === 'aprovado' ? 'color:#27ae60; font-weight:bold;' : 'color:#e74c3c; font-weight:bold;';
-                tbody.innerHTML += `<tr><td>${data.email}</td><td style="${corStatus}">${data.status ? data.status.toUpperCase() : 'PENDENTE'}</td><td><button class="btn-aprovar" onclick="mudarStatusUsuario('${doc.id}', 'aprovado')">Aprovar</button><button class="btn-bloquear" onclick="mudarStatusUsuario('${doc.id}', 'bloqueado')">Bloquear</button></td></tr>`;
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${data.email}</td>
+                        <td style="${corStatus}">${data.status ? data.status.toUpperCase() : 'PENDENTE'}</td>
+                        <td>
+                            <button class="btn-aprovar" onclick="mudarStatusUsuario('${doc.id}', 'aprovado')">Aprovar</button>
+                            <button class="btn-bloquear" onclick="mudarStatusUsuario('${doc.id}', 'bloqueado')">Bloquear</button>
+                        </td>
+                    </tr>
+                `;
             });
-        } catch(e) { 
+        } catch (e) { 
             tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:red;">Erro.</td></tr>'; 
         }
     }
@@ -521,14 +1240,14 @@
             await db.collection("usuarios").doc(uid).update({ status: novoStatus }); 
             alert(`Status alterado: ${novoStatus}`); 
             abrirPainelAdmin(); 
-        } catch(e) { 
+        } catch (e) { 
             alert("Erro: " + e.message); 
         }
     }
 
-    // --------------------------------------------------------------------------------------
-    // 2. LÓGICA DO DASHBOARD E REGISTRO DE VENDAS
-    // --------------------------------------------------------------------------------------
+    // =========================================================================
+    // 2. LÓGICA DE GERENCIAMENTO DE VENDAS E DASHBOARD
+    // =========================================================================
     async function registrarVenda() {
         if (pedidoItens.length === 0) { 
             alert("O carrinho está vazio! Adicione itens primeiro."); 
@@ -548,20 +1267,33 @@
         });
         
         const margemContribuicao = totalVenda - custoVarTotal;
+        
         let dataAgora = new Date(); 
         dataAgora.setHours(dataAgora.getHours() - 3); 
         const dataVenda = dataAgora.toISOString();
         
+        const dadosVenda = { 
+            data_venda: dataVenda, 
+            cliente: cli, 
+            itens_qtd: pedidoItens.length, 
+            valor_total: totalVenda, 
+            custo_variavel: custoVarTotal, 
+            margem_contribuicao: margemContribuicao,
+            itens_detalhes: pedidoItens // Salvando os itens completos para edição futura
+        };
+        
         try { 
-            await db.collection("usuarios").doc(user.uid).collection("vendas").add({ 
-                data_venda: dataVenda, 
-                cliente: cli, 
-                itens_qtd: pedidoItens.length, 
-                valor_total: totalVenda, 
-                custo_variavel: custoVarTotal, 
-                margem_contribuicao: margemContribuicao 
-            }); 
-            alert("✅ Venda Fechada e Registrada no Dashboard com Sucesso!"); 
+            if (window.vendaEditandoId) {
+                // Atualizar Venda Existente
+                await db.collection("usuarios").doc(user.uid).collection("vendas").doc(window.vendaEditandoId).update(dadosVenda);
+                alert("✅ Pedido Atualizado com Sucesso!");
+                cancelarEdicao(); // Limpa as variáveis de edição
+            } else {
+                // Nova Venda
+                await db.collection("usuarios").doc(user.uid).collection("vendas").add(dadosVenda); 
+                alert("✅ Venda Fechada e Registrada no Dashboard com Sucesso!"); 
+            }
+            
             pedidoItens = []; 
             renderizarPedido(); 
             document.getElementById('cliNome').value = ""; 
@@ -573,8 +1305,12 @@
 
     async function abrirDashboard() {
         document.getElementById('dashboard-modal').style.display = 'flex';
-        const tbody = document.getElementById('listaVendasDash'); 
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Buscando histórico financeiro...</td></tr>';
+        
+        const tbodyDash = document.getElementById('listaVendasDash'); 
+        tbodyDash.innerHTML = '<tr><td colspan="5" style="text-align:center;">Buscando...</td></tr>';
+        
+        const tbodyRecentes = document.getElementById('listaPedidosRecentes'); 
+        tbodyRecentes.innerHTML = '<tr><td colspan="5" style="text-align:center;">Buscando...</td></tr>';
         
         const user = auth.currentUser; 
         if (!user) return;
@@ -582,17 +1318,24 @@
         try {
             const docSnap = await db.collection("usuarios").doc(user.uid).get(); 
             let config = docSnap.exists ? docSnap.data().config : {};
+            let custosFixosMensais = parseFloat(config.proMarcilio || 5000) + parseFloat(config.contasFixas || 1000) + parseFloat(config.salarioColab || 0); 
             
-            let custosFixosMensais = parseFloat(config.proMarcilio||5000) + parseFloat(config.contasFixas||1000) + parseFloat(config.salarioColab||0); 
-            if(config.dynFixos) {
-                config.dynFixos.forEach(f => custosFixosMensais += parseFloat(f.v));
+            if (config.dynFixos) {
+                config.dynFixos.forEach(f => {
+                    custosFixosMensais += parseFloat(f.v);
+                });
             }
             
-            const snapshot = await db.collection("usuarios").doc(user.uid).collection("vendas").get();
+            const snapshot = await db.collection("usuarios").doc(user.uid).collection("vendas").orderBy("data_venda", "desc").get();
+            
             let dadosPorMes = {};
+            let ultimosPedidos = [];
+            window.vendasMemoria = {}; // Reseta a memória de vendas para edição
             
             snapshot.forEach(doc => {
                 let d = doc.data(); 
+                window.vendasMemoria[doc.id] = d; // Guarda na memória
+                
                 let dataStr = d.data_venda || new Date().toISOString(); 
                 let dataObj = new Date(dataStr);
                 let mes = String(dataObj.getMonth() + 1).padStart(2, '0'); 
@@ -602,46 +1345,57 @@
                 const mesesNomes = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]; 
                 let nomeMes = `${mesesNomes[dataObj.getMonth()]} / ${ano}`;
                 
-                if(!dadosPorMes[chave]) { 
+                if (!dadosPorMes[chave]) {
                     dadosPorMes[chave] = { nome: nomeMes, faturamento: 0, margem: 0, order: dataObj.getTime() }; 
                 }
                 
                 dadosPorMes[chave].faturamento += (d.valor_total || 0);
-                let mc = d.margem_contribuicao !== undefined ? d.margem_contribuicao : (d.lucro_realizado || 0) + ((d.valor_total || 0)*0.15); 
+                let mc = d.margem_contribuicao !== undefined ? d.margem_contribuicao : (d.lucro_realizado || 0) + ((d.valor_total || 0) * 0.15); 
                 dadosPorMes[chave].margem += mc;
+
+                if (ultimosPedidos.length < 30) {
+                    let dataFormatada = `${String(dataObj.getDate()).padStart(2, '0')}/${mes} - ${String(dataObj.getHours()).padStart(2, '0')}:${String(dataObj.getMinutes()).padStart(2, '0')}`;
+                    ultimosPedidos.push({ 
+                        id: doc.id, 
+                        dataF: dataFormatada, 
+                        cliente: d.cliente || "Balcão", 
+                        qtd: d.itens_qtd || 1, 
+                        total: d.valor_total || 0 
+                    });
+                }
             });
             
             let mesesOrdenados = Object.keys(dadosPorMes).sort((a,b) => b.localeCompare(a));
-            tbody.innerHTML = '';
+            tbodyDash.innerHTML = '';
             
             let hoje = new Date(); 
             let chaveMesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
             let margemAtual = 0; 
             
-            if (dadosPorMes[chaveMesAtual]) { 
+            if (dadosPorMes[chaveMesAtual]) {
                 margemAtual = dadosPorMes[chaveMesAtual].margem; 
             }
 
-            // ATUALIZAÇÃO DOS CARDS
+            // Cards de Faturamento
             document.getElementById('lblCustosFixos').innerText = `R$ ${custosFixosMensais.toFixed(2).replace('.',',')}`;
             document.getElementById('lblMargemArrecadada').innerText = `R$ ${margemAtual.toFixed(2).replace('.',',')}`;
             
             let resultadoMes = margemAtual - custosFixosMensais;
-            let cardRes = document.getElementById('cardResultado');
-            let lblResTitle = document.getElementById('lblResultadoTitle');
+            let cardRes = document.getElementById('cardResultado'); 
+            let lblResTitle = document.getElementById('lblResultadoTitle'); 
             let lblResValue = document.getElementById('lblResultadoValue');
 
-            if(resultadoMes >= 0) {
-                cardRes.style.background = '#27ae60';
-                lblResTitle.innerText = "LUCRO NO MÊS";
-                lblResValue.innerText = `R$ ${resultadoMes.toFixed(2).replace('.',',')}`;
-            } else {
-                cardRes.style.background = '#e74c3c';
-                lblResTitle.innerText = "FALTA ARRECADAR";
-                lblResValue.innerText = `R$ ${Math.abs(resultadoMes).toFixed(2).replace('.',',')}`;
+            if (resultadoMes >= 0) { 
+                cardRes.style.background = '#27ae60'; 
+                lblResTitle.innerText = "LUCRO NO MÊS"; 
+                lblResValue.innerText = `R$ ${resultadoMes.toFixed(2).replace('.',',')}`; 
+            } else { 
+                cardRes.style.background = '#e74c3c'; 
+                lblResTitle.innerText = "FALTA ARRECADAR"; 
+                lblResValue.innerText = `R$ ${Math.abs(resultadoMes).toFixed(2).replace('.',',')}`; 
             }
 
-            // ATUALIZAÇÃO DA BARRA DE PROGRESSO
+            // Barra de Progresso
             let percentualPago = (margemAtual / custosFixosMensais) * 100;
             let barra = document.getElementById('barFill'); 
             let statusFinanceiro = document.getElementById('lblStatusFinanceiro');
@@ -662,106 +1416,287 @@
                 statusFinanceiro.innerHTML = `<i class="fa fa-exclamation-triangle"></i> Faltam <b>R$ ${falta.toFixed(2).replace('.',',')}</b> para cobrir as contas fixas.`; 
             }
 
-            // ATUALIZAÇÃO DA TABELA
+            // Tabela Dash (Mês a Mês)
             if (mesesOrdenados.length === 0) { 
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhuma venda registrada ainda.</td></tr>'; 
-                return; 
+                tbodyDash.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhuma venda registrada.</td></tr>'; 
+            } else { 
+                mesesOrdenados.forEach(chave => { 
+                    let mesData = dadosPorMes[chave]; 
+                    let resultadoLiquido = mesData.margem - custosFixosMensais; 
+                    let corRes = resultadoLiquido >= 0 ? "color:#27ae60; font-weight:bold;" : "color:#e74c3c; font-weight:bold;"; 
+                    
+                    tbodyDash.innerHTML += `
+                        <tr>
+                            <td style="font-weight:bold;">${mesData.nome}</td>
+                            <td>R$ ${mesData.faturamento.toFixed(2).replace('.',',')}</td>
+                            <td>R$ ${mesData.margem.toFixed(2).replace('.',',')}</td>
+                            <td>R$ ${custosFixosMensais.toFixed(2).replace('.',',')}</td>
+                            <td style="${corRes}">R$ ${resultadoLiquido.toFixed(2).replace('.',',')}</td>
+                        </tr>
+                    `; 
+                }); 
             }
-            
-            mesesOrdenados.forEach(chave => { 
-                let mesData = dadosPorMes[chave]; 
-                let resultadoLiquido = mesData.margem - custosFixosMensais; 
-                let corRes = resultadoLiquido >= 0 ? "color:#27ae60; font-weight:bold;" : "color:#e74c3c; font-weight:bold;"; 
-                tbody.innerHTML += `
-                    <tr>
-                        <td style="font-weight:bold;">${mesData.nome}</td>
-                        <td>R$ ${mesData.faturamento.toFixed(2).replace('.',',')}</td>
-                        <td>R$ ${mesData.margem.toFixed(2).replace('.',',')}</td>
-                        <td>R$ ${custosFixosMensais.toFixed(2).replace('.',',')}</td>
-                        <td style="${corRes}">R$ ${resultadoLiquido.toFixed(2).replace('.',',')}</td>
-                    </tr>
-                `; 
-            });
+
+            // Tabela Pedidos Recentes (Edição)
+            if (ultimosPedidos.length === 0) { 
+                tbodyRecentes.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhuma venda recente.</td></tr>'; 
+            } else { 
+                tbodyRecentes.innerHTML = '';
+                ultimosPedidos.forEach(p => {
+                    tbodyRecentes.innerHTML += `
+                        <tr>
+                            <td>${p.dataF}</td>
+                            <td style="font-weight:bold; color:var(--bg-blue);">${p.cliente}</td>
+                            <td style="text-align:center;">${p.qtd}</td>
+                            <td style="font-weight:bold;">R$ ${p.total.toFixed(2).replace('.',',')}</td>
+                            <td>
+                                <button class="btn-gerenciar btn-edit-venda" onclick="editarVenda('${p.id}')" title="Editar Pedido">
+                                    <i class="fa fa-pencil-alt"></i> Recuperar
+                                </button>
+                                <button class="btn-gerenciar btn-del-venda" onclick="apagarVenda('${p.id}')" title="Apagar Pedido (Estorno)">
+                                    <i class="fa fa-trash"></i> Apagar
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
         } catch (e) { 
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Erro ao buscar dashboard financeiro.</td></tr>'; 
+            tbodyDash.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Erro ao buscar dashboard financeiro.</td></tr>'; 
             console.error(e); 
         }
     }
-
-    // --------------------------------------------------------------------------------------
-    // 3. FUNÇÕES MATEMÁTICAS E DE DESENHO (RESTAURADAS COMPLETAMENTE)
-    // --------------------------------------------------------------------------------------
-
-    function calcMapRaw(w, h, sheet) {
-        let ap1 = Math.floor(sheet.w/w)*Math.floor(sheet.h/h);
-        let ap2 = Math.floor(sheet.w/h)*Math.floor(sheet.h/w);
-        return Math.max(ap1, ap2);
-    }
-
-    function getBestMap(lar, alt) {
-        const formats = [{n:"64x88", w:64, h:88}, {n:"66x96", w:66, h:96}];
-        let mapOut = 0; let mfOut = formats[0]; let mlOut = lar, maOut = alt; let ap64Out = 0, ap66Out = 0;
-        formats.forEach(f => {
-            let ap1 = Math.floor(f.w/lar)*Math.floor(f.h/alt); 
-            let ap2 = Math.floor(f.w/alt)*Math.floor(f.h/lar); 
-            let bestForF = Math.max(ap1, ap2);
-            if (f.n === "64x88") ap64Out = bestForF; 
-            if (f.n === "66x96") ap66Out = bestForF;
-            if(bestForF > mapOut) { 
-                mapOut = bestForF; mfOut = f; mlOut = (ap2 > ap1) ? alt : lar; maOut = (ap2 > ap1) ? lar : alt; 
-            }
-        });
-        return { map: mapOut, mf: mfOut, ml: mlOut, ma: maOut, ap64: ap64Out, ap66: ap66Out };
-    }
-
-    function desenharIconeGenerico(ct, tipo, x, y, w, h) {
-        ct.lineWidth = 1;
-        if (tipo === 'bloco') {
-            ct.fillStyle = "#f9f9f9"; ct.fillRect(x+10, y, w-20, h);
-            ct.strokeStyle = "#bbb"; ct.strokeRect(x+10, y, w-20, h);
-            ct.fillStyle = "#c0392b"; ct.fillRect(x+10, y, w-20, 10); 
-            ct.fillStyle = "#e0e0e0";
-            for(let i=1; i<5; i++) ct.fillRect(x+15, y+15+(i*10), w-30, 2);
-            ct.fillStyle = "#333"; ct.font = "bold 9px Arial"; ct.fillText("BLOCO", x+16, y+h-10);
-        } else if (tipo === 'cartao') {
-            ct.fillStyle = "#ddd"; ct.fillRect(x+5, y+10, w-15, h/2); ct.strokeRect(x+5, y+10, w-15, h/2);
-            ct.fillStyle = "#005aab"; ct.fillRect(x+15, y+25, w-15, h/2); ct.strokeRect(x+15, y+25, w-15, h/2);
-            ct.fillStyle = "#fff"; ct.fillRect(x+18, y+28, w-21, h/2-6);
-            ct.fillStyle = "#005aab"; ct.fillRect(x+22, y+35, 15, 4);
-            ct.fillStyle = "#333"; ct.font = "bold 9px Arial"; ct.fillText("CARTÃO", x+16, y+h/2+38);
-        } else if (tipo === 'panfleto') {
-            let fw = w/3;
-            ct.fillStyle = "#fff"; ct.fillRect(x, y+10, fw, h-20); ct.strokeRect(x, y+10, fw, h-20);
-            ct.fillStyle = "#f0f0f0"; ct.fillRect(x+fw, y+5, fw, h-20); ct.strokeRect(x+fw, y+5, fw, h-20);
-            ct.fillStyle = "#e0e0e0"; ct.fillRect(x+fw*2, y+15, fw, h-20); ct.strokeRect(x+fw*2, y+15, fw, h-20);
-            ct.fillStyle = "#333"; ct.font = "bold 9px Arial"; ct.fillText("PANFLETO", x+12, y+h+5);
-        } else if (tipo === 'adesivo') {
-            ct.beginPath(); ct.arc(x+w/2, y+h/2-5, w/2.5, 0, Math.PI*2); ct.fillStyle = "#f1c40f"; ct.fill(); ct.strokeStyle = "#d4ac0d"; ct.stroke();
-            ct.beginPath(); ct.moveTo(x+w/2+5, y+h/2+5); ct.lineTo(x+w/2+25, y+h/2-5); ct.lineTo(x+w/2-5, y+h/2+25); ct.fillStyle = "#fff"; ct.fill(); ct.stroke();
-            ct.fillStyle = "#333"; ct.font = "bold 9px Arial"; ct.fillText("ADESIVO", x+14, y+h+5);
-        } else if (tipo === 'banner') {
-            ct.fillStyle = "#ecf0f1"; ct.fillRect(x+5, y+15, w-10, h-25); ct.strokeRect(x+5, y+15, w-10, h-25);
-            ct.fillStyle = "#7f8c8d"; ct.fillRect(x, y+12, w, 5); ct.fillRect(x, y+h-10, w, 5);
-            ct.beginPath(); ct.moveTo(x+w/2, y); ct.lineTo(x+5, y+12); ct.moveTo(x+w/2, y); ct.lineTo(x+w-5, y+12); ct.strokeStyle = "#333"; ct.stroke();
-            ct.fillStyle = "#333"; ct.font = "bold 9px Arial"; ct.fillText("BANNER", x+14, y+h/2+5);
-        } else if (tipo === 'sacola_plastica') {
-            ct.fillStyle = "#e67e22"; ct.fillRect(x+10, y, w-20, h);
-            ct.fillStyle = "#fff"; ct.beginPath(); ct.ellipse(x+w/2, y+15, 12, 4, 0, 0, Math.PI*2); ct.fill();
-            ct.fillStyle = "#fff"; ct.font = "bold 10px Arial"; ct.fillText("SACOLA", x+14, y+h/2+10);
-        } else if (tipo === 'servico') {
-            ct.fillStyle = "#34495e"; ct.fillRect(x+5, y+10, w-10, h-20);
-            ct.fillStyle = "#fff"; ct.font = "bold 10px Arial"; ct.fillText("SERVIÇO", x+12, y+h/2+3);
-        } else {
-            ct.fillStyle = "#bdc3c7"; ct.fillRect(x+10, y, w-20, h);
-            ct.fillStyle = "#fff"; ct.fillRect(x+12, y+2, w-24, h-4);
-            ct.fillStyle = "#005aab"; ct.font = "bold 9px Arial"; ct.fillText("PRODUTO", x+13, y+h/2+3);
+    async function apagarVenda(id) {
+        if (!confirm("⚠️ ATENÇÃO: Tem certeza que deseja APAGAR este pedido?\n\nO valor será removido do seu Dashboard financeiro e essa ação não pode ser desfeita.")) return;
+        
+        const user = auth.currentUser; 
+        if (!user) return;
+        
+        try {
+            await db.collection("usuarios").doc(user.uid).collection("vendas").doc(id).delete();
+            abrirDashboard(); // Recarrega para atualizar os valores na tela
+        } catch (e) { 
+            alert("Erro ao apagar: " + e.message); 
         }
     }
 
-    function desenharFaca(ct, c, l, h, aba, cx_center, scale) {
-        let sC = c*scale, sL = l*scale, sH = h*scale, sA = aba*scale;
-        let cx = cx_center - (sC/2); let cy = (140 - sL) / 2; let chamfer = sA * 0.3;
-        ct.beginPath(); ct.setLineDash([]); ct.strokeStyle = "#e91e63"; ct.lineWidth = 1.5;
+    function editarVenda(id) {
+        const venda = window.vendasMemoria[id];
+        
+        if (!venda || !venda.itens_detalhes) {
+            alert("Não foi possível carregar os detalhes desse pedido. Talvez seja de uma versão muito antiga.");
+            return;
+        }
+        
+        // Joga as informações de volta pra tela
+        document.getElementById('cliNome').value = venda.cliente || "";
+        pedidoItens = venda.itens_detalhes;
+        window.vendaEditandoId = id;
+        
+        // Ajusta a Interface do Usuário (UI)
+        renderizarPedido();
+        document.getElementById('dashboard-modal').style.display = 'none';
+        document.getElementById('avisoEdicao').style.display = 'block';
+        
+        const btnFechar = document.getElementById('btnFecharPedido');
+        btnFechar.innerHTML = '<i class="fa fa-sync"></i> ATUALIZAR PEDIDO';
+        btnFechar.style.background = '#f39c12';
+        
+        // Rola a tela para o topo para o usuário ver o carrinho
+        window.scrollTo(0, 0);
+    }
+
+    function cancelarEdicao() {
+        window.vendaEditandoId = null;
+        document.getElementById('avisoEdicao').style.display = 'none';
+        
+        const btnFechar = document.getElementById('btnFecharPedido');
+        btnFechar.innerHTML = '<i class="fa fa-handshake"></i> FECHAR PEDIDO';
+        btnFechar.style.background = '#8e44ad';
+        
+        document.getElementById('cliNome').value = "";
+        pedidoItens = [];
+        renderizarPedido();
+    }
+
+
+    // =========================================================================
+    // 3. FUNÇÕES MATEMÁTICAS E DE DESENHO
+    // =========================================================================
+    
+    function calcMapRaw(w, h, sheet) { 
+        let ap1 = Math.floor(sheet.w / w) * Math.floor(sheet.h / h); 
+        let ap2 = Math.floor(sheet.w / h) * Math.floor(sheet.h / w); 
+        return Math.max(ap1, ap2); 
+    }
+
+    function getBestMap(lar, alt) { 
+        const formats = [
+            {n: "64x88", w: 64, h: 88}, 
+            {n: "66x96", w: 66, h: 96}
+        ]; 
+        
+        let mapOut = 0; 
+        let mfOut = formats[0]; 
+        let mlOut = lar;
+        let maOut = alt; 
+        let ap64Out = 0;
+        let ap66Out = 0; 
+        
+        formats.forEach(f => { 
+            let ap1 = Math.floor(f.w / lar) * Math.floor(f.h / alt); 
+            let ap2 = Math.floor(f.w / alt) * Math.floor(f.h / lar); 
+            let bestForF = Math.max(ap1, ap2); 
+            
+            if (f.n === "64x88") ap64Out = bestForF; 
+            if (f.n === "66x96") ap66Out = bestForF; 
+            
+            if (bestForF > mapOut) { 
+                mapOut = bestForF; 
+                mfOut = f; 
+                mlOut = (ap2 > ap1) ? alt : lar; 
+                maOut = (ap2 > ap1) ? lar : alt; 
+            } 
+        }); 
+        
+        return { 
+            map: mapOut, 
+            mf: mfOut, 
+            ml: mlOut, 
+            ma: maOut, 
+            ap64: ap64Out, 
+            ap66: ap66Out 
+        }; 
+    }
+
+    function desenharIconeGenerico(ct, tipo, x, y, w, h) { 
+        ct.lineWidth = 1; 
+        
+        if (tipo === 'bloco') { 
+            ct.fillStyle = "#f9f9f9"; 
+            ct.fillRect(x + 10, y, w - 20, h); 
+            ct.strokeStyle = "#bbb"; 
+            ct.strokeRect(x + 10, y, w - 20, h); 
+            ct.fillStyle = "#c0392b"; 
+            ct.fillRect(x + 10, y, w - 20, 10); 
+            ct.fillStyle = "#e0e0e0"; 
+            for (let i = 1; i < 5; i++) {
+                ct.fillRect(x + 15, y + 15 + (i * 10), w - 30, 2); 
+            }
+            ct.fillStyle = "#333"; 
+            ct.font = "bold 9px Arial"; 
+            ct.fillText("BLOCO", x + 16, y + h - 10); 
+            
+        } else if (tipo === 'cartao') { 
+            ct.fillStyle = "#ddd"; 
+            ct.fillRect(x + 5, y + 10, w - 15, h / 2); 
+            ct.strokeRect(x + 5, y + 10, w - 15, h / 2); 
+            ct.fillStyle = "#005aab"; 
+            ct.fillRect(x + 15, y + 25, w - 15, h / 2); 
+            ct.strokeRect(x + 15, y + 25, w - 15, h / 2); 
+            ct.fillStyle = "#fff"; 
+            ct.fillRect(x + 18, y + 28, w - 21, (h / 2) - 6); 
+            ct.fillStyle = "#005aab"; 
+            ct.fillRect(x + 22, y + 35, 15, 4); 
+            ct.fillStyle = "#333"; 
+            ct.font = "bold 9px Arial"; 
+            ct.fillText("CARTÃO", x + 16, y + (h / 2) + 38); 
+            
+        } else if (tipo === 'panfleto') { 
+            let fw = w / 3; 
+            ct.fillStyle = "#fff"; 
+            ct.fillRect(x, y + 10, fw, h - 20); 
+            ct.strokeRect(x, y + 10, fw, h - 20); 
+            ct.fillStyle = "#f0f0f0"; 
+            ct.fillRect(x + fw, y + 5, fw, h - 20); 
+            ct.strokeRect(x + fw, y + 5, fw, h - 20); 
+            ct.fillStyle = "#e0e0e0"; 
+            ct.fillRect(x + (fw * 2), y + 15, fw, h - 20); 
+            ct.strokeRect(x + (fw * 2), y + 15, fw, h - 20); 
+            ct.fillStyle = "#333"; 
+            ct.font = "bold 9px Arial"; 
+            ct.fillText("PANFLETO", x + 12, y + h + 5); 
+            
+        } else if (tipo === 'adesivo') { 
+            ct.beginPath(); 
+            ct.arc(x + (w / 2), y + (h / 2) - 5, w / 2.5, 0, Math.PI * 2); 
+            ct.fillStyle = "#f1c40f"; 
+            ct.fill(); 
+            ct.strokeStyle = "#d4ac0d"; 
+            ct.stroke(); 
+            ct.beginPath(); 
+            ct.moveTo(x + (w / 2) + 5, y + (h / 2) + 5); 
+            ct.lineTo(x + (w / 2) + 25, y + (h / 2) - 5); 
+            ct.lineTo(x + (w / 2) - 5, y + (h / 2) + 25); 
+            ct.fillStyle = "#fff"; 
+            ct.fill(); 
+            ct.stroke(); 
+            ct.fillStyle = "#333"; 
+            ct.font = "bold 9px Arial"; 
+            ct.fillText("ADESIVO", x + 14, y + h + 5); 
+            
+        } else if (tipo === 'banner') { 
+            ct.fillStyle = "#ecf0f1"; 
+            ct.fillRect(x + 5, y + 15, w - 10, h - 25); 
+            ct.strokeRect(x + 5, y + 15, w - 10, h - 25); 
+            ct.fillStyle = "#7f8c8d"; 
+            ct.fillRect(x, y + 12, w, 5); 
+            ct.fillRect(x, y + h - 10, w, 5); 
+            ct.beginPath(); 
+            ct.moveTo(x + (w / 2), y); 
+            ct.lineTo(x + 5, y + 12); 
+            ct.moveTo(x + (w / 2), y); 
+            ct.lineTo(x + w - 5, y + 12); 
+            ct.strokeStyle = "#333"; 
+            ct.stroke(); 
+            ct.fillStyle = "#333"; 
+            ct.font = "bold 9px Arial"; 
+            ct.fillText("BANNER", x + 14, y + (h / 2) + 5); 
+            
+        } else if (tipo === 'sacola_plastica') { 
+            ct.fillStyle = "#e67e22"; 
+            ct.fillRect(x + 10, y, w - 20, h); 
+            ct.fillStyle = "#fff"; 
+            ct.beginPath(); 
+            ct.ellipse(x + (w / 2), y + 15, 12, 4, 0, 0, Math.PI * 2); 
+            ct.fill(); 
+            ct.fillStyle = "#fff"; 
+            ct.font = "bold 10px Arial"; 
+            ct.fillText("SACOLA", x + 14, y + (h / 2) + 10); 
+            
+        } else if (tipo === 'servico') { 
+            ct.fillStyle = "#34495e"; 
+            ct.fillRect(x + 5, y + 10, w - 10, h - 20); 
+            ct.fillStyle = "#fff"; 
+            ct.font = "bold 10px Arial"; 
+            ct.fillText("SERVIÇO", x + 12, y + (h / 2) + 3); 
+            
+        } else { 
+            ct.fillStyle = "#bdc3c7"; 
+            ct.fillRect(x + 10, y, w - 20, h); 
+            ct.fillStyle = "#fff"; 
+            ct.fillRect(x + 12, y + 2, w - 24, h - 4); 
+            ct.fillStyle = "#005aab"; 
+            ct.font = "bold 9px Arial"; 
+            ct.fillText("PRODUTO", x + 13, y + (h / 2) + 3); 
+        } 
+    }
+
+    function desenharFaca(ct, c, l, h, aba, cx_center, scale) { 
+        let sC = c * scale;
+        let sL = l * scale;
+        let sH = h * scale;
+        let sA = aba * scale; 
+        let cx = cx_center - (sC / 2); 
+        let cy = (140 - sL) / 2; 
+        let chamfer = sA * 0.3; 
+        
+        ct.beginPath(); 
+        ct.setLineDash([]); 
+        ct.strokeStyle = "#e91e63"; 
+        ct.lineWidth = 1.5; 
+        
+        // Desenho do corpo da faca
         ct.moveTo(cx, cy); ct.lineTo(cx, cy - sH); ct.lineTo(cx + sC, cy - sH); ct.lineTo(cx + sC, cy); 
         ct.moveTo(cx, cy + sL); ct.lineTo(cx, cy + sL + sH); ct.lineTo(cx + sC, cy + sL + sH); ct.lineTo(cx + sC, cy + sL); 
         ct.moveTo(cx - sH, cy); ct.lineTo(cx - sH, cy + sL); 
@@ -770,161 +1705,232 @@
         ct.moveTo(cx + sC + sH, cy); ct.lineTo(cx + sC + sH, cy + sL); 
         ct.moveTo(cx + sC, cy); ct.lineTo(cx + sC, cy - sA); ct.lineTo(cx + sC + sH - chamfer, cy - sA); ct.lineTo(cx + sC + sH, cy - sA + chamfer); ct.lineTo(cx + sC + sH, cy); 
         ct.moveTo(cx + sC, cy + sL); ct.lineTo(cx + sC, cy + sL + sA); ct.lineTo(cx + sC + sH - chamfer, cy + sL + sA); ct.lineTo(cx + sC + sH, cy + sL + sA - chamfer); ct.lineTo(cx + sC + sH, cy + sL); 
-        ct.stroke();
-        ct.beginPath(); ct.setLineDash([4, 4]); ct.strokeStyle = "#e91e63"; ct.lineWidth = 1.2; 
+        ct.stroke(); 
+        
+        // Linhas de dobra
+        ct.beginPath(); 
+        ct.setLineDash([4, 4]); 
+        ct.strokeStyle = "#e91e63"; 
+        ct.lineWidth = 1.2; 
         ct.rect(cx, cy, sC, sL); 
-        ct.moveTo(cx - sH, cy); ct.lineTo(cx, cy); ct.moveTo(cx - sH, cy + sL); ct.lineTo(cx, cy + sL); 
-        ct.moveTo(cx + sC, cy); ct.lineTo(cx + sC + sH, cy); ct.moveTo(cx + sC, cy + sL); ct.lineTo(cx + sC + sH, cy + sL); 
-        ct.stroke();
+        ct.moveTo(cx - sH, cy); ct.lineTo(cx, cy); 
+        ct.moveTo(cx - sH, cy + sL); ct.lineTo(cx, cy + sL); 
+        ct.moveTo(cx + sC, cy); ct.lineTo(cx + sC + sH, cy); 
+        ct.moveTo(cx + sC, cy + sL); ct.lineTo(cx + sC + sH, cy + sL); 
+        ct.stroke(); 
     }
 
-    function desenharFacaSacola(ct, c, l, a, boca, fundo, aba, scale, isDupla) {
-        let sC = c*scale, sL = l*scale, sA = a*scale, sBoca = boca*scale, sFundo = fundo*scale, sAba = aba*scale; 
+    function desenharFacaSacola(ct, c, l, a, boca, fundo, aba, scale, isDupla) { 
+        let sC = c * scale;
+        let sL = l * scale;
+        let sA = a * scale;
+        let sBoca = boca * scale;
+        let sFundo = fundo * scale;
+        let sAba = aba * scale; 
+        
         let totalW = isDupla ? (sC + sL + sAba) : ((sC * 2) + (sL * 2) + sAba); 
         let totalH = sA + sBoca + sFundo; 
         let cx = 230 - totalW; 
-        let cy = (140 - totalH) / 2;
-        ct.beginPath(); ct.setLineDash([]); ct.strokeStyle = "#d35400"; ct.lineWidth = 1.5; ct.rect(cx, cy, totalW, totalH); ct.stroke();
-        ct.beginPath(); ct.setLineDash([3, 3]); ct.strokeStyle = "#e67e22"; ct.lineWidth = 1; ct.moveTo(cx, cy + sBoca); ct.lineTo(cx + totalW, cy + sBoca); ct.moveTo(cx, cy + sBoca + sA); ct.lineTo(cx + totalW, cy + sBoca + sA); ct.stroke();
-        let px = cx + sAba; ct.beginPath(); ct.moveTo(px, cy); ct.lineTo(px, cy + totalH); px += sL; ct.moveTo(px, cy); ct.lineTo(px, cy + totalH); px += sC; 
-        if (!isDupla) { ct.moveTo(px, cy); ct.lineTo(px, cy + totalH); px += sL; ct.moveTo(px, cy); ct.lineTo(px, cy + totalH); } 
-        ct.stroke();
-        ct.setLineDash([]); ct.fillStyle = "#d35400"; ct.font = "9px Arial"; 
-        ct.fillText("Aba", cx+2, cy+sBoca+15); ct.fillText("Sanf.", cx+sAba+2, cy+sBoca+15); ct.fillText("Frente", cx+sAba+sL+sC/3, cy+sBoca+15); 
-        if(!isDupla) { ct.fillText("Sanf.", cx+sAba+sL+sC+2, cy+sBoca+15); ct.fillText("Costas", cx+sAba+(sL*2)+sC+sC/3, cy+sBoca+15); }
+        let cy = (140 - totalH) / 2; 
+        
+        ct.beginPath(); 
+        ct.setLineDash([]); 
+        ct.strokeStyle = "#d35400"; 
+        ct.lineWidth = 1.5; 
+        ct.rect(cx, cy, totalW, totalH); 
+        ct.stroke(); 
+        
+        ct.beginPath(); 
+        ct.setLineDash([3, 3]); 
+        ct.strokeStyle = "#e67e22"; 
+        ct.lineWidth = 1; 
+        ct.moveTo(cx, cy + sBoca); ct.lineTo(cx + totalW, cy + sBoca); 
+        ct.moveTo(cx, cy + sBoca + sA); ct.lineTo(cx + totalW, cy + sBoca + sA); 
+        ct.stroke(); 
+        
+        let px = cx + sAba; 
+        ct.beginPath(); 
+        ct.moveTo(px, cy); ct.lineTo(px, cy + totalH); 
+        px += sL; 
+        ct.moveTo(px, cy); ct.lineTo(px, cy + totalH); 
+        px += sC; 
+        
+        if (!isDupla) { 
+            ct.moveTo(px, cy); ct.lineTo(px, cy + totalH); 
+            px += sL; 
+            ct.moveTo(px, cy); ct.lineTo(px, cy + totalH); 
+        } 
+        ct.stroke(); 
+        
+        ct.setLineDash([]); 
+        ct.fillStyle = "#d35400"; 
+        ct.font = "9px Arial"; 
+        ct.fillText("Aba", cx + 2, cy + sBoca + 15); 
+        ct.fillText("Sanf.", cx + sAba + 2, cy + sBoca + 15); 
+        ct.fillText("Frente", cx + sAba + sL + (sC / 3), cy + sBoca + 15); 
+        
+        if (!isDupla) { 
+            ct.fillText("Sanf.", cx + sAba + sL + sC + 2, cy + sBoca + 15); 
+            ct.fillText("Costas", cx + sAba + (sL * 2) + sC + (sC / 3), cy + sBoca + 15); 
+        } 
     }
 
 
-    // --------------------------------------------------------------------------------------
+    // =========================================================================
     // 4. LÓGICA CORE (CÁLCULOS E INTEGRAÇÃO DOS PRODUTOS)
-    // --------------------------------------------------------------------------------------
-
-    let acabamentosAtivos = []; 
-    let pedidoItens = []; 
-    const camposConfig = ['lucroPorcent', 'impostoPorcent', 'comissaoPorcent', 'proMarcilio', 'contasFixas', 'salarioColab', 'diasUteis', 'horasDia', 'baseChapa', 'baseTinta', 'baseSetup', 'gastoTintaGramas', 'qResma'];
-
-    function mudarModeloCaixa() {
-        const mod = document.getElementById('cxModelo').value;
+    // =========================================================================
+    
+    function mudarModeloCaixa() { 
+        const mod = document.getElementById('cxModelo').value; 
         const divAltF = document.getElementById('divAltFundo'); 
-        const divAltT = document.getElementById('divAltTampa');
-        if (mod === 'so_caixa') { divAltF.style.display = 'block'; divAltT.style.display = 'none'; } 
-        else if (mod === 'so_tampa') { divAltF.style.display = 'none'; divAltT.style.display = 'block'; } 
-        else { divAltF.style.display = 'block'; divAltT.style.display = 'block'; }
+        const divAltT = document.getElementById('divAltTampa'); 
+        
+        if (mod === 'so_caixa') { 
+            divAltF.style.display = 'block'; 
+            divAltT.style.display = 'none'; 
+        } else if (mod === 'so_tampa') { 
+            divAltF.style.display = 'none'; 
+            divAltT.style.display = 'block'; 
+        } else { 
+            divAltF.style.display = 'block'; 
+            divAltT.style.display = 'block'; 
+        } 
     }
 
-    function planificarCaixa() {
-        const mod = document.getElementById('cxModelo').value;
+    function planificarCaixa() { 
+        const mod = document.getElementById('cxModelo').value; 
         const c = parseFloat(document.getElementById('cxComp').value) || 0; 
-        const l = parseFloat(document.getElementById('cxLarg').value) || 0;
+        const l = parseFloat(document.getElementById('cxLarg').value) || 0; 
         const altF = parseFloat(document.getElementById('cxAltF').value) || 0; 
-        const altT = parseFloat(document.getElementById('cxAltT').value) || 0;
-        const abas = 3; const folga = 0.4;
-        let wf = c + 2*altF + abas; let hf = l + 2*altF + abas; let wt = c + folga + 2*altT + abas; let ht = l + folga + 2*altT + abas;
-        window.isBagMode = false; window.isBoxMode = true; let nomeFinal = "Caixa";
+        const altT = parseFloat(document.getElementById('cxAltT').value) || 0; 
+        const abas = 3; 
+        const folga = 0.4; 
+        
+        let wf = c + (2 * altF) + abas; 
+        let hf = l + (2 * altF) + abas; 
+        let wt = c + folga + (2 * altT) + abas; 
+        let ht = l + folga + (2 * altT) + abas; 
+        
+        window.isBagMode = false; 
+        window.isBoxMode = true; 
+        let nomeFinal = "Caixa"; 
         
         if (mod.includes('caixa_tampa')) { 
             window.boxData = { c, l, hF: altF, hT: altT, wf, hf, wt, ht, modelo: mod }; 
-            document.getElementById('lar').value = (wf).toFixed(1); 
-            document.getElementById('alt').value = (hf).toFixed(1); 
+            document.getElementById('lar').value = wf.toFixed(1); 
+            document.getElementById('alt').value = hf.toFixed(1); 
             nomeFinal = mod === 'caixa_tampa_conj' ? "Caixa Completa (Faca Conjugada)" : "Caixa Completa (Separada)"; 
-        } 
-        else if (mod === 'so_caixa') { 
+        } else if (mod === 'so_caixa') { 
             window.boxData = { c, l, h: altF, aba: 1.5, tipo: 'fundo', wf, hf, modelo: mod }; 
             document.getElementById('lar').value = wf.toFixed(1); 
             document.getElementById('alt').value = hf.toFixed(1); 
             nomeFinal = "Caixa (Só Fundo)"; 
-        } 
-        else { 
-            window.boxData = { c: c+folga, l: l+folga, h: altT, aba: 1.5, tipo: 'tampa', wf: wt, hf: ht, modelo: mod }; 
+        } else { 
+            window.boxData = { c: c + folga, l: l + folga, h: altT, aba: 1.5, tipo: 'tampa', wf: wt, hf: ht, modelo: mod }; 
             document.getElementById('lar').value = wt.toFixed(1); 
             document.getElementById('alt').value = ht.toFixed(1); 
             nomeFinal = "Caixa (Só Tampa)"; 
-        }
+        } 
         
         let ts = document.getElementById('tipoServico'); 
-        let optionExists = Array.from(ts.options).some(opt => opt.value === nomeFinal);
+        let optionExists = Array.from(ts.options).some(opt => opt.value === nomeFinal); 
+        
         if (!optionExists) { 
             document.getElementById('tbodyProduto').insertAdjacentHTML('beforeend', `<tr data-nome="${nomeFinal}"><td>${nomeFinal}</td><td style="text-align:right;"><i class="fa fa-trash btn-del-trash" onclick="removeRow(this)"></i></td></tr>`); 
             syncDropdowns(); 
-        }
+        } 
+        
         ts.value = nomeFinal; 
         verificarProduto(false); 
-        saveAndCalc();
+        saveAndCalc(); 
     }
 
-    function planificarSacolaPapel() {
+    function planificarSacolaPapel() { 
         const c = parseFloat(document.getElementById('sacComp').value) || 0; 
         const l = parseFloat(document.getElementById('sacLarg').value) || 0; 
-        const a = parseFloat(document.getElementById('sacAlt').value) || 0;  
-        const abaCola = 2; const dobraBoca = 4; const dobraFundo = (l / 2) + 1.5; 
+        const a = parseFloat(document.getElementById('sacAlt').value) || 0; 
+        const abaCola = 2; 
+        const dobraBoca = 4; 
+        const dobraFundo = (l / 2) + 1.5; 
         
-        let wf_inteira = (c * 2) + (l * 2) + abaCola; let hf_inteira = a + dobraBoca + dobraFundo;
-        let wf_metade = c + l + abaCola; let hf_metade = hf_inteira;
-        window.isBoxMode = false; window.isBagMode = true;
-        window.bagData = { c, l, a, wf: wf_inteira, hf: hf_inteira, wf_metade, hf_metade, dobraBoca, dobraFundo, abaCola, isDupla: false };
+        let wf_inteira = (c * 2) + (l * 2) + abaCola; 
+        let hf_inteira = a + dobraBoca + dobraFundo; 
+        let wf_metade = c + l + abaCola; 
+        let hf_metade = hf_inteira; 
+        
+        window.isBoxMode = false; 
+        window.isBagMode = true; 
+        window.bagData = { c, l, a, wf: wf_inteira, hf: hf_inteira, wf_metade, hf_metade, dobraBoca, dobraFundo, abaCola, isDupla: false }; 
         
         document.getElementById('lar').value = wf_inteira.toFixed(1); 
         document.getElementById('alt').value = hf_inteira.toFixed(1); 
         
         let nomeFinal = "Sacolas de Papel"; 
         let ts = document.getElementById('tipoServico'); 
-        let optionExists = Array.from(ts.options).some(opt => opt.value === nomeFinal);
+        let optionExists = Array.from(ts.options).some(opt => opt.value === nomeFinal); 
+        
         if (!optionExists) { 
             document.getElementById('tbodyProduto').insertAdjacentHTML('beforeend', `<tr data-nome="${nomeFinal}"><td>${nomeFinal}</td><td style="text-align:right;"><i class="fa fa-trash btn-del-trash" onclick="removeRow(this)"></i></td></tr>`); 
             syncDropdowns(); 
-        }
+        } 
+        
         ts.value = nomeFinal; 
         verificarProduto(false); 
-        saveAndCalc();
+        saveAndCalc(); 
     }
 
-    function addProdutoLista() {
-        const novo = prompt("Digite o nome do novo Produto ou Serviço:");
+    function addProdutoLista() { 
+        const novo = prompt("Digite o nome do novo Produto ou Serviço:"); 
+        
         if (novo) { 
             document.getElementById('tbodyProduto').insertAdjacentHTML('beforeend', `<tr data-nome="${novo}"><td>${novo}</td><td style="text-align:right;"><i class="fa fa-trash btn-del-trash" onclick="removeRow(this)"></i></td></tr>`); 
             syncDropdowns(); 
             document.getElementById('tipoServico').value = novo; 
             verificarProduto(false); 
             saveAndCalc(); 
-        }
+        } 
     }
 
-    function mudarPapel() {
+    function mudarPapel() { 
         const ts = document.getElementById('tipoServico'); 
-        if(!ts) return; 
+        if (!ts) return; 
+        
         const prod = ts.value ? ts.value.toLowerCase() : ""; 
-        const gramFull = document.getElementById('gramSelect').value || "";
+        const gramFull = document.getElementById('gramSelect').value || ""; 
+        
         if (prod.includes("sacola") && gramFull && !prod.includes("papel")) { 
             let match = gramFull.match(/(\d+)x(\d+)/); 
             if (match) { 
                 document.getElementById('lar').value = match[1]; 
                 document.getElementById('alt').value = match[2]; 
             } 
-        }
+        } 
+        
         verificarProduto(true); 
-        saveAndCalc();
+        saveAndCalc(); 
     }
 
-    function verificarProduto(fromPapel = false) {
+    function verificarProduto(fromPapel = false) { 
         const ts = document.getElementById('tipoServico'); 
-        if(!ts.value) return; 
-        const prod = ts.value.toLowerCase();
+        if (!ts.value) return; 
+        
+        const prod = ts.value.toLowerCase(); 
         const gs = document.getElementById('gramSelect'); 
-        const gramFull = gs && gs.value ? gs.value.toLowerCase() : "";
+        const gramFull = gs && gs.value ? gs.value.toLowerCase() : ""; 
         const lucroInput = document.getElementById('lucroPorcent'); 
-        let lastProd = window.lastProdProduto || "";
+        let lastProd = window.lastProdProduto || ""; 
         
         const isCaixa = prod.includes("caixa"); 
         const isSacolaPapel = prod.includes("sacola de papel") || prod.includes("sacolas de papel"); 
-        const isSacolaPlastica = prod.includes("sacola") && !isSacolaPapel;
-        const wasSacolaPlastica = lastProd.includes("sacola") && !lastProd.includes("papel");
-        const isNowApenasServico = prod.includes("serviço") || prod.includes("servico") || prod.includes("acabamento") || gramFull.includes("sem material") || gramFull.includes("serviço") || gramFull.includes("servico");
-        const isNowM2 = isNowApenasServico || prod.includes("adesivo") || prod.includes("banner") || prod.includes("lona") || prod.includes("recorte") || prod.includes("vinil") || prod.includes("m²") || prod.includes("m2") || gramFull.includes("(m²)") || gramFull.includes("(m2)");
-        const wasM2 = lastProd.includes("adesivo") || lastProd.includes("banner") || lastProd.includes("lona") || lastProd.includes("recorte") || lastProd.includes("vinil") || lastProd.includes("serviço") || lastProd.includes("servico") || lastProd.includes("acabamento") || lastProd.includes("m²") || lastProd.includes("m2");
-
-        if (!isCaixa) window.isBoxMode = false;
-        if (!isSacolaPapel) window.isBagMode = false;
-
+        const isSacolaPlastica = prod.includes("sacola") && !isSacolaPapel; 
+        const wasSacolaPlastica = lastProd.includes("sacola") && !lastProd.includes("papel"); 
+        const isNowApenasServico = prod.includes("serviço") || prod.includes("servico") || prod.includes("acabamento") || gramFull.includes("sem material") || gramFull.includes("serviço") || gramFull.includes("servico"); 
+        const isNowM2 = isNowApenasServico || prod.includes("adesivo") || prod.includes("banner") || prod.includes("lona") || prod.includes("recorte") || prod.includes("vinil") || prod.includes("m²") || prod.includes("m2") || gramFull.includes("(m²)") || gramFull.includes("(m2)"); 
+        const wasM2 = lastProd.includes("adesivo") || lastProd.includes("banner") || lastProd.includes("lona") || lastProd.includes("recorte") || lastProd.includes("vinil") || lastProd.includes("serviço") || lastProd.includes("servico") || lastProd.includes("acabamento") || lastProd.includes("m²") || lastProd.includes("m2"); 
+        
+        if (!isCaixa) window.isBoxMode = false; 
+        if (!isSacolaPapel) window.isBagMode = false; 
+        
         if (isCaixa) { 
             document.getElementById('wrapTamanhoPadrao').style.display = "none"; 
             document.getElementById('wrapSacolaPapel3D').style.display = "none"; 
@@ -937,166 +1943,220 @@
             document.getElementById('wrapTamanhoPadrao').style.display = "flex"; 
             document.getElementById('wrapCaixa3D').style.display = "none"; 
             document.getElementById('wrapSacolaPapel3D').style.display = "none"; 
-        }
-
-        if (isNowM2) {
+        } 
+        
+        if (isNowM2) { 
             document.getElementById('wrapCores').style.display = "none"; 
             document.getElementById('wrapConfigsPapel').style.display = "none"; 
             document.getElementById('wrapSerigrafiaGasto').style.display = "none"; 
             document.getElementById('wrapSetupSerigrafia').style.display = "none"; 
             lucroInput.classList.remove('input-locked'); 
             lucroInput.readOnly = false; 
-            lucroInput.title = "Lucro livre para alterar";
+            lucroInput.title = "Lucro livre para alterar"; 
+            
             if (!wasM2) { 
                 lucroInput.value = 20; 
-                if(isNowApenasServico && gs) { 
-                    for(let i=0; i<gs.options.length; i++) { 
-                        if(gs.options[i].text.toLowerCase().includes("sem material")) { 
-                            gs.selectedIndex = i; break; 
+                if (isNowApenasServico && gs) { 
+                    for (let i = 0; i < gs.options.length; i++) { 
+                        if (gs.options[i].text.toLowerCase().includes("sem material")) { 
+                            gs.selectedIndex = i; 
+                            break; 
                         } 
                     } 
                 } 
-            }
-            document.getElementById('qtdInterna').value = 1;
-        } else {
+            } 
+            document.getElementById('qtdInterna').value = 1; 
+        } else { 
             document.getElementById('wrapCores').style.display = "block"; 
             document.getElementById('wrapConfigsPapel').style.display = isSacolaPlastica ? "none" : "block"; 
             document.getElementById('wrapSerigrafiaGasto').style.display = "block"; 
             document.getElementById('wrapSetupSerigrafia').style.display = "block"; 
             lucroInput.classList.remove('input-locked'); 
             lucroInput.readOnly = false; 
-            lucroInput.title = "";
+            lucroInput.title = ""; 
+            
             if (isSacolaPlastica && !wasSacolaPlastica) { 
                 lucroInput.value = 20; 
             } else if (!isSacolaPlastica && !isNowM2 && (wasSacolaPlastica || wasM2)) { 
                 lucroInput.value = 30; 
-            }
-        }
+            } 
+        } 
         
-        window.lastProdProduto = prod;
+        window.lastProdProduto = prod; 
+        
         if (!fromPapel && gs) { 
-            if(isSacolaPlastica && gs.value) { 
+            if (isSacolaPlastica && gs.value) { 
                 let match = gs.value.match(/(\d+)x(\d+)/); 
                 if (match) { 
                     document.getElementById('lar').value = match[1]; 
                     document.getElementById('alt').value = match[2]; 
                 } 
             } 
-        }
+        } 
     }
 
     function calc() {
         const ts = document.getElementById('tipoServico'); 
-        if(!ts.value) return; 
-        const nomeProduto = ts.value.toLowerCase();
+        if (!ts.value) return; 
         
+        const nomeProduto = ts.value.toLowerCase(); 
         const gs = document.getElementById('gramSelect'); 
-        const gramFull = gs && gs.value ? gs.value.toLowerCase() : "";
+        const gramFull = gs && gs.value ? gs.value.toLowerCase() : ""; 
         
-        const isSacolaPapel = nomeProduto.includes("sacola de papel") || nomeProduto.includes("sacolas de papel");
-        const isSacolaPlastica = nomeProduto.includes("sacola") && !isSacolaPapel;
+        const isSacolaPapel = nomeProduto.includes("sacola de papel") || nomeProduto.includes("sacolas de papel"); 
+        const isSacolaPlastica = nomeProduto.includes("sacola") && !isSacolaPapel; 
         const isApenasServico = nomeProduto.includes("serviço") || nomeProduto.includes("servico") || nomeProduto.includes("acabamento") || gramFull.includes("sem material") || gramFull.includes("serviço") || gramFull.includes("servico"); 
-        const isM2 = isApenasServico || nomeProduto.includes("adesivo") || nomeProduto.includes("banner") || nomeProduto.includes("lona") || nomeProduto.includes("recorte") || nomeProduto.includes("vinil") || nomeProduto.includes("m²") || nomeProduto.includes("m2") || gramFull.includes("(m²)") || gramFull.includes("(m2)");
-        const isBloco = nomeProduto.includes("bloco") || nomeProduto.includes("talon");
-
-        const l = parseFloat(document.getElementById('lar').value) || 1; 
-        const a = parseFloat(document.getElementById('alt').value) || 1;
-        const formats = [{n:"64x88", w:64, h:88}, {n:"66x96", w:66, h:96}];
+        const isM2 = isApenasServico || nomeProduto.includes("adesivo") || nomeProduto.includes("banner") || nomeProduto.includes("lona") || nomeProduto.includes("recorte") || nomeProduto.includes("vinil") || nomeProduto.includes("m²") || nomeProduto.includes("m2") || gramFull.includes("(m²)") || gramFull.includes("(m2)"); 
+        const isBloco = nomeProduto.includes("bloco") || nomeProduto.includes("talon"); 
         
-        let map = 0; let mf = formats[0]; let ml = l, ma = a; let ap64 = 0, ap66 = 0;
-        let setupMult = 1; let mapFundo = 0, mapTampa = 0; let isCaixaConjunta = false;
-
+        const l = parseFloat(document.getElementById('lar').value) || 1; 
+        const a = parseFloat(document.getElementById('alt').value) || 1; 
+        const formats = [{n:"64x88", w:64, h:88}, {n:"66x96", w:66, h:96}]; 
+        
+        let map = 0; 
+        let mf = formats[0]; 
+        let ml = l;
+        let ma = a; 
+        let ap64 = 0;
+        let ap66 = 0; 
+        let setupMult = 1; 
+        let mapFundo = 0;
+        let mapTampa = 0; 
+        let isCaixaConjunta = false; 
+        
         let dynSetupTotal = 0; 
-        document.querySelectorAll('.dyn-setup').forEach(i => dynSetupTotal += parseFloat(i.value) || 0);
+        document.querySelectorAll('.dyn-setup').forEach(i => {
+            dynSetupTotal += parseFloat(i.value) || 0;
+        }); 
+        
         let dynFixosTotal = 0; 
-        document.querySelectorAll('.dyn-fixo').forEach(i => dynFixosTotal += parseFloat(i.value) || 0);
+        document.querySelectorAll('.dyn-fixo').forEach(i => {
+            dynFixosTotal += parseFloat(i.value) || 0;
+        });
 
         if (!isSacolaPlastica && !isM2) {
-            if (window.isBoxMode && window.boxData && window.boxData.modelo.includes('caixa_tampa')) {
+            if (window.isBoxMode && window.boxData && window.boxData.modelo.includes('caixa_tampa')) { 
                 let bd = window.boxData; 
                 isCaixaConjunta = (bd.modelo === 'caixa_tampa_conj'); 
                 let bestM = 0; 
-                let bestF = formats[0];
-                formats.forEach(f => {
-                    let mapTest = 0;
+                let bestF = formats[0]; 
+                
+                formats.forEach(f => { 
+                    let mapTest = 0; 
                     if (isCaixaConjunta) { 
                         let mapV = calcMapRaw(Math.max(bd.wf, bd.wt), bd.hf + bd.ht, f); 
                         let mapH = calcMapRaw(bd.wf + bd.wt, Math.max(bd.hf, bd.ht), f); 
                         mapTest = Math.max(mapV, mapH); 
-                    } 
-                    else { 
+                    } else { 
                         let mF = calcMapRaw(bd.wf, bd.hf, f); 
                         let mT = calcMapRaw(bd.wt, bd.ht, f); 
-                        if (mF > 0 && mT > 0) mapTest = 1 / (1/mF + 1/mT); 
-                    }
+                        if (mF > 0 && mT > 0) mapTest = 1 / ((1 / mF) + (1 / mT)); 
+                    } 
+                    
                     if (f.n === "64x88") ap64 = mapTest; 
-                    if (f.n === "66x96") ap66 = mapTest;
-                    if (mapTest > bestM) { bestM = mapTest; bestF = f; }
-                });
+                    if (f.n === "66x96") ap66 = mapTest; 
+                    
+                    if (mapTest > bestM) { 
+                        bestM = mapTest; 
+                        bestF = f; 
+                    } 
+                }); 
+                
                 if (bestM === 0) { 
                     document.getElementById('resCorte').innerHTML = "<span style='color:red; font-weight:bold;'>Excede a folha!</span>"; 
                     document.getElementById('totalPrice').innerText = "Erro"; 
                     return; 
-                }
-                map = bestM; mf = bestF; setupMult = isCaixaConjunta ? 1 : 2; 
-                mapFundo = calcMapRaw(bd.wf, bd.hf, mf); 
-                mapTampa = calcMapRaw(bd.wt, bd.ht, mf);
-            } else if (isSacolaPapel && window.isBagMode && window.bagData) {
-                let bd = window.bagData; 
-                let bestInteira = getBestMap(bd.wf, bd.hf);
-                if (bestInteira.map > 0) { 
-                    map = bestInteira.map; mf = bestInteira.mf; ml = bestInteira.ml; ma = bestInteira.ma; ap64 = bestInteira.ap64; ap66 = bestInteira.ap66; bd.isDupla = false; setupMult = 1; 
                 } 
-                else {
-                    let bestMetade = getBestMap(bd.wf_metade, bd.hf_metade);
+                
+                map = bestM; 
+                mf = bestF; 
+                setupMult = isCaixaConjunta ? 1 : 2; 
+                mapFundo = calcMapRaw(bd.wf, bd.hf, mf); 
+                mapTampa = calcMapRaw(bd.wt, bd.ht, mf); 
+                
+            } else if (isSacolaPapel && window.isBagMode && window.bagData) { 
+                let bd = window.bagData; 
+                let bestInteira = getBestMap(bd.wf, bd.hf); 
+                
+                if (bestInteira.map > 0) { 
+                    map = bestInteira.map; 
+                    mf = bestInteira.mf; 
+                    ml = bestInteira.ml; 
+                    ma = bestInteira.ma; 
+                    ap64 = bestInteira.ap64; 
+                    ap66 = bestInteira.ap66; 
+                    bd.isDupla = false; 
+                    setupMult = 1; 
+                } else { 
+                    let bestMetade = getBestMap(bd.wf_metade, bd.hf_metade); 
                     if (bestMetade.map > 0) { 
-                        map = bestMetade.map / 2; mf = bestMetade.mf; ml = bestMetade.ml; ma = bestMetade.ma; ap64 = bestMetade.ap64/2; ap66 = bestMetade.ap66/2; bd.isDupla = true; setupMult = 1; 
-                    } 
-                    else { 
+                        map = bestMetade.map / 2; 
+                        mf = bestMetade.mf; 
+                        ml = bestMetade.ml; 
+                        ma = bestMetade.ma; 
+                        ap64 = bestMetade.ap64 / 2; 
+                        ap66 = bestMetade.ap66 / 2; 
+                        bd.isDupla = true; 
+                        setupMult = 1; 
+                    } else { 
                         document.getElementById('resCorte').innerHTML = "<span style='color:red; font-weight:bold;'>Excede a folha!</span>"; 
                         document.getElementById('totalPrice').innerText = "Erro"; 
                         return; 
-                    }
-                }
-            } else {
-                let best = getBestMap(l, a);
+                    } 
+                } 
+            } else { 
+                let best = getBestMap(l, a); 
                 if (best.map === 0) { 
                     document.getElementById('resCorte').innerHTML = "<span style='color:red; font-weight:bold;'>Excede a folha!</span>"; 
                     document.getElementById('totalPrice').innerText = "Erro"; 
                     return; 
-                }
-                map = best.map; mf = best.mf; ml = best.ml; ma = best.ma; ap64 = best.ap64; ap66 = best.ap66;
+                } 
+                map = best.map; 
+                mf = best.mf; 
+                ml = best.ml; 
+                ma = best.ma; 
+                ap64 = best.ap64; 
+                ap66 = best.ap66; 
             }
-        } else { map = 1; }
+        } else { 
+            map = 1; 
+        }
 
         window.currentMap = map; 
         const lblQtdInterna = document.getElementById('lblQtdInterna'); 
         const lblQtdVenda = document.getElementById('lblQtdVenda');
 
-        if (isSacolaPlastica) {
-            lblQtdInterna.innerText = "Total de Sacolas"; lblQtdVenda.innerText = "Milheiros (Auto)";
-            if (document.activeElement.id === 'qtdInterna') document.getElementById('qtdVenda').value = (parseFloat(document.getElementById('qtdInterna').value) || 0) / 1000; 
-            else if (document.activeElement.id === 'qtdVenda') document.getElementById('qtdInterna').value = (parseFloat(document.getElementById('qtdVenda').value) || 0) * 1000;
-        } else if (isM2) { 
-            lblQtdInterna.innerText = "Ignorado (M²)"; lblQtdVenda.innerText = "Qtd Pedido (Itens)";
-        } else if (isBloco) { 
-            lblQtdInterna.innerText = "Fls/Bloco"; lblQtdVenda.innerText = "Qtd de Blocos";
-        } else {
-            lblQtdInterna.innerText = "Comprar (Fls)"; lblQtdVenda.innerText = "Qtd Pedido (Pçs)";
-            if (map > 0) {
-                if (document.activeElement.id === 'qtdInterna') { 
-                    let calcPcs = Math.floor(( (parseFloat(document.getElementById('qtdInterna').value)||0) / 1.1) * map); 
-                    document.getElementById('qtdVenda').value = calcPcs; 
-                } 
-                else { 
-                    let calcFc = Math.ceil(( (parseFloat(document.getElementById('qtdVenda').value)||0) / map) * 1.1); 
-                    document.getElementById('qtdInterna').value = calcFc; 
-                }
+        if (isSacolaPlastica) { 
+            lblQtdInterna.innerText = "Total de Sacolas"; 
+            lblQtdVenda.innerText = "Milheiros (Auto)"; 
+            if (document.activeElement.id === 'qtdInterna') {
+                document.getElementById('qtdVenda').value = (parseFloat(document.getElementById('qtdInterna').value) || 0) / 1000; 
+            } else if (document.activeElement.id === 'qtdVenda') {
+                document.getElementById('qtdInterna').value = (parseFloat(document.getElementById('qtdVenda').value) || 0) * 1000; 
             }
+        } else if (isM2) { 
+            lblQtdInterna.innerText = "Ignorado (M²)"; 
+            lblQtdVenda.innerText = "Qtd Pedido (Itens)"; 
+        } else if (isBloco) { 
+            lblQtdInterna.innerText = "Fls/Bloco"; 
+            lblQtdVenda.innerText = "Qtd de Blocos"; 
+        } else { 
+            lblQtdInterna.innerText = "Comprar (Fls)"; 
+            lblQtdVenda.innerText = "Qtd Pedido (Pçs)"; 
+            if (map > 0) { 
+                if (document.activeElement.id === 'qtdInterna') { 
+                    let calcPcs = Math.floor(((parseFloat(document.getElementById('qtdInterna').value) || 0) / 1.1) * map); 
+                    document.getElementById('qtdVenda').value = calcPcs; 
+                } else { 
+                    let calcFc = Math.ceil(((parseFloat(document.getElementById('qtdVenda').value) || 0) / map) * 1.1); 
+                    document.getElementById('qtdInterna').value = calcFc; 
+                } 
+            } 
         }
 
         const qv = parseFloat(document.getElementById('qtdVenda').value) || 0; 
         const qInt = parseFloat(document.getElementById('qtdInterna').value) || 0;
+        
         if (qv <= 0 || qInt <= 0) { 
             document.getElementById('totalPrice').innerText = "R$ 0,00"; 
             document.getElementById('tabelaOrcamento').innerHTML = ""; 
@@ -1108,9 +2168,10 @@
         const fix = (parseFloat(document.getElementById('contasFixas').value) || 0) + dynFixosTotal; 
         const sal = parseFloat(document.getElementById('salarioColab').value) || 0; 
         const dias = parseFloat(document.getElementById('diasUteis').value) || 1; 
-        const hDia = parseFloat(document.getElementById('horasDia').value) || 1;
+        const hDia = parseFloat(document.getElementById('horasDia').value) || 1; 
         const hm = (pro + fix + sal) / (dias * hDia); 
-        document.getElementById('valHoraMaquina').innerText = hm.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+        
+        document.getElementById('valHoraMaquina').innerText = hm.toLocaleString('pt-BR', {style:'currency', currency:'BRL'}); 
         const tpInput = document.getElementById('tempoProd').value; 
         const tp = tpInput === "" ? 0 : parseFloat(tpInput); 
         
@@ -1121,17 +2182,24 @@
         
         const trP = Array.from(document.querySelectorAll('#tbodyPapel tr')).find(tr => tr.dataset.gram === originalGramFull); 
         let pr = 0; 
+        
         if (trP) { 
-            if (isSacolaPlastica || isM2) pr = parseFloat(trP.cells[1].querySelector('input').value) || 0; 
-            else pr = mf.n === "64x88" ? parseFloat(trP.cells[1].querySelector('input').value) : parseFloat(trP.cells[2].querySelector('input').value); 
-        }
+            if (isSacolaPlastica || isM2) {
+                pr = parseFloat(trP.cells[1].querySelector('input').value) || 0; 
+            } else {
+                pr = mf.n === "64x88" ? parseFloat(trP.cells[1].querySelector('input').value) : parseFloat(trP.cells[2].querySelector('input').value); 
+            }
+        } 
         document.getElementById('pResma').value = pr;
 
         const corOpt = document.getElementById('esquemaCores').options[document.getElementById('esquemaCores').selectedIndex]; 
         const nc = parseInt(corOpt.value) || 1; 
         const extraCoresPassadas = parseInt(corOpt.getAttribute('data-extras')) || 0;
 
-        let resHtml = ""; let zapList = ""; let arrayQtd = [];
+        let resHtml = ""; 
+        let zapList = ""; 
+        let arrayQtd = [];
+        
         if (isSacolaPlastica) { 
             arrayQtd = [100, 250, 500, 1000, 2000, 5000, qInt]; 
         } else if (isBloco || isM2) { 
@@ -1142,15 +2210,17 @@
             else arrayQtd = [1, 10, 25, 50, 100, 250, qv]; 
         }
 
-        arrayQtd.sort((x,y)=>x-y).filter((v,i,arr)=>arr.indexOf(v)===i).forEach(q => {
+        arrayQtd.sort((x, y) => x - y).filter((v, i, arr) => arr.indexOf(v) === i).forEach(q => {
             let cProd = 0, finalS = 0, finalC = 0, finalExibir = 0; 
             let cpap = 0, fc = 0, ccha = 0, ctin = 0, cacabTotal = 0, cFrete = 0, cCoresExtrasAuto = 0; 
-            let detAcab = "", htmlCustos = ""; let isTargetRow = false;
-            let custoVariavelReal = 0; let custoFixoEmbutido = 0;
+            let detAcab = "", htmlCustos = ""; 
+            let isTargetRow = false; 
+            let custoVariavelReal = 0; 
+            let custoFixoEmbutido = 0;
 
             if (isM2) {
                 isTargetRow = (q === qv); 
-                const areaUn = (l/100) * (a/100); 
+                const areaUn = (l / 100) * (a / 100); 
                 const vM2 = pr; 
                 const custoMatUnidade = areaUn * vM2; 
                 let divQv = qv > 0 ? qv : 1; 
@@ -1160,117 +2230,174 @@
                 let cacabUnidade = 0; 
                 acabamentosAtivos.forEach(ac => { 
                     const tr = Array.from(document.querySelectorAll('#tbodyAcab tr')).find(t => t.dataset.serv === ac); 
-                    if(tr) { 
+                    if (tr) { 
                         const vB = parseFloat(tr.cells[1].querySelector('input').value) || 0; 
                         let custoAcabM2 = isApenasServico ? (vB * 1) : ((vB * 10) * areaUn); 
                         let descriAcab = isApenasServico ? `> ${ac} (Base x 1)` : `> ${ac} (Base x 10 x M²)`; 
                         cacabUnidade += custoAcabM2; 
-                        if (isTargetRow) detAcab += `<tr><td style="padding-left:10px; font-style:italic; color:#8e44ad;">${descriAcab}</td><td class="val" style="color:#8e44ad;">R$ ${(custoAcabM2 * q).toFixed(2)}</td></tr>`; 
+                        if (isTargetRow) {
+                            detAcab += `<tr><td style="padding-left:10px; font-style:italic; color:#8e44ad;">${descriAcab}</td><td class="val" style="color:#8e44ad;">R$ ${(custoAcabM2 * q).toFixed(2)}</td></tr>`; 
+                        }
                     } 
                 });
                 
-                custoVariavelReal = (custoMatUnidade + setupFixUnidade + cacabUnidade) * q;
-                custoFixoEmbutido = opCostUnidade * q;
+                custoVariavelReal = (custoMatUnidade + setupFixUnidade + cacabUnidade) * q; 
+                custoFixoEmbutido = opCostUnidade * q; 
                 cProd = custoVariavelReal + custoFixoEmbutido; 
                 
                 const m = parseFloat(document.getElementById('lucroPorcent').value) || 0; 
                 const i = parseFloat(document.getElementById('impostoPorcent').value) || 0; 
                 const com = parseFloat(document.getElementById('comissaoPorcent').value) || 0; 
-                const divS = Math.max(0.01, (100-(m+com))/100); 
-                const divC = Math.max(0.01, (100-(m+com+i))/100);
+                const divS = Math.max(0.01, (100 - (m + com)) / 100); 
+                const divC = Math.max(0.01, (100 - (m + com + i)) / 100);
                 
-                finalS = (cProd / divS); finalC = (cProd / divC); finalExibir = (i > 0 ? finalC : finalS); 
-                cpap = custoMatUnidade * q; fc = areaUn * q; cacabTotal = cacabUnidade * q;
+                finalS = (cProd / divS); 
+                finalC = (cProd / divC); 
+                finalExibir = (i > 0 ? finalC : finalS); 
+                cpap = custoMatUnidade * q; 
+                fc = areaUn * q; 
+                cacabTotal = cacabUnidade * q;
                 
-                if (isTargetRow) {
-                    if(vM2 > 0) htmlCustos = `<tr><td>Material M² - ${originalGramFull} (${fc.toFixed(2)} m²)</td><td class="val">R$ ${cpap.toFixed(2)}</td></tr>`; 
-                    else if (isApenasServico) htmlCustos = `<tr><td>Sem Custo de Material</td><td class="val">R$ 0,00</td></tr>`;
-                    if (cacabUnidade > 0) htmlCustos += `<tr><td>Custo Acabamentos Extras</td><td class="val">R$ ${cacabTotal.toFixed(2)}</td></tr>${detAcab}`;
-                    if (tp > 0) htmlCustos += `<tr><td>Custo Operacional (Mão de Obra)</td><td class="val">R$ ${(opCostUnidade * q).toFixed(2)}</td></tr>`; 
-                    else htmlCustos += `<tr><td>Custo Operacional (ZERADO)</td><td class="val">R$ 0,00</td></tr>`;
-                    htmlCustos += `<tr class="total-line"><td>Total Custo Real</td><td class="val">R$ ${cProd.toFixed(2)}</td></tr>`;
+                if (isTargetRow) { 
+                    if (vM2 > 0) {
+                        htmlCustos = `<tr><td>Material M² - ${originalGramFull} (${fc.toFixed(2)} m²)</td><td class="val">R$ ${cpap.toFixed(2)}</td></tr>`; 
+                    } else if (isApenasServico) {
+                        htmlCustos = `<tr><td>Sem Custo de Material</td><td class="val">R$ 0,00</td></tr>`; 
+                    }
+                    if (cacabUnidade > 0) {
+                        htmlCustos += `<tr><td>Custo Acabamentos Extras</td><td class="val">R$ ${cacabTotal.toFixed(2)}</td></tr>${detAcab}`; 
+                    }
+                    if (tp > 0) {
+                        htmlCustos += `<tr><td>Custo Operacional (Mão de Obra)</td><td class="val">R$ ${(opCostUnidade * q).toFixed(2)}</td></tr>`; 
+                    } else {
+                        htmlCustos += `<tr><td>Custo Operacional (ZERADO)</td><td class="val">R$ 0,00</td></tr>`; 
+                    }
+                    htmlCustos += `<tr class="total-line"><td>Total Custo Real</td><td class="val">R$ ${cProd.toFixed(2)}</td></tr>`; 
                 }
             } else {
-                isTargetRow = isSacolaPlastica ? (q === qInt) : (q === qv);
+                isTargetRow = isSacolaPlastica ? (q === qInt) : (q === qv); 
                 let tpec = isSacolaPlastica ? q : (isBloco ? q * qInt : q); 
                 let pecasPorItem = (isSacolaPapel && window.bagData && window.bagData.isDupla) ? 2 : 1; 
                 let tpecReal = tpec * pecasPorItem;
 
                 if (isSacolaPlastica) { 
-                    cpap = (tpec / 1000) * pr; fc = tpec; 
+                    cpap = (tpec / 1000) * pr; 
+                    fc = tpec; 
                 } else { 
-                    fc = Math.ceil((tpec/map)*1.1); cpap = (pr/qr)*fc; 
+                    fc = Math.ceil((tpec / map) * 1.1); 
+                    cpap = (pr / qr) * fc; 
                 }
 
-                ccha = nc * (parseFloat(document.getElementById('baseChapa').value) || 0) * setupMult;
-                ctin = (tpecReal/1000) * gTintaProd * (pTintaKg/1000) * (nc > 4 ? 2 : 1) * setupMult; 
-                cCoresExtrasAuto = isSacolaPlastica ? (extraCoresPassadas * 220.00 * (tpec / 1000)) : 0;
-                const baseSetupFix = ((parseFloat(document.getElementById('baseSetup').value) || 0) + dynSetupTotal) * setupMult;
+                ccha = nc * (parseFloat(document.getElementById('baseChapa').value) || 0) * setupMult; 
+                ctin = (tpecReal / 1000) * gTintaProd * (pTintaKg / 1000) * (nc > 4 ? 2 : 1) * setupMult; 
+                cCoresExtrasAuto = isSacolaPlastica ? (extraCoresPassadas * 220.00 * (tpec / 1000)) : 0; 
+                const baseSetupFix = ((parseFloat(document.getElementById('baseSetup').value) || 0) + dynSetupTotal) * setupMult; 
                 cFrete = isSacolaPlastica ? 150 : 0;
 
-                acabamentosAtivos.forEach(ac => {
-                    const tr = Array.from(document.querySelectorAll('#tbodyAcab tr')).find(t => t.dataset.serv === ac);
-                    if(tr) {
-                        const vB = parseFloat(tr.cells[1].querySelector('input').value) || 0, vM = parseFloat(tr.cells[2].querySelector('input').value) || 0;
+                acabamentosAtivos.forEach(ac => { 
+                    const tr = Array.from(document.querySelectorAll('#tbodyAcab tr')).find(t => t.dataset.serv === ac); 
+                    if (tr) { 
+                        const vB = parseFloat(tr.cells[1].querySelector('input').value) || 0;
+                        const vM = parseFloat(tr.cells[2].querySelector('input').value) || 0; 
                         let nomeA = ac.toLowerCase(); 
                         let isAlca = (isSacolaPapel || isSacolaPlastica) && (nomeA.includes("alça") || nomeA.includes("alca") || nomeA.includes("cadarço") || nomeA.includes("cadarco") || nomeA.includes("gorgurão") || nomeA.includes("gorgurao") || nomeA.includes("fita")); 
-                        let isIlhos = (isSacolaPapel || isSacolaPlastica) && (nomeA.includes("ilhós") || nomeA.includes("ilhos"));
-                        let multPecas = 1; let infoExtraDesc = ""; let pecasParaAcabamento = tpecReal; 
+                        let isIlhos = (isSacolaPapel || isSacolaPlastica) && (nomeA.includes("ilhós") || nomeA.includes("ilhos")); 
+                        let multPecas = 1; 
+                        let infoExtraDesc = ""; 
+                        let pecasParaAcabamento = tpecReal; 
                         
-                        if (isAlca && !nomeA.includes("vazada") && !nomeA.includes("par")) { multPecas = 2; infoExtraDesc = " (x2 pçs/sacola)"; pecasParaAcabamento = tpec * multPecas; } 
-                        else if (isIlhos) { multPecas = 4; infoExtraDesc = " (x4 pçs/sacola)"; pecasParaAcabamento = tpec * multPecas; }
+                        if (isAlca && !nomeA.includes("vazada") && !nomeA.includes("par")) { 
+                            multPecas = 2; 
+                            infoExtraDesc = " (x2 pçs/sacola)"; 
+                            pecasParaAcabamento = tpec * multPecas; 
+                        } else if (isIlhos) { 
+                            multPecas = 4; 
+                            infoExtraDesc = " (x4 pçs/sacola)"; 
+                            pecasParaAcabamento = tpec * multPecas; 
+                        } 
                         
                         let c = 0; 
-                        if (isSacolaPlastica) c = (vB * 1) + ((vM / 1000) * pecasParaAcabamento); 
-                        else if (isBloco) c = (vB * q) + ((vM / 1000) * pecasParaAcabamento); 
-                        else c = (vB * setupMult * 10) + ((vM / 1000) * pecasParaAcabamento); 
+                        if (isSacolaPlastica) {
+                            c = (vB * 1) + ((vM / 1000) * pecasParaAcabamento); 
+                        } else if (isBloco) {
+                            c = (vB * q) + ((vM / 1000) * pecasParaAcabamento); 
+                        } else {
+                            c = (vB * setupMult * 10) + ((vM / 1000) * pecasParaAcabamento); 
+                        }
                         
                         cacabTotal += c; 
-                        if(isTargetRow) detAcab += `<tr><td style="padding-left:10px; font-style:italic;">> ${ac}${infoExtraDesc}</td><td class="val">R$ ${c.toFixed(2)}</td></tr>`;
-                    }
+                        
+                        if (isTargetRow) {
+                            detAcab += `<tr><td style="padding-left:10px; font-style:italic;">> ${ac}${infoExtraDesc}</td><td class="val">R$ ${c.toFixed(2)}</td></tr>`; 
+                        }
+                    } 
                 });
 
-                custoVariavelReal = ccha + cpap + ctin + cacabTotal + baseSetupFix + cFrete + cCoresExtrasAuto;
-                custoFixoEmbutido = (hm * tp);
+                custoVariavelReal = ccha + cpap + ctin + cacabTotal + baseSetupFix + cFrete + cCoresExtrasAuto; 
+                custoFixoEmbutido = (hm * tp); 
                 cProd = custoVariavelReal + custoFixoEmbutido;
 
                 const m = parseFloat(document.getElementById('lucroPorcent').value) || 0; 
                 const i = parseFloat(document.getElementById('impostoPorcent').value) || 0; 
                 const com = parseFloat(document.getElementById('comissaoPorcent').value) || 0; 
-                const divS = Math.max(0.01, (100-(m+com))/100); 
-                const divC = Math.max(0.01, (100-(m+com+i))/100);
-                finalS = cProd / divS; finalC = cProd / divC; finalExibir = (i > 0 ? finalC : finalS);
+                const divS = Math.max(0.01, (100 - (m + com)) / 100); 
+                const divC = Math.max(0.01, (100 - (m + com + i)) / 100); 
+                
+                finalS = cProd / divS; 
+                finalC = cProd / divC; 
+                finalExibir = (i > 0 ? finalC : finalS);
 
-                if (isTargetRow) {
+                if (isTargetRow) { 
                     let labelMaterial = isSacolaPlastica ? `Sacolas Plásticas (${fc} un)` : `Papel / Resma (${fc} fls)`; 
-                    htmlCustos = `<tr><td>${labelMaterial}</td><td class="val">R$ ${cpap.toFixed(2)}</td></tr>`;
-                    if (isSacolaPlastica) htmlCustos += `<tr><td>Frete Transportadora (SP)</td><td class="val">R$ ${cFrete.toFixed(2)}</td></tr>`;
-                    htmlCustos += `<tr><td>Telas/Chapas (${nc * setupMult} un)</td><td class="val">R$ ${ccha.toFixed(2)}</td></tr>`;
-                    if (isSacolaPlastica && cCoresExtrasAuto > 0) htmlCustos += `<tr><td style="color:var(--sync-orange); font-weight:bold;">Adicional Cores Extras (${extraCoresPassadas}x 220)</td><td class="val" style="color:var(--sync-orange);">R$ ${cCoresExtrasAuto.toFixed(2)}</td></tr>`;
-                    htmlCustos += `<tr><td>Tinta/Custo Variável Ref (${tpecReal} pçs rodadas)</td><td class="val">R$ ${ctin.toFixed(2)}</td></tr>`;
-                    if(cacabTotal > 0) htmlCustos += `<tr><td>Acabamentos Extra</td><td class="val">R$ ${cacabTotal.toFixed(2)}</td></tr>${detAcab}`;
-                    if(tp > 0) htmlCustos += `<tr><td>Custo Operacional Fixado (HM)</td><td class="val">R$ ${(hm*tp).toFixed(2)}</td></tr>`; 
-                    else htmlCustos += `<tr><td>Custo Operacional (ZERADO)</td><td class="val">R$ 0,00</td></tr>`;
-                    htmlCustos += `<tr class="total-line"><td>Total Custo Real</td><td class="val">R$ ${cProd.toFixed(2)}</td></tr>`;
+                    htmlCustos = `<tr><td>${labelMaterial}</td><td class="val">R$ ${cpap.toFixed(2)}</td></tr>`; 
+                    
+                    if (isSacolaPlastica) {
+                        htmlCustos += `<tr><td>Frete Transportadora (SP)</td><td class="val">R$ ${cFrete.toFixed(2)}</td></tr>`; 
+                    }
+                    
+                    htmlCustos += `<tr><td>Telas/Chapas (${nc * setupMult} un)</td><td class="val">R$ ${ccha.toFixed(2)}</td></tr>`; 
+                    
+                    if (isSacolaPlastica && cCoresExtrasAuto > 0) {
+                        htmlCustos += `<tr><td style="color:var(--sync-orange); font-weight:bold;">Adicional Cores Extras (${extraCoresPassadas}x 220)</td><td class="val" style="color:var(--sync-orange);">R$ ${cCoresExtrasAuto.toFixed(2)}</td></tr>`; 
+                    }
+                    
+                    htmlCustos += `<tr><td>Tinta/Custo Variável Ref (${tpecReal} pçs rodadas)</td><td class="val">R$ ${ctin.toFixed(2)}</td></tr>`; 
+                    
+                    if (cacabTotal > 0) {
+                        htmlCustos += `<tr><td>Acabamentos Extra</td><td class="val">R$ ${cacabTotal.toFixed(2)}</td></tr>${detAcab}`; 
+                    }
+                    if (tp > 0) {
+                        htmlCustos += `<tr><td>Custo Operacional Fixado (HM)</td><td class="val">R$ ${(hm * tp).toFixed(2)}</td></tr>`; 
+                    } else {
+                        htmlCustos += `<tr><td>Custo Operacional (ZERADO)</td><td class="val">R$ 0,00</td></tr>`; 
+                    }
+                    htmlCustos += `<tr class="total-line"><td>Total Custo Real</td><td class="val">R$ ${cProd.toFixed(2)}</td></tr>`; 
                 }
             }
 
             zapList += `* ${isSacolaPlastica ? q + ' un' : (isM2 ? q + ' un' : q + ' un (' + qInt + ' fls/vias)')} — Total: R$ ${finalExibir.toFixed(2)}\n`;
+            
             if (isTargetRow) { 
-                document.getElementById('totalPrice').innerText = finalExibir.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); 
+                document.getElementById('totalPrice').innerText = finalExibir.toLocaleString('pt-BR', {style:'currency', currency:'BRL'}); 
                 document.getElementById('tabelaResumoCustos').innerHTML = htmlCustos; 
             }
             
-            resHtml += `<tr ${isTargetRow?'class="row-active"':''} data-cvar="${custoVariavelReal.toFixed(2)}" data-vlr-nota="${finalC.toFixed(2)}" data-vlr-snf="${finalS.toFixed(2)}" data-unit="${(finalExibir/q).toFixed(2)}"><td>${q}</td><td>${(finalExibir/q).toFixed(2)}</td><td>${finalExibir.toFixed(2)}</td></tr>`;
+            resHtml += `<tr ${isTargetRow ? 'class="row-active"' : ''} data-cvar="${custoVariavelReal.toFixed(2)}" data-vlr-nota="${finalC.toFixed(2)}" data-vlr-snf="${finalS.toFixed(2)}" data-unit="${(finalExibir / q).toFixed(2)}">
+                <td>${q}</td>
+                <td>${(finalExibir / q).toFixed(2)}</td>
+                <td>${finalExibir.toFixed(2)}</td>
+            </tr>`;
         });
         
         document.getElementById('tabelaOrcamento').innerHTML = resHtml; 
         window.temp_zap_list = zapList;
         
-        const cv = document.getElementById('canvasLayout');
+        // Desenhos do Layout
+        const cv = document.getElementById('canvasLayout'); 
         const ct = cv.getContext('2d'); 
-        cv.width = 240; cv.height = 140; 
-        ct.clearRect(0,0, cv.width, cv.height); 
+        cv.width = 240; 
+        cv.height = 140; 
+        ct.clearRect(0, 0, cv.width, cv.height); 
         ct.fillStyle = "#ffffff"; 
         ct.fillRect(0, 0, cv.width, cv.height);
 
@@ -1278,52 +2405,61 @@
             let bd = window.bagData; 
             let txtModo = bd.isDupla ? `<b style="color:var(--sync-orange);">FACA SACOLA (EM 2 PARTES)</b>` : `<b style="color:#d35400;">FACA SACOLA (INTEIRA)</b>`; 
             let pecasNaFolha = bd.isDupla ? map * 2 : map; 
-            document.getElementById('resCorte').innerHTML = `Modo: ${txtModo}<br>Rendimento: <b>${map} Sacola/fl</b> (Roda ${pecasNaFolha} metades na folha ${mf.n})<br><span style="font-size:9px;">Planificação: ${bd.isDupla ? bd.wf_metade+"x"+bd.hf_metade : bd.wf+"x"+bd.hf} cm</span>`;
+            
+            document.getElementById('resCorte').innerHTML = `Modo: ${txtModo}<br>Rendimento: <b>${map} Sacola/fl</b> (Roda ${pecasNaFolha} metades na folha ${mf.n})<br><span style="font-size:9px;">Planificação: ${bd.isDupla ? bd.wf_metade + "x" + bd.hf_metade : bd.wf + "x" + bd.hf} cm</span>`;
+            
             if (map > 0) { 
-                const sSheet = Math.min(80/mf.w, 120/mf.h); 
-                ct.strokeStyle="#ccc"; 
-                ct.strokeRect(5,5,mf.w*sSheet,mf.h*sSheet); 
-                ct.fillStyle="rgba(255, 82, 82, 0.4)"; 
-                for(let j=0; j<Math.floor(mf.w/ml); j++) { 
-                    for(let k=0; k<Math.floor(mf.h/ma); k++) { 
-                        ct.fillRect(5+(j*ml*sSheet), 5+(k*ma*sSheet), (ml*sSheet)-1, (ma*sSheet)-1); 
+                const sSheet = Math.min(80 / mf.w, 120 / mf.h); 
+                ct.strokeStyle = "#ccc"; 
+                ct.strokeRect(5, 5, mf.w * sSheet, mf.h * sSheet); 
+                ct.fillStyle = "rgba(255, 82, 82, 0.4)"; 
+                for (let j = 0; j < Math.floor(mf.w / ml); j++) { 
+                    for (let k = 0; k < Math.floor(mf.h / ma); k++) { 
+                        ct.fillRect(5 + (j * ml * sSheet), 5 + (k * ma * sSheet), (ml * sSheet) - 1, (ma * sSheet) - 1); 
                     } 
                 } 
             } 
+            
             let useW = bd.isDupla ? bd.wf_metade : bd.wf; 
             let useH = bd.isDupla ? bd.hf_metade : bd.hf; 
-            let scale = Math.min(130/useW, 130/useH); 
+            let scale = Math.min(130 / useW, 130 / useH); 
+            
             desenharFacaSacola(ct, bd.c, bd.l, bd.a, bd.dobraBoca, bd.dobraFundo, bd.abaCola, scale, bd.isDupla); 
-            document.getElementById('resRetirar').innerHTML = `UTILIZAR: ${Math.ceil(qInt/map)} fls | COMPRAR: ${Math.ceil((qInt/map)*1.1)} fls`;
+            document.getElementById('resRetirar').innerHTML = `UTILIZAR: ${Math.ceil(qInt / map)} fls | COMPRAR: ${Math.ceil((qInt / map) * 1.1)} fls`;
+            
         } else if (window.isBoxMode && window.boxData) {
             let bd = window.boxData; 
             if (bd.modelo === 'caixa_tampa_conj') { 
                 document.getElementById('resCorte').innerHTML = `Modo: <b style="color:purple;">FACA CONJUGADA (1 Chapa)</b><br>Rendimento: <b>${map.toFixed(2)} Caixas Completas/fl</b> em <b>${mf.n}</b>`; 
-                let scale = Math.min(100/(bd.wf+4), 120/(bd.hf+4), 100/(bd.wt+4), 120/(bd.ht+4)); 
+                let scale = Math.min(100 / (bd.wf + 4), 120 / (bd.hf + 4), 100 / (bd.wt + 4), 120 / (bd.ht + 4)); 
                 desenharFaca(ct, bd.c, bd.l, bd.hF, 1.5, 60, scale); 
-                desenharFaca(ct, bd.c+0.4, bd.l+0.4, bd.hT, 1.5, 180, scale); 
+                desenharFaca(ct, bd.c + 0.4, bd.l + 0.4, bd.hT, 1.5, 180, scale); 
             } else if (bd.modelo === 'caixa_tampa_sep') { 
                 document.getElementById('resCorte').innerHTML = `Modo: <b style="color:var(--sync-orange);">FACAS SEPARADAS (2 Chapas)</b><br>Rendimento: <b>${map.toFixed(2)} Caixas Completas/fl</b> em <b>${mf.n}</b><br><span style="font-size:9px;">Produz ${mapFundo} Fundos/fl OU ${mapTampa} Tampas/fl</span>`; 
-                let scale = Math.min(100/(bd.wf+4), 120/(bd.hf+4), 100/(bd.wt+4), 120/(bd.ht+4)); 
+                let scale = Math.min(100 / (bd.wf + 4), 120 / (bd.hf + 4), 100 / (bd.wt + 4), 120 / (bd.ht + 4)); 
                 desenharFaca(ct, bd.c, bd.l, bd.hF, 1.5, 60, scale); 
-                desenharFaca(ct, bd.c+0.4, bd.l+0.4, bd.hT, 1.5, 180, scale); 
+                desenharFaca(ct, bd.c + 0.4, bd.l + 0.4, bd.hT, 1.5, 180, scale); 
             } else { 
                 let modCaixa = bd.modelo === 'so_caixa' ? "Só Fundo" : "Só Tampa"; 
                 document.getElementById('resCorte').innerHTML = `Modo: <b>CAIXA [${modCaixa}]</b><br>Aproveitamento: <b>${map} pçs/fl</b> em <b>${mf.n}</b><br><span style="font-size:10px; color:#e91e63;">Comparativo: 64x88 rende ${ap64.toFixed(1)} | 66x96 rende ${ap66.toFixed(1)}</span>`; 
                 if (map > 0) { 
-                    const sSheet = Math.min(80/mf.w, 120/mf.h); 
-                    ct.strokeStyle="#ccc"; ct.strokeRect(5,5,mf.w*sSheet,mf.h*sSheet); ct.fillStyle="rgba(255, 82, 82, 0.4)"; 
-                    for(let j=0; j<Math.floor(mf.w/ml); j++) { 
-                        for(let k=0; k<Math.floor(mf.h/ma); k++) { 
-                            ct.fillRect(5+(j*ml*sSheet), 5+(k*ma*sSheet), (ml*sSheet)-1, (ma*sSheet)-1); 
+                    const sSheet = Math.min(80 / mf.w, 120 / mf.h); 
+                    ct.strokeStyle = "#ccc"; 
+                    ct.strokeRect(5, 5, mf.w * sSheet, mf.h * sSheet); 
+                    ct.fillStyle = "rgba(255, 82, 82, 0.4)"; 
+                    for (let j = 0; j < Math.floor(mf.w / ml); j++) { 
+                        for (let k = 0; k < Math.floor(mf.h / ma); k++) { 
+                            ct.fillRect(5 + (j * ml * sSheet), 5 + (k * ma * sSheet), (ml * sSheet) - 1, (ma * sSheet) - 1); 
                         } 
                     } 
                 } 
-                let maxW = bd.c + (2 * bd.h) + 4; let maxH = bd.l + (2 * bd.h) + 4; 
+                let maxW = bd.c + (2 * bd.h) + 4; 
+                let maxH = bd.l + (2 * bd.h) + 4; 
                 let scale = Math.min(130 / maxW, 130 / maxH); 
                 desenharFaca(ct, bd.c, bd.l, bd.h, 1.5, 160, scale); 
             } 
-            document.getElementById('resRetirar').innerHTML = `UTILIZAR: ${Math.ceil(qv/map)} fls | COMPRAR: ${Math.ceil((qv/map)*1.1)} fls`;
+            document.getElementById('resRetirar').innerHTML = `UTILIZAR: ${Math.ceil(qv / map)} fls | COMPRAR: ${Math.ceil((qv / map) * 1.1)} fls`;
+            
         } else {
             let iconType = 'default'; 
             if (isBloco) iconType = 'bloco'; 
@@ -1339,23 +2475,26 @@
                 document.getElementById('resRetirar').innerHTML = `PRODUÇÃO: ${qv} itens | TEMPO TOTAL: ${tp} Horas`; 
             } else if (isM2) { 
                 document.getElementById('resCorte').innerHTML = `Modo: <b>COMUNICAÇÃO VISUAL (M²)</b><br><span style="font-size:10px; color:#0d47a1;">Lendo preço por M² da coluna 64x88</span>`; 
-                document.getElementById('resRetirar').innerHTML = `PRODUÇÃO: ${qv} itens | ÁREA TOTAL: ${((l/100)*(a/100)*qv).toFixed(2)} M²`; 
+                document.getElementById('resRetirar').innerHTML = `PRODUÇÃO: ${qv} itens | ÁREA TOTAL: ${((l / 100) * (a / 100) * qv).toFixed(2)} M²`; 
             } else if (isSacolaPlastica) { 
                 document.getElementById('resCorte').innerHTML = `Modo: <b>SACOLAS PLÁSTICAS</b><br><span style="font-size:10px; color:#0d47a1;">Lendo preço do milheiro na coluna 64x88</span>`; 
                 document.getElementById('resRetirar').innerHTML = `PRODUZIR: ${qInt} un | FRETE R$ 150 INCLUSO`; 
             } else if (map > 0) { 
                 document.getElementById('resCorte').innerHTML = `Aproveitamento: <b>${map} pçs/fl</b> em <b>${mf.n}</b><br><span style="font-size:10px; color:#0d47a1;">Comparativo: 64x88 rende ${ap64} | 66x96 rende ${ap66}</span>`; 
-                let compraReal = isBloco ? Math.ceil(((qv*qInt)/map)*1.1) : Math.ceil((qv/map)*1.1); 
-                let utilizaReal = isBloco ? Math.ceil((qv*qInt)/map) : Math.ceil(qv/map); 
+                let compraReal = isBloco ? Math.ceil(((qv * qInt) / map) * 1.1) : Math.ceil((qv / map) * 1.1); 
+                let utilizaReal = isBloco ? Math.ceil((qv * qInt) / map) : Math.ceil(qv / map); 
                 document.getElementById('resRetirar').innerHTML = `UTILIZAR: ${utilizaReal} fls | COMPRAR: ${compraReal} fls`; 
             }
             
             if (!isSacolaPlastica && !isM2 && !isApenasServico && map > 0) { 
-                const sSheet = Math.min(130/mf.w, 130/mf.h); 
-                ct.strokeStyle="#ccc"; ct.lineWidth = 1; ct.strokeRect(5,5,mf.w*sSheet,mf.h*sSheet); ct.fillStyle="rgba(255, 82, 82, 0.4)"; 
-                for(let j=0; j<Math.floor(mf.w/ml); j++) { 
-                    for(let k=0; k<Math.floor(mf.h/ma); k++) { 
-                        ct.fillRect(5+(j*ml*sSheet), 5+(k*ma*sSheet), (ml*sSheet)-1, (ma*sSheet)-1); 
+                const sSheet = Math.min(130 / mf.w, 130 / mf.h); 
+                ct.strokeStyle = "#ccc"; 
+                ct.lineWidth = 1; 
+                ct.strokeRect(5, 5, mf.w * sSheet, mf.h * sSheet); 
+                ct.fillStyle = "rgba(255, 82, 82, 0.4)"; 
+                for (let j = 0; j < Math.floor(mf.w / ml); j++) { 
+                    for (let k = 0; k < Math.floor(mf.h / ma); k++) { 
+                        ct.fillRect(5 + (j * ml * sSheet), 5 + (k * ma * sSheet), (ml * sSheet) - 1, (ma * sSheet) - 1); 
                     } 
                 } 
             }
@@ -1366,13 +2505,16 @@
     }
 
 
-    // --------------------------------------------------------------------------------------
+    // =========================================================================
     // 5. PDF, WHATSAPP, EXPORTAÇÃO E ADICIONAR AO PEDIDO
-    // --------------------------------------------------------------------------------------
-
+    // =========================================================================
+    
     function adicionarAoPedido() { 
         const trAtiva = document.querySelector('#tabelaOrcamento tr.row-active'); 
-        if (!trAtiva) { alert("Calcule o orçamento primeiro!"); return; } 
+        if (!trAtiva) { 
+            alert("Calcule o orçamento primeiro!"); 
+            return; 
+        } 
 
         const prod = document.getElementById('tipoServico').value; 
         const lar = document.getElementById('lar').value; 
@@ -1385,6 +2527,7 @@
         const nomeProduto = prod.toLowerCase(); 
         const gs = document.getElementById('gramSelect'); 
         const gramFull = gs && gs.value ? gs.value.toLowerCase() : ""; 
+        
         const isSacolaPapel = nomeProduto.includes("sacola de papel") || nomeProduto.includes("sacolas de papel"); 
         const isSacolaPlastica = nomeProduto.includes("sacola") && !isSacolaPapel; 
         const isBloco = nomeProduto.includes("bloco") || nomeProduto.includes("talon"); 
@@ -1393,7 +2536,9 @@
         const pap = document.getElementById('gramSelect').value; 
         
         let qVendaFinal = parseInt(document.getElementById('qtdVenda').value); 
-        if (isSacolaPlastica) qVendaFinal = parseInt(document.getElementById('qtdInterna').value); 
+        if (isSacolaPlastica) {
+            qVendaFinal = parseInt(document.getElementById('qtdInterna').value); 
+        }
         
         const totalItem = parseFloat(trAtiva.getAttribute('data-vlr-nota')); 
         const unitItem = totalItem / qVendaFinal; 
@@ -1402,7 +2547,7 @@
         let sugestoesItem = []; 
         document.querySelectorAll('#tabelaOrcamento tr').forEach(tr => { 
             let tds = tr.querySelectorAll('td'); 
-            if(tds.length >= 3) { 
+            if (tds.length >= 3) { 
                 sugestoesItem.push({ 
                     qtd: tds[0].innerText, 
                     unit: tr.getAttribute('data-unit'), 
@@ -1417,7 +2562,10 @@
         let mioloTexto = ""; 
         
         let nomeVisualFormato = window.isBoxMode && window.boxData ? `${window.boxData.wf}x${window.boxData.hf}` : (window.isBagMode && window.bagData ? `${window.bagData.wf}x${window.bagData.hf}` : `${lar}x${alt}`); 
-        if (window.isBagMode && window.bagData && window.bagData.isDupla) nomeVisualFormato = `${window.bagData.wf_metade}x${window.bagData.hf_metade} (2 partes/sacola)`; 
+        
+        if (window.isBagMode && window.bagData && window.bagData.isDupla) {
+            nomeVisualFormato = `${window.bagData.wf_metade}x${window.bagData.hf_metade} (2 partes/sacola)`; 
+        }
         
         if (isSacolaPlastica) { 
             textoEspecificacao = `${lar}x${alt}cm | ${pap} | Total Sacolas: ${miolo} | ${cor} | Acab: ${acabados}`; 
@@ -1472,8 +2620,12 @@
         acabamentosAtivos = []; 
         renderAcab(); 
         
-        if(document.getElementById('tipoServico').options.length > 0) document.getElementById('tipoServico').selectedIndex = 0; 
-        if(document.getElementById('gramSelect').options.length > 0) document.getElementById('gramSelect').selectedIndex = 0; 
+        if (document.getElementById('tipoServico').options.length > 0) {
+            document.getElementById('tipoServico').selectedIndex = 0; 
+        }
+        if (document.getElementById('gramSelect').options.length > 0) {
+            document.getElementById('gramSelect').selectedIndex = 0; 
+        }
         document.getElementById('esquemaCores').selectedIndex = 0; 
         
         verificarProduto(false); 
@@ -1487,7 +2639,7 @@
         let grandTotal = 0; 
         
         if (pedidoItens.length === 0) { 
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum item adicionado ainda.</td></tr>'; 
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:15px; color:#999;">Nenhum item adicionado ao pedido ainda.</td></tr>'; 
             document.getElementById('granTotalPedido').innerText = "R$ 0,00"; 
             return; 
         } 
@@ -1496,11 +2648,16 @@
             grandTotal += item.total; 
             tbody.innerHTML += `
                 <tr>
-                    <td style="text-align: left;"><strong>${item.produto}</strong><br><span style="font-size: 10px;">${item.specs}</span></td>
+                    <td style="text-align: left;">
+                        <strong>${item.produto}</strong><br>
+                        <span style="font-size: 10px;">${item.specs}</span>
+                    </td>
                     <td style="text-align: center;">${item.qtd}</td>
                     <td style="text-align: center;">R$ ${item.unitario.toFixed(2).replace('.', ',')}</td>
                     <td class="val">R$ ${item.total.toFixed(2).replace('.', ',')}</td>
-                    <td style="text-align: right;"><i class="fa fa-trash btn-del-trash" onclick="removerDoPedido(${index})"></i></td>
+                    <td style="text-align: right;">
+                        <i class="fa fa-trash btn-del-trash" onclick="removerDoPedido(${index})"></i>
+                    </td>
                 </tr>
             `; 
         }); 
@@ -1509,7 +2666,7 @@
     }
 
     function removerDoPedido(index) { 
-        if(confirm("Remover este item?")) { 
+        if (confirm("Remover este item?")) { 
             pedidoItens.splice(index, 1); 
             renderizarPedido(); 
         } 
@@ -1525,7 +2682,7 @@
         const doc = new jsPDF();
         
         const cli = document.getElementById('cliNome').value || "Cliente"; 
-        const dataAtual = new Date().toLocaleDateString('pt-BR');
+        const dataAtual = new Date().toLocaleDateString('pt-BR'); 
         const nomeEmpresa = document.getElementById('cfgEmpresa') ? document.getElementById('cfgEmpresa').value : "MC SERIGRAFIA E GRÁFICA"; 
         const pixEmpresa = document.getElementById('cfgPix') ? document.getElementById('cfgPix').value : "46.897.470/0001-09";
         
@@ -1576,7 +2733,7 @@
             yTable += 6; 
             
             doc.setFont("helvetica", "normal"); 
-            doc.setFontSize(9);
+            doc.setFontSize(9); 
             doc.text(`• Produto: ${item.specsObj.produto}`, 15, yTable); yTable += 5; 
             doc.text(`• Formato: ${item.specsObj.formato}`, 15, yTable); yTable += 5; 
             doc.text(`• Material: ${item.specsObj.papel}`, 15, yTable); yTable += 5; 
@@ -1605,15 +2762,22 @@
             yTable += 8;
             
             item.sugestoes.forEach(s => { 
-                if (yTable > 270) { doc.addPage(); yTable = 20; } 
-                if (s.qtd == item.qtd) { 
-                    doc.setFont("helvetica", "bold"); doc.setTextColor(0, 120, 0); 
-                } else { 
-                    doc.setFont("helvetica", "normal"); doc.setTextColor(50, 50, 50); 
+                if (yTable > 270) { 
+                    doc.addPage(); 
+                    yTable = 20; 
                 } 
+                if (s.qtd == item.qtd) { 
+                    doc.setFont("helvetica", "bold"); 
+                    doc.setTextColor(0, 120, 0); 
+                } else { 
+                    doc.setFont("helvetica", "normal"); 
+                    doc.setTextColor(50, 50, 50); 
+                } 
+                
                 let unitF = parseFloat(s.unit).toFixed(2).replace('.', ','); 
                 let snfF = parseFloat(s.total_snf).toFixed(2).replace('.', ','); 
                 let cnfF = parseFloat(s.total_cnf).toFixed(2).replace('.', ','); 
+                
                 doc.text(s.qtd.toString(), 15, yTable); 
                 doc.text(`R$ ${unitF}`, 45, yTable); 
                 doc.text(`R$ ${snfF}`, 100, yTable); 
@@ -1629,14 +2793,20 @@
             yTable += 12; 
         });
 
-        if (yTable > 260) { doc.addPage(); yTable = 20; } 
+        if (yTable > 260) { 
+            doc.addPage(); 
+            yTable = 20; 
+        } 
+        
         doc.setFillColor(245, 245, 245); 
         doc.rect(10, yTable, 190, 18, 'F'); 
         doc.setTextColor(0, 90, 171); 
         doc.setFont("helvetica", "bold"); 
         doc.setFontSize(13); 
+        
         const valorFormatadoFinal = totalGeralPDF.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'}); 
         doc.text(`VALOR TOTAL DO PEDIDO: ${valorFormatadoFinal}`, 15, yTable + 11); 
+        
         doc.setTextColor(100, 100, 100); 
         doc.setFontSize(8); 
         doc.text(`Pagamento via Pix: ${pixEmpresa}`, 105, yTable + 30, {align: "center"});
@@ -1653,15 +2823,16 @@
         
         const cli = document.getElementById('cliNome').value || "Cliente"; 
         let itensMsg = ""; 
-        let totalGeral = 0;
+        let totalGeral = 0; 
         const nomeEmpresa = document.getElementById('cfgEmpresa') ? document.getElementById('cfgEmpresa').value : "MC SERIGRAFIA"; 
         const pixEmpresa = document.getElementById('cfgPix') ? document.getElementById('cfgPix').value : "46.897.470/0001-09";
         
         pedidoItens.forEach((item, index) => { 
             totalGeral += item.total; 
             itensMsg += `*Item ${index + 1}: ${item.produto}*\n_${item.specs}_\n► *Escolhido: ${item.qtd} un — R$ ${item.total.toFixed(2).replace('.', ',')}*\n\n*Outras opções (Sugestões):*\n`; 
+            
             item.sugestoes.forEach(s => { 
-                if(s.qtd != item.qtd) { 
+                if (s.qtd != item.qtd) { 
                     let unitFormat = s.unit.toString().replace('.', ','); 
                     itensMsg += `- ${s.qtd} un: R$ ${parseFloat(s.total_cnf).toFixed(2).replace('.', ',')} (Unit. R$ ${unitFormat})\n`; 
                 } 
@@ -1679,12 +2850,15 @@
             alert("Adicione os itens ao pedido primeiro (Botão Laranja)!"); 
             return; 
         } 
+        
         const cli = document.getElementById('cliNome').value || "Cliente"; 
         let csv = "Produto;Especificacoes;Qtd;Valor Unit;Valor Total\n"; 
+        
         pedidoItens.forEach(item => { 
             let specsStr = item.specs.replace(/;/g, ' ').replace(/\n/g, ' '); 
             csv += `${item.produto};${specsStr};${item.qtd};${item.unitario.toFixed(2).replace('.', ',')};${item.total.toFixed(2).replace('.', ',')}\n`; 
         }); 
+        
         const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' }); 
         const link = document.createElement("a"); 
         link.href = URL.createObjectURL(blob); 
@@ -1692,10 +2866,11 @@
         link.click(); 
     }
 
-    // --------------------------------------------------------------------------------------
-    // 6. UTILIDADES GERAIS, NUVEM E INICIALIZAÇÃO
-    // --------------------------------------------------------------------------------------
 
+    // =========================================================================
+    // 6. UTILIDADES GERAIS E CLOUD (FIREBASE)
+    // =========================================================================
+    
     async function buscarEndereco() { 
         const cep = document.getElementById('cliCep').value.replace(/\D/g, ''); 
         if (cep.length === 8) { 
@@ -1713,8 +2888,8 @@
     }
 
     function syncDropdowns() { 
-        const gs = document.getElementById('gramSelect');
-        const sa = document.getElementById('selAcab');
+        const gs = document.getElementById('gramSelect'); 
+        const sa = document.getElementById('selAcab'); 
         const ts = document.getElementById('tipoServico'); 
         
         const gv = gs.value; 
@@ -1722,7 +2897,7 @@
         document.querySelectorAll('#tbodyPapel tr').forEach(tr => { 
             gs.innerHTML += `<option value="${tr.dataset.gram}">${tr.dataset.gram}</option>`; 
         }); 
-        if(gv) gs.value = gv; 
+        if (gv) gs.value = gv; 
         
         sa.innerHTML = '<option value="">-- Selecione --</option>'; 
         document.querySelectorAll('#tbodyAcab tr').forEach(tr => { 
@@ -1734,12 +2909,12 @@
         document.querySelectorAll('#tbodyProduto tr').forEach(tr => { 
             ts.innerHTML += `<option value="${tr.dataset.nome}">${tr.dataset.nome}</option>`; 
         }); 
-        if(tv) ts.value = tv; 
+        if (tv) ts.value = tv; 
     }
 
     function addAcab() { 
         let v = document.getElementById('selAcab').value; 
-        if(v && !acabamentosAtivos.includes(v)) { 
+        if (v && !acabamentosAtivos.includes(v)) { 
             acabamentosAtivos.push(v); 
             renderAcab(); 
             saveAndCalc(); 
@@ -1748,7 +2923,12 @@
     }
 
     function renderAcab() { 
-        document.getElementById('listaAcab').innerHTML = acabamentosAtivos.map(a => `<div style="color:black; padding:5px; background:#f0f0f0; margin-top:5px; display:flex; justify-content:space-between"><span>${a}</span><i class="fa fa-trash" onclick="acabamentosAtivos.splice(acabamentosAtivos.indexOf('${a}'),1);renderAcab();saveAndCalc();" style="cursor:pointer"></i></div>`).join(''); 
+        document.getElementById('listaAcab').innerHTML = acabamentosAtivos.map(a => 
+            `<div style="color:black; padding:5px; background:#f0f0f0; margin-top:5px; display:flex; justify-content:space-between">
+                <span>${a}</span>
+                <i class="fa fa-trash" onclick="acabamentosAtivos.splice(acabamentosAtivos.indexOf('${a}'),1); renderAcab(); saveAndCalc();" style="cursor:pointer"></i>
+            </div>`
+        ).join(''); 
     }
 
     function removeRow(btn) { 
@@ -1756,16 +2936,22 @@
         syncDropdowns(); 
         saveAndCalc(); 
     }
-
+    
     function addItem(type) { 
         const name = prompt("Nome:"); 
-        if(!name) return;
+        if (!name) return;
         
-        if(type==='setup') document.getElementById('containerSetup').insertAdjacentHTML('beforeend', `<div style="display:flex; justify-content:space-between; align-items:center;"><label>${name}</label><i class="fa fa-trash btn-del-trash" onclick="this.parentElement.nextElementSibling.remove(); this.parentElement.remove(); saveAndCalc();"></i></div><input type="number" class="dyn-setup" data-nome="${name}" value="0" oninput="saveAndCalc()">`);
-        else if(type==='fixos') document.getElementById('containerFixos').insertAdjacentHTML('beforeend', `<div style="display:flex; justify-content:space-between; align-items:center;"><label>${name}</label><i class="fa fa-trash btn-del-trash" onclick="this.parentElement.nextElementSibling.remove(); this.parentElement.remove(); saveAndCalc();"></i></div><input type="number" class="dyn-fixo" data-nome="${name}" value="0" oninput="saveAndCalc()">`);
-        else if(type==='papel') document.getElementById('tbodyPapel').insertAdjacentHTML('beforeend', `<tr data-gram="${name}"><td>${name}</td><td><input type="number" value="0" oninput="saveAndCalc()"></td><td><input type="number" value="0" oninput="saveAndCalc()"></td><td><i class="fa fa-trash btn-del-trash" onclick="removeRow(this)"></i></td></tr>`);
-        else if(type==='acabamento') document.getElementById('tbodyAcab').insertAdjacentHTML('beforeend', `<tr data-serv="${name}"><td>${name}</td><td><input type="number" value="0" oninput="saveAndCalc()"></td><td><input type="number" value="0" oninput="saveAndCalc()"></td><td><i class="fa fa-trash btn-del-trash" onclick="removeRow(this)"></i></td></tr>`);
-        else if(type==='produto') document.getElementById('tbodyProduto').insertAdjacentHTML('beforeend', `<tr data-nome="${name}"><td>${name}</td><td style="text-align:right;"><i class="fa fa-trash btn-del-trash" onclick="removeRow(this)"></i></td></tr>`); 
+        if (type === 'setup') {
+            document.getElementById('containerSetup').insertAdjacentHTML('beforeend', `<div style="display:flex; justify-content:space-between; align-items:center;"><label>${name}</label><i class="fa fa-trash btn-del-trash" onclick="this.parentElement.nextElementSibling.remove(); this.parentElement.remove(); saveAndCalc();"></i></div><input type="number" class="dyn-setup" data-nome="${name}" value="0" oninput="saveAndCalc()">`);
+        } else if (type === 'fixos') {
+            document.getElementById('containerFixos').insertAdjacentHTML('beforeend', `<div style="display:flex; justify-content:space-between; align-items:center;"><label>${name}</label><i class="fa fa-trash btn-del-trash" onclick="this.parentElement.nextElementSibling.remove(); this.parentElement.remove(); saveAndCalc();"></i></div><input type="number" class="dyn-fixo" data-nome="${name}" value="0" oninput="saveAndCalc()">`);
+        } else if (type === 'papel') {
+            document.getElementById('tbodyPapel').insertAdjacentHTML('beforeend', `<tr data-gram="${name}"><td>${name}</td><td><input type="number" value="0" oninput="saveAndCalc()"></td><td><input type="number" value="0" oninput="saveAndCalc()"></td><td><i class="fa fa-trash btn-del-trash" onclick="removeRow(this)"></i></td></tr>`);
+        } else if (type === 'acabamento') {
+            document.getElementById('tbodyAcab').insertAdjacentHTML('beforeend', `<tr data-serv="${name}"><td>${name}</td><td><input type="number" value="0" oninput="saveAndCalc()"></td><td><input type="number" value="0" oninput="saveAndCalc()"></td><td><i class="fa fa-trash btn-del-trash" onclick="removeRow(this)"></i></td></tr>`);
+        } else if (type === 'produto') {
+            document.getElementById('tbodyProduto').insertAdjacentHTML('beforeend', `<tr data-nome="${name}"><td>${name}</td><td style="text-align:right;"><i class="fa fa-trash btn-del-trash" onclick="removeRow(this)"></i></td></tr>`); 
+        }
         
         syncDropdowns(); 
         saveAndCalc();
@@ -1774,7 +2960,9 @@
     function saveAndCalc() { 
         const d = {}; 
         camposConfig.forEach(id => { 
-            if(document.getElementById(id)) d[id] = document.getElementById(id).value; 
+            if (document.getElementById(id)) {
+                d[id] = document.getElementById(id).value; 
+            }
         }); 
         localStorage.setItem('mc_v20_config', JSON.stringify(d)); 
         calc(); 
@@ -1782,20 +2970,16 @@
 
     function carregarBackup() { 
         const s = localStorage.getItem('mc_v20_config'); 
-        if(s) { 
+        if (s) { 
             const d = JSON.parse(s); 
             Object.keys(d).forEach(id => { 
-                if(document.getElementById(id)) document.getElementById(id).value = d[id]; 
+                if (document.getElementById(id)) {
+                    document.getElementById(id).value = d[id]; 
+                }
             }); 
         } 
     }
-
-    function novoOrcamento() { 
-        if(confirm("Deseja limpar toda a tela e iniciar um novo orçamento zerado?")) { 
-            location.reload(); 
-        } 
-    }
-
+    
     async function saveToCloud() { 
         const user = auth.currentUser; 
         if (!user) return; 
@@ -1889,23 +3073,23 @@
             } 
             
             if (d.config) { 
-                if(document.getElementById('cfgEmpresa')) document.getElementById('cfgEmpresa').value = d.config.empresa || "MC SERIGRAFIA"; 
-                if(document.getElementById('cfgPix')) document.getElementById('cfgPix').value = d.config.pix || ""; 
-                if(document.getElementById('lucroPorcent')) document.getElementById('lucroPorcent').value = d.config.lucro !== undefined ? d.config.lucro : 30; 
-                if(document.getElementById('impostoPorcent')) document.getElementById('impostoPorcent').value = d.config.imposto !== undefined ? d.config.imposto : 0; 
-                if(document.getElementById('comissaoPorcent')) document.getElementById('comissaoPorcent').value = d.config.comissao !== undefined ? d.config.comissao : 0; 
-                if(document.getElementById('proMarcilio')) document.getElementById('proMarcilio').value = d.config.proMarcilio !== undefined ? d.config.proMarcilio : 5000; 
-                if(document.getElementById('contasFixas')) document.getElementById('contasFixas').value = d.config.contasFixas !== undefined ? d.config.contasFixas : 1000; 
-                if(document.getElementById('salarioColab')) document.getElementById('salarioColab').value = d.config.salarioColab !== undefined ? d.config.salarioColab : 0; 
-                if(document.getElementById('diasUteis')) document.getElementById('diasUteis').value = d.config.diasUteis !== undefined ? d.config.diasUteis : 22; 
-                if(document.getElementById('horasDia')) document.getElementById('horasDia').value = d.config.horasDia !== undefined ? d.config.horasDia : 7; 
-                if(document.getElementById('baseChapa')) document.getElementById('baseChapa').value = d.config.baseChapa !== undefined ? d.config.baseChapa : 45; 
-                if(document.getElementById('baseTinta')) document.getElementById('baseTinta').value = d.config.baseTinta !== undefined ? d.config.baseTinta : 100; 
-                if(document.getElementById('baseSetup')) document.getElementById('baseSetup').value = d.config.baseSetup !== undefined ? d.config.baseSetup : 40; 
-                if(document.getElementById('gastoTintaGramas')) document.getElementById('gastoTintaGramas').value = d.config.gastoTinta !== undefined ? d.config.gastoTinta : 100; 
-                if(document.getElementById('qResma')) document.getElementById('qResma').value = d.config.qResma !== undefined ? d.config.qResma : 500; 
+                if (document.getElementById('cfgEmpresa')) document.getElementById('cfgEmpresa').value = d.config.empresa || "MC SERIGRAFIA"; 
+                if (document.getElementById('cfgPix')) document.getElementById('cfgPix').value = d.config.pix || ""; 
+                if (document.getElementById('lucroPorcent')) document.getElementById('lucroPorcent').value = d.config.lucro !== undefined ? d.config.lucro : 30; 
+                if (document.getElementById('impostoPorcent')) document.getElementById('impostoPorcent').value = d.config.imposto !== undefined ? d.config.imposto : 0; 
+                if (document.getElementById('comissaoPorcent')) document.getElementById('comissaoPorcent').value = d.config.comissao !== undefined ? d.config.comissao : 0; 
+                if (document.getElementById('proMarcilio')) document.getElementById('proMarcilio').value = d.config.proMarcilio !== undefined ? d.config.proMarcilio : 5000; 
+                if (document.getElementById('contasFixas')) document.getElementById('contasFixas').value = d.config.contasFixas !== undefined ? d.config.contasFixas : 1000; 
+                if (document.getElementById('salarioColab')) document.getElementById('salarioColab').value = d.config.salarioColab !== undefined ? d.config.salarioColab : 0; 
+                if (document.getElementById('diasUteis')) document.getElementById('diasUteis').value = d.config.diasUteis !== undefined ? d.config.diasUteis : 22; 
+                if (document.getElementById('horasDia')) document.getElementById('horasDia').value = d.config.horasDia !== undefined ? d.config.horasDia : 7; 
+                if (document.getElementById('baseChapa')) document.getElementById('baseChapa').value = d.config.baseChapa !== undefined ? d.config.baseChapa : 45; 
+                if (document.getElementById('baseTinta')) document.getElementById('baseTinta').value = d.config.baseTinta !== undefined ? d.config.baseTinta : 100; 
+                if (document.getElementById('baseSetup')) document.getElementById('baseSetup').value = d.config.baseSetup !== undefined ? d.config.baseSetup : 40; 
+                if (document.getElementById('gastoTintaGramas')) document.getElementById('gastoTintaGramas').value = d.config.gastoTinta !== undefined ? d.config.gastoTinta : 100; 
+                if (document.getElementById('qResma')) document.getElementById('qResma').value = d.config.qResma !== undefined ? d.config.qResma : 500; 
                 
-                if(d.config.logo) { 
+                if (d.config.logo) { 
                     window.logoEmpresaBase64 = d.config.logo; 
                     document.getElementById('logoPreview').src = d.config.logo; 
                     document.getElementById('logoPreview').style.display = 'block'; 
@@ -1934,6 +3118,7 @@
     function processarLogo(event) { 
         const file = event.target.files[0]; 
         if (!file) return; 
+        
         const reader = new FileReader(); 
         reader.onload = function(e) { 
             const img = new Image(); 
@@ -1942,20 +3127,27 @@
                 const ctx = canvas.getContext('2d'); 
                 const MAX_WIDTH = 300; 
                 const MAX_HEIGHT = 200; 
+                
                 let width = img.width; 
                 let height = img.height; 
                 
                 if (width > height) { 
-                    if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } 
+                    if (width > MAX_WIDTH) { 
+                        height *= MAX_WIDTH / width; 
+                        width = MAX_WIDTH; 
+                    } 
                 } else { 
-                    if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } 
+                    if (height > MAX_HEIGHT) { 
+                        width *= MAX_HEIGHT / height; 
+                        height = MAX_HEIGHT; 
+                    } 
                 } 
                 
                 canvas.width = width; 
                 canvas.height = height; 
                 ctx.drawImage(img, 0, 0, width, height); 
-                const base64 = canvas.toDataURL('image/png'); 
                 
+                const base64 = canvas.toDataURL('image/png'); 
                 document.getElementById('logoPreview').src = base64; 
                 document.getElementById('logoPreview').style.display = 'block'; 
                 window.logoEmpresaBase64 = base64; 
@@ -1965,7 +3157,48 @@
         }; 
         reader.readAsDataURL(file); 
     }
+    // =========================================================================
+    // FUNÇÃO PARA LIMPAR TUDO (NOVO ORÇAMENTO)
+    // =========================================================================
+    function novoOrcamento() {
+        if(confirm("Deseja realmente limpar todos os campos do orçamento atual? Os itens que já estão no carrinho NÃO serão apagados.")) {
+            // 1. Limpa os dados do cliente
+            document.getElementById('cliNome').value = "";
+            document.getElementById('cliDados').value = "";
+            document.getElementById('cliEmail').value = "";
+            document.getElementById('cliCep').value = "";
+            document.getElementById('cliEndereco').value = "";
+            document.getElementById('cliNum').value = "";
 
+            // 2. Reseta as medidas e quantidades para o padrão
+            document.getElementById('lar').value = "15";
+            document.getElementById('alt').value = "21";
+            document.getElementById('qtdInterna').value = "100";
+            document.getElementById('qtdVenda').value = "1";
+            document.getElementById('tempoProd').value = "0";
+
+            window.isBoxMode = false;
+            window.isBagMode = false;
+            
+            // 3. Reseta as listas suspensas (dropdowns) para a primeira opção
+            if(document.getElementById('tipoServico').options.length > 0) document.getElementById('tipoServico').selectedIndex = 0;
+            if(document.getElementById('gramSelect').options.length > 0) document.getElementById('gramSelect').selectedIndex = 0;
+            document.getElementById('esquemaCores').selectedIndex = 0;
+
+            // 4. Limpa os acabamentos extras selecionados
+            acabamentosAtivos = [];
+            renderAcab();
+
+            // 5. Atualiza a tela e os cálculos
+            verificarProduto(false);
+            saveAndCalc();
+            
+            // 6. Coloca o cursor piscando direto no nome do cliente para agilizar
+            document.getElementById('cliNome').focus();
+        }
+    }
+
+    // Inicialização quando a página carrega
     window.onload = () => { 
         carregarBackup(); 
         setTimeout(calc, 800); 
@@ -1973,6 +3206,10 @@
 
 </script>
 
-<div style="display:none;"><table id="tbodyPapel"></table><table id="tbodyAcab"></table><table id="tbodyProduto"></table></div>
+<div style="display:none;">
+    <table id="tbodyPapel"></table>
+    <table id="tbodyAcab"></table>
+    <table id="tbodyProduto"></table>
+</div>
 </body>
 </html>
