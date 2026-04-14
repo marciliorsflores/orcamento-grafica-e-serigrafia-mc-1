@@ -726,6 +726,7 @@
     </div>
 
 <script>
+<script>
     // =========================================================================
     // VARIÁVEIS GLOBAIS
     // =========================================================================
@@ -738,15 +739,13 @@
         'contasFixas', 'salarioColab', 'diasUteis', 'horasDia', 'baseChapa', 
         'baseTinta', 'baseSetup', 'gastoTintaGramas', 'qResma'
     ];
-    let tourPasso = 0; // Para o Avatar
+    let tourPasso = 0;
 
     // =========================================================================
     // MODAL E AVATAR
     // =========================================================================
-    // Substitua a função aceitarContrato, falar e proximoPassoTour por este bloco:
-
     function aceitarContrato() {
-        localStorage.setItem('contratoLidoMC', 'sim'); // Grava no navegador
+        localStorage.setItem('contratoLidoMC', 'sim');
         document.getElementById('modal-contrato').style.display = 'none';
     }
 
@@ -755,7 +754,6 @@
         if (balao) {
             balao.innerText = texto;
             balao.style.display = 'block';
-            // Removi o setTimeout. A mensagem agora não some sozinha!
         }
     }
 
@@ -769,80 +767,59 @@
 
     function passoTour(direcao) {
         tourPasso += direcao;
-        
-        if (tourPasso < 0) tourPasso = 0; // Não deixa voltar antes do zero
-        
+        if (tourPasso < 0) tourPasso = 0; 
         if (tourPasso >= mensagensTour.length) {
-            document.getElementById('balao-fala').style.display = 'none'; // Esconde no final
+            document.getElementById('balao-fala').style.display = 'none';
             tourPasso = mensagensTour.length - 1; 
             return;
         }
         falar(mensagensTour[tourPasso]);
     }
-    // Função para fechar e desativar o avatar
-    window.avatarDesativado = false; // Cria uma variável para lembrar se foi fechado
 
-    // 1. Função que faz o Avatar "dormir" no canto
+    window.avatarDesativado = false; 
+
     function minimizarAvatar() {
-        window.avatarDesativado = true; // Trava o movimento dele
-        
+        window.avatarDesativado = true; 
         const balao = document.getElementById('balao-fala');
-        if(balao) balao.style.display = 'none'; // Esconde o balão de texto
+        if(balao) balao.style.display = 'none'; 
         
         const avatarContainer = document.getElementById('container-avatar');
         if(avatarContainer) {
-            // Fixa ele no canto inferior direito da tela
             avatarContainer.style.position = 'fixed';
             avatarContainer.style.top = 'auto';
             avatarContainer.style.left = 'auto';
             avatarContainer.style.bottom = '20px';
             avatarContainer.style.right = '20px';
-            
-            // Deixa ele meio transparente para não atrapalhar
             avatarContainer.style.opacity = '0.5'; 
         }
     }
-    // =========================================================
-    // AVATAR EXPLICANDO BOTÕES FLUTUANTES
-    // =========================================================
-    function explicarBotao(elemento, texto) {
-        // Se o avatar estiver dormindo no canto, ele não faz nada
-        if (window.avatarDesativado) return;
 
+    function explicarBotao(elemento, texto) {
+        if (window.avatarDesativado) return;
         const avatarContainer = document.getElementById('container-avatar');
         const balao = document.getElementById('balao-fala');
-        
-        // Pega a posição do botão na tela
         const rect = elemento.getBoundingClientRect();
 
-        // Faz o avatar falar o texto que mandarmos
-        if (typeof falar === 'function') {
-            falar(texto);
-        }
+        if (typeof falar === 'function') falar(texto);
 
         avatarContainer.style.position = 'fixed';
         balao.style.position = 'fixed';
 
-        // Calcula para o avatar aparecer logo ACIMA do botão flutuante
         let largAvatar = 100;
         let leftAvatar = rect.left + (rect.width / 2) - (largAvatar / 2); 
         let topAvatar = rect.top - 130; 
-        
         let leftBalao = leftAvatar - 70;
         let topBalao = topAvatar - 100;
 
-        // Travas de segurança para ele não vazar pelas laterais da tela
         if (leftAvatar < 10) leftAvatar = 10;
         if (leftAvatar + largAvatar > window.innerWidth) leftAvatar = window.innerWidth - largAvatar - 10;
         if (leftBalao < 10) leftBalao = 10;
         
-        // Se o balão bater no teto, joga ele para o lado do avatar
         if (topBalao < 10) {
             topBalao = topAvatar;
             leftBalao = leftAvatar + largAvatar + 10;
         }
 
-        // Aplica as posições finais
         avatarContainer.style.bottom = 'auto';
         avatarContainer.style.right = 'auto';
         avatarContainer.style.top = topAvatar + 'px';
@@ -854,19 +831,14 @@
         balao.style.left = leftBalao + 'px';
     }
 
-    // 2. Função que "acorda" o Avatar quando clica nele
     function reativarAvatar() {
-        // Só faz alguma coisa se ele estiver desativado
         if (window.avatarDesativado) {
-            window.avatarDesativado = false; // Destrava o movimento
-            
+            window.avatarDesativado = false; 
             const avatarContainer = document.getElementById('container-avatar');
-            if(avatarContainer) {
-                avatarContainer.style.opacity = '1'; // Tira a transparência
-            }
+            if(avatarContainer) avatarContainer.style.opacity = '1'; 
             
             const balao = document.getElementById('balao-fala');
-            if(balao) balao.style.display = 'block'; // Mostra o balão de novo
+            if(balao) balao.style.display = 'block'; 
             
             if (typeof falar === 'function') {
                 falar("Pronto, voltei! Pode continuar preenchendo.");
@@ -893,11 +865,77 @@
 
     const EMAIL_ADMIN = "serigrafiaegraficamc@gmail.com";
 
+    const dicasCampos = {
+        'cliNome': 'Digite aqui o nome do seu cliente.',
+        'cliDados': 'Insira o WhatsApp ou CNPJ do cliente.',
+        'cliEmail': 'Preencha com o e-mail de contato do cliente.',
+        'cliCep': 'Digite o CEP para buscar o endereço automaticamente.',
+        'cliEndereco': 'Confira ou digite o endereço do cliente.',
+        'cliNum': 'Qual o número do local?',
+        'tipoServico': 'Escolha ou digite o produto/serviço para este pedido.',
+        'qtdInterna': 'Atenção aqui: quantidade de folhas por bloco, ou total a ser comprado.',
+        'qtdVenda': 'Digite a quantidade final que o cliente está pedindo.',
+        'lar': 'Insira a largura final do material em centímetros.',
+        'alt': 'Insira a altura final do material em centímetros.',
+        'cxModelo': 'Escolha como será o corte e montagem dessa caixa.',
+        'cxComp': 'Qual o comprimento (frente) da caixa?',
+        'sacComp': 'Qual a largura visual (frente) da sacola?',
+        'gramSelect': 'Escolha a matéria-prima a ser utilizada.',
+        'esquemaCores': 'Quantas cores vão na impressão? (Ex: 4x0, 1x0, 1x1).',
+        'qResma': 'Quantas folhas vêm no pacote fechado que você compra?',
+        'gastoTintaGramas': 'Qual a estimativa de gasto de tinta para 1000 peças?',
+        'tempoProd': 'Tempo de máquina/mão de obra em horas. Zero não cobra custo fixo.',
+        'selAcab': 'Adicione os acabamentos extras (furos, grampos, ilhós, etc).'
+    };
+
     window.addEventListener('DOMContentLoaded', () => {
-        // Verifica se o contrato já foi aceito alguma vez na vida
         if (!localStorage.getItem('contratoLidoMC')) {
             document.getElementById('modal-contrato').style.display = 'flex';
         }
+
+        document.addEventListener('focusin', function(e) {
+            if (window.avatarDesativado) return; 
+
+            if((e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') && window.innerWidth > 768) {
+                const avatarContainer = document.getElementById('container-avatar'); 
+                const balao = document.getElementById('balao-fala');
+                const rect = e.target.getBoundingClientRect();
+                const idDoCampo = e.target.id;
+
+                if (dicasCampos[idDoCampo]) {
+                    falar(dicasCampos[idDoCampo]);
+                } else {
+                    falar('Preencha este campo de acordo com o pedido.');
+                }
+                
+                let topAvatar = rect.top + window.scrollY - 15;
+                let leftAvatar = rect.right + 15;
+                let topBalao = rect.top + window.scrollY - 60;
+                let leftBalao = rect.right - 100;
+
+                if (leftAvatar + 80 > window.innerWidth) {
+                    leftAvatar = rect.left - 60; 
+                    leftBalao = rect.left - 240; 
+                }
+
+                if (topBalao < window.scrollY + 10) {
+                    topBalao = rect.bottom + window.scrollY + 10;
+                    topAvatar = rect.bottom + window.scrollY + 10;
+                }
+                
+                if (leftBalao < 10) leftBalao = 10;
+
+                avatarContainer.style.bottom = 'auto';
+                avatarContainer.style.right = 'auto';
+                avatarContainer.style.top = topAvatar + 'px';
+                avatarContainer.style.left = leftAvatar + 'px';
+                
+                balao.style.bottom = 'auto';
+                balao.style.right = 'auto';
+                balao.style.top = topBalao + 'px';
+                balao.style.left = leftBalao + 'px';
+            }
+        });
     });
 
     async function handleAuth() {
@@ -907,14 +945,13 @@
         try {
             if (isReg) {
                 const cred = await auth.createUserWithEmailAndPassword(e, p);
-                
                 await db.collection("usuarios").doc(cred.user.uid).set({ 
                     email: e, 
                     status: "pendente", 
                     data_cadastro: new Date().toLocaleDateString('pt-BR') 
                 }, { merge: true });
                 
-                const msgZap = encodeURIComponent(`Olá! Acabei de criar uma conta no Orçamentador Inteligente com o e-mail: ${e}. Pode liberar meu acesso?`);
+                const msgZap = encodeURIComponent(`Olá Marcilio! Acabei de criar uma conta no Orçamentador Inteligente com o e-mail: ${e}. Pode liberar meu acesso?`);
                 
                 document.querySelector('.auth-box').innerHTML = `
                     <h2><i class="fa fa-check-circle"></i> Conta Criada!</h2>
@@ -922,7 +959,6 @@
                     <a href="https://wa.me/5551999713739?text=${msgZap}" target="_blank" style="display:block; background:#25D366; color:white; padding:10px; border-radius:5px; text-decoration:none;">SOLICITAR ACESSO AGORA</a>
                     <p onclick="location.reload()" style="cursor:pointer; font-weight:bold; color:#005aab; margin-top:10px;">Voltar para o Login</p>
                 `;
-                
                 auth.signOut(); 
             } else { 
                 await auth.signInWithEmailAndPassword(e, p); 
@@ -943,18 +979,16 @@
                 const docSnap = await db.collection("usuarios").doc(user.uid).get();
                 
                 if (!docSnap.exists || docSnap.data().status !== 'aprovado') {
-                    const msgZap = encodeURIComponent(`Olá! Meu e-mail (${user.email}) está aguardando aprovação. Pode me liberar?`);
+                    const msgZap = encodeURIComponent(`Olá Marcilio! Meu e-mail (${user.email}) está aguardando aprovação. Pode me liberar?`);
                     
                     document.querySelector('.auth-box').innerHTML = `
                         <h2><i class="fa fa-lock"></i> Acesso Bloqueado</h2>
                         <a href="https://wa.me/5551999713739?text=${msgZap}" target="_blank" style="display:block; background:#25D366; color:white; padding:10px; border-radius:5px; text-decoration:none;">CHAMAR ADMIN NO WHATSAPP</a>
                         <p onclick="location.reload()" style="cursor:pointer; font-weight:bold; color:#005aab; margin-top:10px;">Tentar Novamente</p>
                     `;
-                    
                     auth.signOut(); 
                     return; 
                 }
-                
                 liberarAcessoTotal(false);
             }
         } else { 
@@ -975,11 +1009,11 @@
         
         loadFromCloud(); 
 
-        // Aciona o Avatar
         document.getElementById('container-avatar').style.display = 'block';
-        window.avatarDesativado = false; // Garante que ele ligue ao fazer login
+        window.avatarDesativado = false; 
         tourPasso = 0;
         setTimeout(() => falar(mensagensTour[tourPasso]), 1500);
+    }
     } // <-- A CHAVE ESTAVA NO LUGAR ERRADO! AGORA ELA FECHA A FUNÇÃO AQUI.
 
     // ==========================================
