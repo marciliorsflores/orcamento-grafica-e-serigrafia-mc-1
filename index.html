@@ -726,135 +726,27 @@
     </div>
 
 <script>
-<script>
     // =========================================================================
-    // VARIÁVEIS GLOBAIS
+    // VARIÁVEIS GLOBAIS E FIREBASE
     // =========================================================================
     window.vendaEditandoId = null;
     window.vendasMemoria = {};
-    let acabamentosAtivos = []; 
-    let pedidoItens = []; 
+    let acabamentosAtivos = [];
+    let pedidoItens = [];
     const camposConfig = [
-        'lucroPorcent', 'impostoPorcent', 'comissaoPorcent', 'proMarcilio', 
-        'contasFixas', 'salarioColab', 'diasUteis', 'horasDia', 'baseChapa', 
+        'lucroPorcent', 'impostoPorcent', 'comissaoPorcent', 'proMarcilio',
+        'contasFixas', 'salarioColab', 'diasUteis', 'horasDia', 'baseChapa',
         'baseTinta', 'baseSetup', 'gastoTintaGramas', 'qResma'
     ];
     let tourPasso = 0;
+    window.avatarDesativado = false;
 
-    // =========================================================================
-    // MODAL E AVATAR
-    // =========================================================================
-    function aceitarContrato() {
-        localStorage.setItem('contratoLidoMC', 'sim');
-        document.getElementById('modal-contrato').style.display = 'none';
-    }
-
-    function falar(texto) {
-        const balao = document.getElementById('balao-fala');
-        if (balao) {
-            balao.innerText = texto;
-            balao.style.display = 'block';
-        }
-    }
-
-    const mensagensTour = [
-        "Olá Marcilio! Clique em mim com o ESQUERDO para avançar, ou DIREITO para voltar.",
-        "Veja lá em cima! Adicionei o botão de Estoque e O.S.",
-        "Se você digitar 'copiativo' no Produto, eu abro o painel amarelo!",
-        "Vou te seguir nos campos para ajudar. Sucesso nas vendas!",
-        "Você concluiu as dicas! Pode fechar clicando aqui novamente."
-    ];
-
-    function passoTour(direcao) {
-        tourPasso += direcao;
-        if (tourPasso < 0) tourPasso = 0; 
-        if (tourPasso >= mensagensTour.length) {
-            document.getElementById('balao-fala').style.display = 'none';
-            tourPasso = mensagensTour.length - 1; 
-            return;
-        }
-        falar(mensagensTour[tourPasso]);
-    }
-
-    window.avatarDesativado = false; 
-
-    function minimizarAvatar() {
-        window.avatarDesativado = true; 
-        const balao = document.getElementById('balao-fala');
-        if(balao) balao.style.display = 'none'; 
-        
-        const avatarContainer = document.getElementById('container-avatar');
-        if(avatarContainer) {
-            avatarContainer.style.position = 'fixed';
-            avatarContainer.style.top = 'auto';
-            avatarContainer.style.left = 'auto';
-            avatarContainer.style.bottom = '20px';
-            avatarContainer.style.right = '20px';
-            avatarContainer.style.opacity = '0.5'; 
-        }
-    }
-
-    function explicarBotao(elemento, texto) {
-        if (window.avatarDesativado) return;
-        const avatarContainer = document.getElementById('container-avatar');
-        const balao = document.getElementById('balao-fala');
-        const rect = elemento.getBoundingClientRect();
-
-        if (typeof falar === 'function') falar(texto);
-
-        avatarContainer.style.position = 'fixed';
-        balao.style.position = 'fixed';
-
-        let largAvatar = 100;
-        let leftAvatar = rect.left + (rect.width / 2) - (largAvatar / 2); 
-        let topAvatar = rect.top - 130; 
-        let leftBalao = leftAvatar - 70;
-        let topBalao = topAvatar - 100;
-
-        if (leftAvatar < 10) leftAvatar = 10;
-        if (leftAvatar + largAvatar > window.innerWidth) leftAvatar = window.innerWidth - largAvatar - 10;
-        if (leftBalao < 10) leftBalao = 10;
-        
-        if (topBalao < 10) {
-            topBalao = topAvatar;
-            leftBalao = leftAvatar + largAvatar + 10;
-        }
-
-        avatarContainer.style.bottom = 'auto';
-        avatarContainer.style.right = 'auto';
-        avatarContainer.style.top = topAvatar + 'px';
-        avatarContainer.style.left = leftAvatar + 'px';
-        
-        balao.style.bottom = 'auto';
-        balao.style.right = 'auto';
-        balao.style.top = topBalao + 'px';
-        balao.style.left = leftBalao + 'px';
-    }
-
-    function reativarAvatar() {
-        if (window.avatarDesativado) {
-            window.avatarDesativado = false; 
-            const avatarContainer = document.getElementById('container-avatar');
-            if(avatarContainer) avatarContainer.style.opacity = '1'; 
-            
-            const balao = document.getElementById('balao-fala');
-            if(balao) balao.style.display = 'block'; 
-            
-            if (typeof falar === 'function') {
-                falar("Pronto, voltei! Pode continuar preenchendo.");
-            }
-        }
-    }
-
-    // =========================================================================
-    // 1. CONFIGURAÇÃO FIREBASE E AUTENTICAÇÃO
-    // =========================================================================
     const firebaseConfig = {
-        apiKey: "AIzaSyBa15QojIYjCm5dTqzLXHa4R_myAzYrPEw", 
-        authDomain: "precifica-7e047.firebaseapp.com", 
-        projectId: "precifica-7e047", 
-        storageBucket: "precifica-7e047.firebasestorage.app", 
-        messagingSenderId: "1021698485607", 
+        apiKey: "AIzaSyBa15QojIYjCm5dTqzLXHa4R_myAzYrPEw",
+        authDomain: "precifica-7e047.firebaseapp.com",
+        projectId: "precifica-7e047",
+        storageBucket: "precifica-7e047.firebasestorage.app",
+        messagingSenderId: "1021698485607",
         appId: "1:1021698485607:web:7909523579ab95869ad3c2"
     };
 
@@ -865,6 +757,9 @@
 
     const EMAIL_ADMIN = "serigrafiaegraficamc@gmail.com";
 
+    // =========================================================================
+    // DICIONÁRIO E AVATAR
+    // =========================================================================
     const dicasCampos = {
         'cliNome': 'Digite aqui o nome do seu cliente.',
         'cliDados': 'Insira o WhatsApp ou CNPJ do cliente.',
@@ -888,16 +783,116 @@
         'selAcab': 'Adicione os acabamentos extras (furos, grampos, ilhós, etc).'
     };
 
+    const mensagensTour = [
+        "Olá Marcilio! Clique em mim com o ESQUERDO para avançar, ou DIREITO para voltar.",
+        "Veja lá em cima! Adicionei o botão de Estoque e O.S.",
+        "Se você digitar 'copiativo' no Produto, eu abro o painel amarelo!",
+        "Vou te seguir nos campos para ajudar. Sucesso nas vendas!",
+        "Você concluiu as dicas! Pode fechar clicando aqui novamente."
+    ];
+
+    function aceitarContrato() {
+        localStorage.setItem('contratoLidoMC', 'sim');
+        document.getElementById('modal-contrato').style.display = 'none';
+    }
+
+    function falar(texto) {
+        const balao = document.getElementById('balao-fala');
+        if (balao) {
+            balao.innerText = texto;
+            balao.style.display = 'block';
+        }
+    }
+
+    function passoTour(direcao) {
+        tourPasso += direcao;
+        if (tourPasso < 0) tourPasso = 0;
+        if (tourPasso >= mensagensTour.length) {
+            document.getElementById('balao-fala').style.display = 'none';
+            tourPasso = mensagensTour.length - 1;
+            return;
+        }
+        falar(mensagensTour[tourPasso]);
+    }
+
+    function minimizarAvatar() {
+        window.avatarDesativado = true;
+        const balao = document.getElementById('balao-fala');
+        if(balao) balao.style.display = 'none';
+
+        const avatarContainer = document.getElementById('container-avatar');
+        if(avatarContainer) {
+            avatarContainer.style.position = 'fixed';
+            avatarContainer.style.top = 'auto';
+            avatarContainer.style.left = 'auto';
+            avatarContainer.style.bottom = '20px';
+            avatarContainer.style.right = '20px';
+            avatarContainer.style.opacity = '0.5';
+        }
+    }
+
+    function reativarAvatar() {
+        if (window.avatarDesativado) {
+            window.avatarDesativado = false;
+            const avatarContainer = document.getElementById('container-avatar');
+            if(avatarContainer) avatarContainer.style.opacity = '1';
+
+            const balao = document.getElementById('balao-fala');
+            if(balao) balao.style.display = 'block';
+
+            if (typeof falar === 'function') {
+                falar("Pronto, voltei! Pode continuar preenchendo.");
+            }
+        }
+    }
+
+    function explicarBotao(elemento, texto) {
+        if (window.avatarDesativado) return;
+        const avatarContainer = document.getElementById('container-avatar');
+        const balao = document.getElementById('balao-fala');
+        const rect = elemento.getBoundingClientRect();
+
+        if (typeof falar === 'function') falar(texto);
+
+        avatarContainer.style.position = 'fixed';
+        balao.style.position = 'fixed';
+
+        let largAvatar = 100;
+        let leftAvatar = rect.left + (rect.width / 2) - (largAvatar / 2);
+        let topAvatar = rect.top - 130;
+        let leftBalao = leftAvatar - 70;
+        let topBalao = topAvatar - 100;
+
+        if (leftAvatar < 10) leftAvatar = 10;
+        if (leftAvatar + largAvatar > window.innerWidth) leftAvatar = window.innerWidth - largAvatar - 10;
+        if (leftBalao < 10) leftBalao = 10;
+
+        if (topBalao < 10) {
+            topBalao = topAvatar;
+            leftBalao = leftAvatar + largAvatar + 10;
+        }
+
+        avatarContainer.style.bottom = 'auto';
+        avatarContainer.style.right = 'auto';
+        avatarContainer.style.top = topAvatar + 'px';
+        avatarContainer.style.left = leftAvatar + 'px';
+
+        balao.style.bottom = 'auto';
+        balao.style.right = 'auto';
+        balao.style.top = topBalao + 'px';
+        balao.style.left = leftBalao + 'px';
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
         if (!localStorage.getItem('contratoLidoMC')) {
             document.getElementById('modal-contrato').style.display = 'flex';
         }
 
         document.addEventListener('focusin', function(e) {
-            if (window.avatarDesativado) return; 
+            if (window.avatarDesativado) return;
 
             if((e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') && window.innerWidth > 768) {
-                const avatarContainer = document.getElementById('container-avatar'); 
+                const avatarContainer = document.getElementById('container-avatar');
                 const balao = document.getElementById('balao-fala');
                 const rect = e.target.getBoundingClientRect();
                 const idDoCampo = e.target.id;
@@ -907,29 +902,29 @@
                 } else {
                     falar('Preencha este campo de acordo com o pedido.');
                 }
-                
+
                 let topAvatar = rect.top + window.scrollY - 15;
                 let leftAvatar = rect.right + 15;
                 let topBalao = rect.top + window.scrollY - 60;
                 let leftBalao = rect.right - 100;
 
                 if (leftAvatar + 80 > window.innerWidth) {
-                    leftAvatar = rect.left - 60; 
-                    leftBalao = rect.left - 240; 
+                    leftAvatar = rect.left - 60;
+                    leftBalao = rect.left - 240;
                 }
 
                 if (topBalao < window.scrollY + 10) {
                     topBalao = rect.bottom + window.scrollY + 10;
                     topAvatar = rect.bottom + window.scrollY + 10;
                 }
-                
+
                 if (leftBalao < 10) leftBalao = 10;
 
                 avatarContainer.style.bottom = 'auto';
                 avatarContainer.style.right = 'auto';
                 avatarContainer.style.top = topAvatar + 'px';
                 avatarContainer.style.left = leftAvatar + 'px';
-                
+
                 balao.style.bottom = 'auto';
                 balao.style.right = 'auto';
                 balao.style.top = topBalao + 'px';
@@ -938,33 +933,36 @@
         });
     });
 
+    // =========================================================================
+    // AUTENTICAÇÃO
+    // =========================================================================
     async function handleAuth() {
         const e = document.getElementById('auth-email').value;
         const p = document.getElementById('auth-pass').value;
-        
+
         try {
             if (isReg) {
                 const cred = await auth.createUserWithEmailAndPassword(e, p);
-                await db.collection("usuarios").doc(cred.user.uid).set({ 
-                    email: e, 
-                    status: "pendente", 
-                    data_cadastro: new Date().toLocaleDateString('pt-BR') 
+                await db.collection("usuarios").doc(cred.user.uid).set({
+                    email: e,
+                    status: "pendente",
+                    data_cadastro: new Date().toLocaleDateString('pt-BR')
                 }, { merge: true });
-                
+
                 const msgZap = encodeURIComponent(`Olá Marcilio! Acabei de criar uma conta no Orçamentador Inteligente com o e-mail: ${e}. Pode liberar meu acesso?`);
-                
+
                 document.querySelector('.auth-box').innerHTML = `
                     <h2><i class="fa fa-check-circle"></i> Conta Criada!</h2>
                     <p>Aguardando liberação na sala de espera.</p>
                     <a href="https://wa.me/5551999713739?text=${msgZap}" target="_blank" style="display:block; background:#25D366; color:white; padding:10px; border-radius:5px; text-decoration:none;">SOLICITAR ACESSO AGORA</a>
                     <p onclick="location.reload()" style="cursor:pointer; font-weight:bold; color:#005aab; margin-top:10px;">Voltar para o Login</p>
                 `;
-                auth.signOut(); 
-            } else { 
-                await auth.signInWithEmailAndPassword(e, p); 
+                auth.signOut();
+            } else {
+                await auth.signInWithEmailAndPassword(e, p);
             }
-        } catch (err) { 
-            alert(err.message); 
+        } catch (err) {
+            alert(err.message);
         }
     }
 
@@ -972,49 +970,48 @@
         if (user) {
             const emailLogado = user.email ? user.email.toLowerCase().trim() : "";
             const emailChefe = EMAIL_ADMIN.toLowerCase().trim();
-            
-            if (emailLogado === emailChefe) { 
-                liberarAcessoTotal(true); 
+
+            if (emailLogado === emailChefe) {
+                liberarAcessoTotal(true);
             } else {
                 const docSnap = await db.collection("usuarios").doc(user.uid).get();
-                
+
                 if (!docSnap.exists || docSnap.data().status !== 'aprovado') {
                     const msgZap = encodeURIComponent(`Olá Marcilio! Meu e-mail (${user.email}) está aguardando aprovação. Pode me liberar?`);
-                    
+
                     document.querySelector('.auth-box').innerHTML = `
                         <h2><i class="fa fa-lock"></i> Acesso Bloqueado</h2>
                         <a href="https://wa.me/5551999713739?text=${msgZap}" target="_blank" style="display:block; background:#25D366; color:white; padding:10px; border-radius:5px; text-decoration:none;">CHAMAR ADMIN NO WHATSAPP</a>
                         <p onclick="location.reload()" style="cursor:pointer; font-weight:bold; color:#005aab; margin-top:10px;">Tentar Novamente</p>
                     `;
-                    auth.signOut(); 
-                    return; 
+                    auth.signOut();
+                    return;
                 }
                 liberarAcessoTotal(false);
             }
-        } else { 
-            document.getElementById('auth-container').style.display = 'flex'; 
-            document.getElementById('main-app').style.display = 'none'; 
+        } else {
+            document.getElementById('auth-container').style.display = 'flex';
+            document.getElementById('main-app').style.display = 'none';
         }
     });
 
-    function liberarAcessoTotal(isAdmin) { 
-        document.getElementById('auth-container').style.display = 'none'; 
-        document.getElementById('main-app').style.display = 'block'; 
-        
+    function liberarAcessoTotal(isAdmin) {
+        document.getElementById('auth-container').style.display = 'none';
+        document.getElementById('main-app').style.display = 'block';
+
         if (isAdmin) {
-            document.getElementById('btnPainelAdmin').style.display = 'flex'; 
+            document.getElementById('btnPainelAdmin').style.display = 'flex';
         } else {
-            document.getElementById('btnPainelAdmin').style.display = 'none'; 
+            document.getElementById('btnPainelAdmin').style.display = 'none';
         }
-        
-        loadFromCloud(); 
+
+        loadFromCloud();
 
         document.getElementById('container-avatar').style.display = 'block';
-        window.avatarDesativado = false; 
+        window.avatarDesativado = false;
         tourPasso = 0;
         setTimeout(() => falar(mensagensTour[tourPasso]), 1500);
-    }
-    } // <-- A CHAVE ESTAVA NO LUGAR ERRADO! AGORA ELA FECHA A FUNÇÃO AQUI.
+    }// <-- A CHAVE ESTAVA NO LUGAR ERRADO! AGORA ELA FECHA A FUNÇÃO AQUI.
 
     // ==========================================
     // DICIONÁRIO E MOVIMENTO DO AVATAR
