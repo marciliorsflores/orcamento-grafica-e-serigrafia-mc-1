@@ -48,8 +48,6 @@
         #modal-contrato { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 30000; display: flex; align-items: center; justify-content: center; }
         .box-contrato { background: white; padding: 30px; border-radius: 10px; max-width: 500px; text-align: center; color: #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         
-        /* Substitua o CSS do Avatar (#avatar-mc e #balao-fala) por este: */
-        /* Substitua o CSS antigo do #avatar-mc por este bloco: */
         #container-avatar { position: fixed; bottom: 85px; right: 20px; z-index: 10000; transition: all 0.5s ease; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.3)); }
         #avatar-mc { width: 50px; cursor: pointer; transition: 0.3s; }
         #avatar-mc:hover { transform: scale(1.1); }
@@ -59,14 +57,14 @@
         #btn-fechar-avatar:hover { background: #c0392b; transform: scale(1.2); }
         #balao-fala { position: fixed; bottom: 145px; right: 30px; background: white; padding: 15px; border-radius: 15px; border: 2px solid var(--bg-blue); display: none; width: 220px; font-size: 13px; z-index: 10000; box-shadow: 0 5px 15px rgba(0,0,0,0.2); color: black; font-weight: bold; transition: all 0.5s ease; }
        
-        /* Adicione este bloco NO FINAL do seu <style> para organizar no celular */
         @media (max-width: 768px) {
             .footer-floating { flex-direction: column; padding: 10px; gap: 10px; }
             .btn-group { justify-content: center; width: 100%; }
             .btn-action { flex: 1; min-width: 45%; justify-content: center; font-size: 10px; padding: 10px 5px; }
             .final-price-value { font-size: 28px !important; }
-            body { padding-bottom: 300px; } /* Evita que o rodapé maior cubra o final da página */
+            body { padding-bottom: 300px; }
         }
+
         /* =========================================
            TELA DE LOGIN E AUTENTICAÇÃO
         ========================================= */
@@ -83,6 +81,33 @@
         }
         .auth-box input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
         .auth-btn { width: 100%; padding: 12px; background: #005aab; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+
+        .input-senha-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .input-senha-container input {
+            width: 100%;
+            padding-right: 40px; 
+            box-sizing: border-box;
+        }
+
+        .icone-olho {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #666;
+            display: flex;
+            align-items: center;
+        }
+
+        .icone-olho:hover {
+            color: #0056b3;
+        }
 
         /* =========================================
            MODAIS E DASHBOARD
@@ -181,34 +206,6 @@
         .btn-blue-add { background: var(--bg-blue); color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer; font-size: 12px; font-weight: bold; }
         .btn-del-trash { color: var(--red-delete); cursor: pointer; font-size: 11px; margin-left: 5px; }
         .input-locked { background-color: #e9ecef; border: 1px solid #ccc; color: #666; cursor: not-allowed; }
-        .input-senha-container {
-  position: relative; /* Importante para o ícone ficar contido aqui dentro */
-  width: 100%;
-  margin-bottom: 15px; /* Ajuste conforme o espaçamento do seu formulário */
-}
-
-.input-senha-container input {
-  width: 100%;
-  /* O padding-right de 40px cria um "buraco" vazio do lado direito 
-     para que o texto digitado não fique por baixo do ícone do olho */
-  padding-right: 40px; 
-  box-sizing: border-box;
-}
-
-.icone-olho {
-  position: absolute;
-  right: 10px; /* Distância do ícone para a borda direita */
-  top: 50%;
-  transform: translateY(-50%); /* Centraliza o ícone verticalmente */
-  cursor: pointer;
-  color: #666; /* Cor do ícone */
-  display: flex;
-  align-items: center;
-}
-
-.icone-olho:hover {
-  color: #0056b3; /* Cor que o ícone fica ao passar o mouse por cima (pode usar o azul do seu botão) */
-}
     </style>
 </head>
 <body>
@@ -229,17 +226,43 @@
 
     <div id="balao-fala"></div>
     <div id="container-avatar" style="display:none;">
-    <div id="btn-fechar-avatar"> 
-        <button onclick="minimizarAvatar()">X</button>
+        <div id="btn-fechar-avatar"> 
+            <button onclick="minimizarAvatar()" style="background:none; border:none; color:white; font-weight:bold; cursor:pointer;">X</button>
+        </div>
+        <img id="avatar-mc" 
+             src="https://cdn-icons-png.flaticon.com/512/4712/4712139.png" 
+             onclick="if(window.avatarDesativado) { reativarAvatar(); } else { passoTour(1); }" 
+             oncontextmenu="passoTour(-1); return false;" 
+             alt="Assistente" 
+             style="cursor: pointer;">
     </div>
-    
-    <img id="avatar-mc" 
-         src="https://cdn-icons-png.flaticon.com/512/4712/4712139.png" 
-         onclick="if(window.avatarDesativado) { reativarAvatar(); } else { passoTour(1); }" 
-         oncontextmenu="passoTour(-1); return false;" 
-         alt="Assistente" 
-         style="cursor: pointer;">
-</div>
+
+    <div id="auth-container">
+        <div class="auth-box">
+            <h2 style="color:var(--bg-blue)"><i class="fa fa-lock"></i> Acesso Restrito</h2>
+            <p style="font-size: 12px; color: #666; margin-bottom: 20px;">MC Serigrafia V25.0</p>
+            
+            <input type="email" id="auth-email" placeholder="Seu E-mail" required>
+            
+            <div class="input-senha-container">
+              <input type="password" id="auth-pass" placeholder="Sua senha" required>
+              <span id="btnMostrarSenha" class="icone-olho">
+                <svg id="olhoAberto" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg id="olhoFechado" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </span>
+            </div>
+
+            <button class="auth-btn" onclick="isReg=false; handleAuth()">ENTRAR NO SISTEMA</button>
+            <button class="auth-btn" style="background:var(--green-success);" onclick="isReg=true; handleAuth()">CRIAR CONTA</button>
+        </div>
+    </div>
+
     <div id="admin-modal" class="modal-bg">
         <div class="modal-box">
             <h2 style="margin-top:0; color:var(--bg-blue); border-bottom: 2px solid var(--bg-blue); padding-bottom: 10px;">
@@ -322,29 +345,14 @@
         </div>
     </div>
 
-    <div class="input-senha-container">
-  <input type="password" id="senha" placeholder="Sua senha" required>
-  
-  <span id="btnMostrarSenha" class="icone-olho">
-    <svg id="olhoAberto" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-      <circle cx="12" cy="12" r="3"></circle>
-    </svg>
-    
-    <svg id="olhoFechado" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-      <line x1="1" y1="1" x2="23" y2="23"></line>
-    </svg>
-  </span>
-</div>
-
     <div id="main-app">
         <div class="main-container">
             
-            <div class="top-menu-os">
-               <button class="btn-top" onclick="alert('Em breve: baixa automática!')"><i class="fa fa-boxes"></i> CONTROLE DE ESTOQUE</button>
-                <button class="btn-top" onclick="abrirFilaOS()">
-                    <i class="fa fa-list-check"></i> ORDENS DE SERVIÇO</button> </div>
+            <div class="top-menu-os" style="display: flex; gap: 10px; margin-bottom: 15px;">
+               <button class="btn-action" style="background:var(--bg-blue); color:white;" onclick="alert('Em breve: baixa automática!')"><i class="fa fa-boxes"></i> CONTROLE DE ESTOQUE</button>
+                <button class="btn-action" style="background:var(--sync-orange); color:white;" onclick="abrirFilaOS()">
+                    <i class="fa fa-list-check"></i> ORDENS DE SERVIÇO</button> 
+            </div>
 
             <div id="avisoEdicao" style="display:none; background:#f39c12; color:white; padding:10px; text-align:center; font-weight:bold; border-radius:4px; margin-bottom:10px;">
                 <i class="fa fa-exclamation-triangle"></i> VOCÊ ESTÁ EDITANDO UM PEDIDO EXISTENTE. Ao fechar, o pedido original será atualizado.
@@ -636,6 +644,7 @@
                         <tbody id="tbodyAcab"></tbody>
                     </table>
                 </div>
+
                 <div class="ref-card" style="grid-column: 1 / -1; background: #e3f2fd; border: 2px dashed #005aab; text-align: center; padding: 20px;">
                     <h4 style="justify-content: center; color: var(--bg-blue); border-bottom: none; font-size: 14px; margin-bottom: 5px;">
                         <i class="fa fa-file-excel"></i> Cadastro em Massa (Excel)
@@ -651,6 +660,7 @@
                     
                     <input type="file" id="fileImportExcel" accept=".xlsx, .xls" style="display:none;" onchange="processarImportacaoExcel(event)">
                 </div>
+
                 <div class="ref-card" style="background:#fff; border-left:5px solid var(--active-blue);">
                     <h4 style="color:var(--text-dark); border-bottom:2px solid var(--active-blue);">Conferência Detalhada</h4>
                     <table class="resumo-table" id="tabelaResumoCustos"></table>
@@ -697,65 +707,71 @@
                 </div>
                 <p style="margin: 0; font-style: italic; color: #4ade80; font-weight: bold; font-size: 14px;">"Deus abençoe sua vida e seu negócio sempre!!! 🙏"</p>
             </div>
-
         </div>
 
         <div class="footer-floating">
             <div class="final-price-value" id="totalPrice" style="font-size: 32px;">R$ 0,00</div>
-            
             <div class="btn-group">
-                
-            <button class="btn-action" style="background:#e67e22;" onclick="gerarESalvarOS()" 
-                    onmouseenter="explicarBotao(this, 'Gera a Ordem de Serviço sem valores, focada na produção, e salva na Fila de Máquina.')">
-                <i class="fa fa-print"></i> GERAR O.S.
-            </button>
-            
-            <button class="btn-action btn-add-pedido" title="Adicionar ao Carrinho" onclick="adicionarAoPedido()" 
-                    onmouseenter="explicarBotao(this, 'Adiciona este item com todas as configurações ao carrinho do cliente.')">
-                <i class="fa fa-cart-plus"></i> ADD ITEM AO PEDIDO
-            </button>
-            
-            <button class="btn-action btn-dash" onclick="abrirDashboard()" 
-                    onmouseenter="explicarBotao(this, 'Abre o painel com os gráficos e resultados financeiros do mês.')">
-                <i class="fa fa-chart-bar"></i> DASHBOARD MENSAL
-            </button>
-            
-            <button class="btn-action btn-save-hist" id="btnFecharPedido" onclick="registrarVenda()" 
-                    onmouseenter="explicarBotao(this, 'Finaliza o pedido com todos os itens do carrinho e salva no histórico de vendas.')">
-                <i class="fa fa-handshake"></i> FECHAR PEDIDO
-            </button>
-            
-            <button class="btn-action" id="btnPainelAdmin" onclick="abrirPainelAdmin()" style="display:none; background:#c0392b;" 
-                    onmouseenter="explicarBotao(this, 'Abre a área restrita de configuração e administração do sistema.')">
-                <i class="fa fa-cogs"></i> ADM
-            </button>
-            
-            <button class="btn-action" style="background:#107c41" onclick="baixarExcel()" 
-                    onmouseenter="explicarBotao(this, 'Exporta os dados da tabela para uma planilha do Excel.')">
-                <i class="fa fa-file-excel"></i> EXCEL
-            </button>
-            
-            <button class="btn-action btn-save-plan" onclick="saveToCloud()" 
-                    onmouseenter="explicarBotao(this, 'Sincroniza e salva um backup de segurança dos seus dados na nuvem.')">
-                <i class="fa fa-cloud-upload"></i> SALVAR NUVEM
-            </button>
-            
-            <button class="btn-action btn-pdf" onclick="gerarPDF()" 
-                    onmouseenter="explicarBotao(this, 'Gera o orçamento completo em PDF para entregar ou enviar ao cliente.')">
-                <i class="fa fa-file-pdf"></i> PDF
-            </button>
-            
-            <button class="btn-action btn-xml" onclick="alert('Leitor de XML Fiscal será ativado na atualização V25.1!')" 
-                    onmouseenter="explicarBotao(this, 'Função em breve: Leitura de nota fiscal para controle de estoque automático.')">
-                <i class="fa fa-file-code"></i> LER XML
-            </button>
-            
-            <button class="btn-action btn-whatsapp" onclick="enviarWhatsApp()" 
-                    onmouseenter="explicarBotao(this, 'Abre o WhatsApp Web já com o texto do orçamento pronto para enviar ao cliente.')">
-                <i class="fab fa-whatsapp"></i> ZAP
-            </button>
-            
+                <button class="btn-action" style="background:#e67e22;" onclick="gerarESalvarOS()" 
+                        onmouseenter="explicarBotao(this, 'Gera a Ordem de Serviço sem valores, focada na produção, e salva na Fila de Máquina.')">
+                    <i class="fa fa-print"></i> GERAR O.S.
+                </button>
+                <button class="btn-action btn-add-pedido" title="Adicionar ao Carrinho" onclick="adicionarAoPedido()" 
+                        onmouseenter="explicarBotao(this, 'Adiciona este item com todas as configurações ao carrinho do cliente.')">
+                    <i class="fa fa-cart-plus"></i> ADD ITEM AO PEDIDO
+                </button>
+                <button class="btn-action btn-dash" onclick="abrirDashboard()" 
+                        onmouseenter="explicarBotao(this, 'Abre o painel com os gráficos e resultados financeiros do mês.')">
+                    <i class="fa fa-chart-bar"></i> DASHBOARD MENSAL
+                </button>
+                <button class="btn-action btn-save-hist" id="btnFecharPedido" onclick="registrarVenda()" 
+                        onmouseenter="explicarBotao(this, 'Finaliza o pedido com todos os itens do carrinho e salva no histórico de vendas.')">
+                    <i class="fa fa-handshake"></i> FECHAR PEDIDO
+                </button>
+                <button class="btn-action" id="btnPainelAdmin" onclick="abrirPainelAdmin()" style="display:none; background:#c0392b;" 
+                        onmouseenter="explicarBotao(this, 'Abre a área restrita de configuração e administração do sistema.')">
+                    <i class="fa fa-cogs"></i> ADM
+                </button>
+                <button class="btn-action" style="background:#107c41" onclick="baixarExcel()" 
+                        onmouseenter="explicarBotao(this, 'Exporta os dados da tabela para uma planilha do Excel.')">
+                    <i class="fa fa-file-excel"></i> EXCEL
+                </button>
+                <button class="btn-action btn-save-plan" onclick="saveToCloud()" 
+                        onmouseenter="explicarBotao(this, 'Sincroniza e salva um backup de segurança dos seus dados na nuvem.')">
+                    <i class="fa fa-cloud-upload"></i> SALVAR NUVEM
+                </button>
+                <button class="btn-action btn-pdf" onclick="gerarPDF()" 
+                        onmouseenter="explicarBotao(this, 'Gera o orçamento completo em PDF para entregar ou enviar ao cliente.')">
+                    <i class="fa fa-file-pdf"></i> PDF
+                </button>
+                <button class="btn-action btn-xml" onclick="alert('Leitor de XML Fiscal será ativado na atualização V25.1!')" 
+                        onmouseenter="explicarBotao(this, 'Função em breve: Leitura de nota fiscal para controle de estoque automático.')">
+                    <i class="fa fa-file-code"></i> LER XML
+                </button>
+                <button class="btn-action btn-whatsapp" onclick="enviarWhatsApp()" 
+                        onmouseenter="explicarBotao(this, 'Abre o WhatsApp Web já com o texto do orçamento pronto para enviar ao cliente.')">
+                    <i class="fab fa-whatsapp"></i> ZAP
+                </button>
+            </div>
         </div>
+    </div>
+
+    <div id="os-modal" class="modal-bg" style="display: none;">
+        <div class="modal-box">
+            <h2 style="margin-top:0; color:var(--bg-blue); border-bottom: 2px solid var(--bg-blue); padding-bottom: 10px;">
+                <i class="fa fa-print"></i> Fila de Máquina (Ordens de Serviço)
+            </h2>
+            <table class="hist-table">
+                <thead>
+                    <tr><th>Data</th><th>Cliente</th><th>Status</th><th>Ações</th></tr>
+                </thead>
+                <tbody id="listaOS">
+                    <tr><td colspan="4" style="text-align:center;">Carregando O.S...</td></tr>
+                </tbody>
+            </table>
+            <div style="text-align: right; margin-top: 20px;">
+                <button onclick="document.getElementById('os-modal').style.display='none'" style="padding:10px 15px; background:#95a5a6; color:white; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">FECHAR</button>
+            </div>
         </div>
     </div>
 
@@ -774,6 +790,7 @@
     ];
     let tourPasso = 0;
     window.avatarDesativado = false;
+    let isReg = false;
 
     const firebaseConfig = {
         apiKey: "AIzaSyBa15QojIYjCm5dTqzLXHa4R_myAzYrPEw",
@@ -787,12 +804,10 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
-    let isReg = false;
-
     const EMAIL_ADMIN = "serigrafiaegraficamc@gmail.com";
 
     // =========================================================================
-    // DICIONÁRIO E AVATAR
+    // DICIONÁRIO E TOUR DO AVATAR
     // =========================================================================
     const dicasCampos = {
         'cliNome': 'Digite aqui o nome do seu cliente.',
@@ -814,7 +829,8 @@
         'qResma': 'Quantas folhas vêm no pacote fechado que você compra?',
         'gastoTintaGramas': 'Qual a estimativa de gasto de tinta para 1000 peças?',
         'tempoProd': 'Tempo de máquina/mão de obra em horas. Zero não cobra custo fixo.',
-        'selAcab': 'Adicione os acabamentos extras (furos, grampos, ilhós, etc).'
+        'selAcab': 'Adicione os acabamentos extras (furos, grampos, ilhós, etc).',
+        'qtdVias': 'Selecione o número de vias do talão.'
     };
 
     const mensagensTour = [
@@ -873,10 +889,7 @@
 
             const balao = document.getElementById('balao-fala');
             if(balao) balao.style.display = 'block';
-
-            if (typeof falar === 'function') {
-                falar("Pronto, voltei! Pode continuar preenchendo.");
-            }
+            falar("Pronto, voltei! Pode continuar preenchendo.");
         }
     }
 
@@ -886,7 +899,7 @@
         const balao = document.getElementById('balao-fala');
         const rect = elemento.getBoundingClientRect();
 
-        if (typeof falar === 'function') falar(texto);
+        falar(texto);
 
         avatarContainer.style.position = 'fixed';
         balao.style.position = 'fixed';
@@ -900,7 +913,6 @@
         if (leftAvatar < 10) leftAvatar = 10;
         if (leftAvatar + largAvatar > window.innerWidth) leftAvatar = window.innerWidth - largAvatar - 10;
         if (leftBalao < 10) leftBalao = 10;
-
         if (topBalao < 10) {
             topBalao = topAvatar;
             leftBalao = leftAvatar + largAvatar + 10;
@@ -917,16 +929,38 @@
         balao.style.left = leftBalao + 'px';
     }
 
+    // =========================================================================
+    // LÓGICA DO OLHO MÁGICO DE SENHA E INICIALIZAÇÃO
+    // =========================================================================
     window.addEventListener('DOMContentLoaded', () => {
         if (!localStorage.getItem('contratoLidoMC')) {
             document.getElementById('modal-contrato').style.display = 'flex';
         }
 
+        const btnMostrarSenha = document.getElementById('btnMostrarSenha');
+        if(btnMostrarSenha) {
+            btnMostrarSenha.addEventListener('click', function() {
+                const senhaInput = document.getElementById('auth-pass');
+                const olhoAberto = document.getElementById('olhoAberto');
+                const olhoFechado = document.getElementById('olhoFechado');
+                if(senhaInput.type === 'password') {
+                    senhaInput.type = 'text';
+                    olhoAberto.style.display = 'none';
+                    olhoFechado.style.display = 'block';
+                } else {
+                    senhaInput.type = 'password';
+                    olhoAberto.style.display = 'block';
+                    olhoFechado.style.display = 'none';
+                }
+            });
+        }
+
+        // LÓGICA UNIFICADA DE MOVIMENTAÇÃO DO AVATAR PELOS CAMPOS (FOCUSIN)
         document.addEventListener('focusin', function(e) {
-            if (window.avatarDesativado) return;
+            if (window.avatarDesativado) return; 
 
             if((e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') && window.innerWidth > 768) {
-                const avatarContainer = document.getElementById('container-avatar');
+                const avatarContainer = document.getElementById('container-avatar'); 
                 const balao = document.getElementById('balao-fala');
                 const rect = e.target.getBoundingClientRect();
                 const idDoCampo = e.target.id;
@@ -936,29 +970,47 @@
                 } else {
                     falar('Preencha este campo de acordo com o pedido.');
                 }
+                
+                avatarContainer.style.position = 'fixed';
+                balao.style.position = 'fixed';
 
-                let topAvatar = rect.top + window.scrollY - 15;
+                const largAvatar = 100; 
+                const altAvatar = 120;
+                const largBalao = 250;
+                const altBalao = 100;
+
                 let leftAvatar = rect.right + 15;
-                let topBalao = rect.top + window.scrollY - 60;
-                let leftBalao = rect.right - 100;
+                let topAvatar = rect.top;
+                let leftBalao = leftAvatar + largAvatar + 10;
+                let topBalao = rect.top - 20;
 
-                if (leftAvatar + 80 > window.innerWidth) {
-                    leftAvatar = rect.left - 60;
-                    leftBalao = rect.left - 240;
+                const telaLargura = window.innerWidth;
+                const telaAltura = window.innerHeight;
+
+                if (leftBalao + largBalao > telaLargura) {
+                    leftAvatar = rect.left - largAvatar - 15;
+                    leftBalao = leftAvatar - largBalao - 10;
                 }
 
-                if (topBalao < window.scrollY + 10) {
-                    topBalao = rect.bottom + window.scrollY + 10;
-                    topAvatar = rect.bottom + window.scrollY + 10;
+                if (leftBalao < 0 || leftAvatar < 0) {
+                    leftAvatar = rect.left + (rect.width / 2) - (largAvatar / 2);
+                    leftBalao = leftAvatar - (largBalao / 2) + 30;
+                    topAvatar = rect.bottom + 15;
+                    topBalao = topAvatar + altAvatar;
                 }
 
-                if (leftBalao < 10) leftBalao = 10;
+                if (topAvatar + altAvatar > telaAltura) topAvatar = telaAltura - altAvatar - 10;
+                if (topBalao + altBalao > telaAltura) topBalao = telaAltura - altBalao - 10;
+                if (topAvatar < 0) topAvatar = 10;
+                if (topBalao < 0) topBalao = 10;
+                if (leftBalao < 0) leftBalao = 10;
+                if (leftAvatar < 0) leftAvatar = 10;
 
                 avatarContainer.style.bottom = 'auto';
                 avatarContainer.style.right = 'auto';
                 avatarContainer.style.top = topAvatar + 'px';
                 avatarContainer.style.left = leftAvatar + 'px';
-
+                
                 balao.style.bottom = 'auto';
                 balao.style.right = 'auto';
                 balao.style.top = topBalao + 'px';
@@ -968,194 +1020,8 @@
     });
 
     // =========================================================================
-    // AUTENTICAÇÃO
+    // AUTENTICAÇÃO LIMPA E DESDUPLICADA
     // =========================================================================
-    async function handleAuth() {
-        const e = document.getElementById('auth-email').value;
-        const p = document.getElementById('auth-pass').value;
-
-        try {
-            if (isReg) {
-                const cred = await auth.createUserWithEmailAndPassword(e, p);
-                await db.collection("usuarios").doc(cred.user.uid).set({
-                    email: e,
-                    status: "pendente",
-                    data_cadastro: new Date().toLocaleDateString('pt-BR')
-                }, { merge: true });
-
-                const msgZap = encodeURIComponent(`Olá Marcilio! Acabei de criar uma conta no Orçamentador Inteligente com o e-mail: ${e}. Pode liberar meu acesso?`);
-
-                document.querySelector('.auth-box').innerHTML = `
-                    <h2><i class="fa fa-check-circle"></i> Conta Criada!</h2>
-                    <p>Aguardando liberação na sala de espera.</p>
-                    <a href="https://wa.me/5551999713739?text=${msgZap}" target="_blank" style="display:block; background:#25D366; color:white; padding:10px; border-radius:5px; text-decoration:none;">SOLICITAR ACESSO AGORA</a>
-                    <p onclick="location.reload()" style="cursor:pointer; font-weight:bold; color:#005aab; margin-top:10px;">Voltar para o Login</p>
-                `;
-                auth.signOut();
-            } else {
-                await auth.signInWithEmailAndPassword(e, p);
-            }
-        } catch (err) {
-            alert(err.message);
-        }
-    }
-
-    auth.onAuthStateChanged(async (user) => {
-        if (user) {
-            const emailLogado = user.email ? user.email.toLowerCase().trim() : "";
-            const emailChefe = EMAIL_ADMIN.toLowerCase().trim();
-
-            if (emailLogado === emailChefe) {
-                liberarAcessoTotal(true);
-            } else {
-                const docSnap = await db.collection("usuarios").doc(user.uid).get();
-
-                if (!docSnap.exists || docSnap.data().status !== 'aprovado') {
-                    const msgZap = encodeURIComponent(`Olá Marcilio! Meu e-mail (${user.email}) está aguardando aprovação. Pode me liberar?`);
-
-                    document.querySelector('.auth-box').innerHTML = `
-                        <h2><i class="fa fa-lock"></i> Acesso Bloqueado</h2>
-                        <a href="https://wa.me/5551999713739?text=${msgZap}" target="_blank" style="display:block; background:#25D366; color:white; padding:10px; border-radius:5px; text-decoration:none;">CHAMAR ADMIN NO WHATSAPP</a>
-                        <p onclick="location.reload()" style="cursor:pointer; font-weight:bold; color:#005aab; margin-top:10px;">Tentar Novamente</p>
-                    `;
-                    auth.signOut();
-                    return;
-                }
-                liberarAcessoTotal(false);
-            }
-        } else {
-            document.getElementById('auth-container').style.display = 'flex';
-            document.getElementById('main-app').style.display = 'none';
-        }
-    });
-
-    function liberarAcessoTotal(isAdmin) {
-        document.getElementById('auth-container').style.display = 'none';
-        document.getElementById('main-app').style.display = 'block';
-
-        if (isAdmin) {
-            document.getElementById('btnPainelAdmin').style.display = 'flex';
-        } else {
-            document.getElementById('btnPainelAdmin').style.display = 'none';
-        }
-
-        loadFromCloud();
-
-        document.getElementById('container-avatar').style.display = 'block';
-        window.avatarDesativado = false;
-        tourPasso = 0;
-        setTimeout(() => falar(mensagensTour[tourPasso]), 1500);
-    }// <-- A CHAVE ESTAVA NO LUGAR ERRADO! AGORA ELA FECHA A FUNÇÃO AQUI.
-
-    // ==========================================
-    // DICIONÁRIO E MOVIMENTO DO AVATAR
-    // ==========================================
-    const dicasCampos = {
-        'cliNome': 'Digite aqui o nome do seu cliente.',
-        'cliDados': 'Insira o WhatsApp ou CNPJ do cliente.',
-        'cliEmail': 'Preencha com o e-mail de contato do cliente.',
-        'cliCep': 'Digite o CEP para buscar o endereço automaticamente.',
-        'cliEndereco': 'Confira ou digite o endereço do cliente.',
-        'cliNum': 'Qual o número do local?',
-        'tipoServico': 'Escolha ou digite o produto/serviço para este pedido.',
-        'qtdInterna': 'Atenção aqui: quantidade de folhas por bloco, ou total a ser comprado.',
-        'qtdVenda': 'Digite a quantidade final que o cliente está pedindo.',
-        'lar': 'Insira a largura final do material em centímetros.',
-        'alt': 'Insira a altura final do material em centímetros.',
-        'cxModelo': 'Escolha como será o corte e montagem dessa caixa.',
-        'cxComp': 'Qual o comprimento (frente) da caixa?',
-        'sacComp': 'Qual a largura visual (frente) da sacola?',
-        'gramSelect': 'Escolha a matéria-prima a ser utilizada.',
-        'esquemaCores': 'Quantas cores vão na impressão? (Ex: 4x0, 1x0, 1x1).',
-        'qResma': 'Quantas folhas vêm no pacote fechado que você compra?',
-        'gastoTintaGramas': 'Qual a estimativa de gasto de tinta para 1000 peças?',
-        'tempoProd': 'Tempo de máquina/mão de obra em horas. Zero não cobra custo fixo.',
-        'selAcab': 'Adicione os acabamentos extras (furos, grampos, ilhós, etc).'
-    };
-
-    document.addEventListener('mouseover', function(e) {
-        // SE O AVATAR FOI DESATIVADO NO 'X', NÃO FAZ NADA E SAI DA FUNÇÃO
-        if (window.avatarDesativado) return; 
-
-        if((e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT')) {
-            const avatarContainer = document.getElementById('container-avatar'); 
-            const balao = document.getElementById('balao-fala');
-            
-            // getBoundingClientRect pega a posição exata em relação à tela visível agora
-            const rect = e.target.getBoundingClientRect();
-            const idDoCampo = e.target.id;
-
-            if (typeof dicasCampos !== 'undefined' && dicasCampos[idDoCampo]) {
-                falar(dicasCampos[idDoCampo]);
-            } else if (typeof falar === 'function') {
-                falar('Preencha este campo de acordo com o pedido.');
-            }
-            
-            // MUDANÇA CRÍTICA: Usar 'fixed' impede que a rolagem bagunce a posição
-            avatarContainer.style.position = 'fixed';
-            balao.style.position = 'fixed';
-
-            // Tamanhos aproximados do avatar e do balão para o cálculo da "parede"
-            const largAvatar = 100; 
-            const altAvatar = 120;
-            const largBalao = 250;
-            const altBalao = 100;
-
-            // Tenta colocar à direita do campo primeiro
-            let leftAvatar = rect.right + 15;
-            let topAvatar = rect.top;
-            
-            let leftBalao = leftAvatar + largAvatar + 10;
-            let topBalao = rect.top - 20;
-
-            const telaLargura = window.innerWidth;
-            const telaAltura = window.innerHeight;
-
-            // TRAVA 1: Bateu na direita da tela? Joga tudo para a ESQUERDA do campo
-            if (leftBalao + largBalao > telaLargura) {
-                leftAvatar = rect.left - largAvatar - 15;
-                leftBalao = leftAvatar - largBalao - 10;
-            }
-
-            // TRAVA 2: Bateu na esquerda da tela? Coloca EM CIMA ou EMBAIXO do campo
-            if (leftBalao < 0 || leftAvatar < 0) {
-                leftAvatar = rect.left + (rect.width / 2) - (largAvatar / 2);
-                leftBalao = leftAvatar - (largBalao / 2) + 30;
-                
-                // Tenta colocar embaixo
-                topAvatar = rect.bottom + 15;
-                topBalao = topAvatar + altAvatar;
-            }
-
-            // TRAVA 3: Bateu no fundo da tela? Empurra pra cima
-            if (topAvatar + altAvatar > telaAltura) {
-                topAvatar = telaAltura - altAvatar - 10;
-            }
-            if (topBalao + altBalao > telaAltura) {
-                topBalao = telaAltura - altBalao - 10;
-            }
-
-            // TRAVA 4: Bateu no teto da tela? Empurra pra baixo
-            if (topAvatar < 0) topAvatar = 10;
-            if (topBalao < 0) topBalao = 10;
-
-            // TRAVA 5: Garantia final de margem esquerda
-            if (leftBalao < 0) leftBalao = 10;
-            if (leftAvatar < 0) leftAvatar = 10;
-
-            // Aplica as coordenadas finais com as travas
-            avatarContainer.style.bottom = 'auto';
-            avatarContainer.style.right = 'auto';
-            avatarContainer.style.top = topAvatar + 'px';
-            avatarContainer.style.left = leftAvatar + 'px';
-            
-            balao.style.bottom = 'auto';
-            balao.style.right = 'auto';
-            balao.style.top = topBalao + 'px';
-            balao.style.left = leftBalao + 'px';
-        }
-    });
-
     async function handleAuth() {
         const e = document.getElementById('auth-email').value;
         const p = document.getElementById('auth-pass').value;
@@ -1184,7 +1050,7 @@
                 await auth.signInWithEmailAndPassword(e, p); 
             }
         } catch (err) { 
-            alert(err.message); 
+            alert("Erro de autenticação: " + err.message); 
         }
     }
 
@@ -1231,99 +1097,15 @@
         
         loadFromCloud(); 
 
-        // Aciona o Avatar
-        // Dentro de liberarAcessoTotal
-        // No final da função liberarAcessoTotal(isAdmin), troque o avatar-mc por container-avatar:
         document.getElementById('container-avatar').style.display = 'block';
-        window.avatarDesativado = false; // Garante que ele ligue ao fazer login
+        window.avatarDesativado = false;
         tourPasso = 0;
-        setTimeout(() => falar(mensagensTour[tourPasso]), 1500);tourPasso = 0;
         setTimeout(() => falar(mensagensTour[tourPasso]), 1500);
-    // Dicionário com as dicas de cada campo. 
-    // Você pode alterar os textos ou adicionar novos campos usando o ID do HTML.
-    const dicasCampos = {
-        'cliNome': 'Digite aqui o nome do seu cliente.',
-        'cliDados': 'Insira o WhatsApp ou CNPJ do cliente.',
-        'cliEmail': 'Preencha com o e-mail de contato do cliente.',
-        'cliCep': 'Digite o CEP para buscar o endereço automaticamente.',
-        'cliEndereco': 'Confira ou digite o endereço do cliente.',
-        'cliNum': 'Qual o número do local?',
-        'tipoServico': 'Escolha ou digite o produto/serviço para este pedido.',
-        'qtdInterna': 'Atenção aqui: quantidade de folhas por bloco, ou total a ser comprado.',
-        'qtdVenda': 'Digite a quantidade final que o cliente está pedindo.',
-        'lar': 'Insira a largura final do material em centímetros.',
-        'alt': 'Insira a altura final do material em centímetros.',
-        'cxModelo': 'Escolha como será o corte e montagem dessa caixa.',
-        'cxComp': 'Qual o comprimento (frente) da caixa?',
-        'sacComp': 'Qual a largura visual (frente) da sacola?',
-        'gramSelect': 'Escolha a matéria-prima a ser utilizada.',
-        'esquemaCores': 'Quantas cores vão na impressão? (Ex: 4x0, 1x0, 1x1).',
-        'qResma': 'Quantas folhas vêm no pacote fechado que você compra?',
-        'gastoTintaGramas': 'Qual a estimativa de gasto de tinta para 1000 peças?',
-        'tempoProd': 'Tempo de máquina/mão de obra em horas. Zero não cobra custo fixo.',
-        'selAcab': 'Adicione os acabamentos extras (furos, grampos, ilhós, etc).'
-    };
+    }
 
-    window.addEventListener('DOMContentLoaded', () => {
-        // Verifica se o contrato já foi aceito alguma vez na vida
-        if (!localStorage.getItem('contratoLidoMC')) {
-            document.getElementById('modal-contrato').style.display = 'flex';
-        }
-
-        // Lógica para o avatar seguir o campo clicado e falar a dica Deixei uma lista dicasCampos bem fácil de ler. Se você quiser adicionar uma instrução específica para a qtdVias do copiativo, por exemplo, é só adicionar uma vírgula no último item da lista e colocar: 'qtdVias': 'Selecione o número de vias do talão.',.
-        // Substitua a lógica de mover o avatar por esta:
-        document.addEventListener('focusin', function(e) {
-        // SE O AVATAR FOI DESATIVADO NO 'X', NÃO FAZ NADA E SAI DA FUNÇÃO
-        if (window.avatarDesativado) return; 
-
-        if((e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') && window.innerWidth > 768) {
-            const avatarContainer = document.getElementById('container-avatar'); 
-            const balao = document.getElementById('balao-fala');
-            const rect = e.target.getBoundingClientRect();
-            const idDoCampo = e.target.id;
-
-            if (dicasCampos[idDoCampo]) {
-                falar(dicasCampos[idDoCampo]);
-            } else {
-                falar('Preencha este campo de acordo com o pedido.');
-            }
-            
-            // Cálculos para manter na tela
-            let topAvatar = rect.top + window.scrollY - 15;
-            let leftAvatar = rect.right + 15;
-            let topBalao = rect.top + window.scrollY - 60;
-            let leftBalao = rect.right - 100;
-
-            // Se bater na margem direita da tela, joga o avatar para a esquerda do campo
-            if (leftAvatar + 80 > window.innerWidth) {
-                leftAvatar = rect.left - 60; 
-                leftBalao = rect.left - 240; 
-            }
-
-            // Se o campo for muito no topo da página, joga o balão para baixo
-            if (topBalao < window.scrollY + 10) {
-                topBalao = rect.bottom + window.scrollY + 10;
-                topAvatar = rect.bottom + window.scrollY + 10;
-            }
-            
-            // Impede do balão sumir pela esquerda
-            if (leftBalao < 10) leftBalao = 10;
-
-            // Aplica as posições finais
-            avatarContainer.style.bottom = 'auto';
-            avatarContainer.style.right = 'auto';
-            avatarContainer.style.top = topAvatar + 'px';
-            avatarContainer.style.left = leftAvatar + 'px';
-            
-            balao.style.bottom = 'auto';
-            balao.style.right = 'auto';
-            balao.style.top = topBalao + 'px';
-            balao.style.left = leftBalao + 'px';
-        }
-    });
-    });
-}
-
+    // =========================================================================
+    // ADMIN E USUÁRIOS
+    // =========================================================================
     async function abrirPainelAdmin() {
         document.getElementById('admin-modal').style.display = 'flex';
         const tbody = document.getElementById('listaUsuariosAdmin'); 
@@ -1366,7 +1148,7 @@
     }
 
     // =========================================================================
-    // 2. LÓGICA DE GERENCIAMENTO DE VENDAS E DASHBOARD
+    // LÓGICA DE GERENCIAMENTO DE VENDAS E DASHBOARD
     // =========================================================================
     async function registrarVenda() {
         if (pedidoItens.length === 0) { 
@@ -1399,17 +1181,15 @@
             valor_total: totalVenda, 
             custo_variavel: custoVarTotal, 
             margem_contribuicao: margemContribuicao,
-            itens_detalhes: pedidoItens // Salvando os itens completos para edição futura
+            itens_detalhes: pedidoItens
         };
         
         try { 
             if (window.vendaEditandoId) {
-                // Atualizar Venda Existente
                 await db.collection("usuarios").doc(user.uid).collection("vendas").doc(window.vendaEditandoId).update(dadosVenda);
                 alert("✅ Pedido Atualizado com Sucesso!");
-                cancelarEdicao(); // Limpa as variáveis de edição
+                cancelarEdicao(); 
             } else {
-                // Nova Venda
                 await db.collection("usuarios").doc(user.uid).collection("vendas").add(dadosVenda); 
                 alert("✅ Venda Fechada e Registrada no Dashboard com Sucesso!"); 
             }
@@ -1450,11 +1230,11 @@
             
             let dadosPorMes = {};
             let ultimosPedidos = [];
-            window.vendasMemoria = {}; // Reseta a memória de vendas para edição
+            window.vendasMemoria = {}; 
             
             snapshot.forEach(doc => {
                 let d = doc.data(); 
-                window.vendasMemoria[doc.id] = d; // Guarda na memória
+                window.vendasMemoria[doc.id] = d; 
                 
                 let dataStr = d.data_venda || new Date().toISOString(); 
                 let dataObj = new Date(dataStr);
@@ -1496,7 +1276,6 @@
                 margemAtual = dadosPorMes[chaveMesAtual].margem; 
             }
 
-            // Cards de Faturamento
             document.getElementById('lblCustosFixos').innerText = `R$ ${custosFixosMensais.toFixed(2).replace('.',',')}`;
             document.getElementById('lblMargemArrecadada').innerText = `R$ ${margemAtual.toFixed(2).replace('.',',')}`;
             
@@ -1515,7 +1294,6 @@
                 lblResValue.innerText = `R$ ${Math.abs(resultadoMes).toFixed(2).replace('.',',')}`; 
             }
 
-            // Barra de Progresso
             let percentualPago = (margemAtual / custosFixosMensais) * 100;
             let barra = document.getElementById('barFill'); 
             let statusFinanceiro = document.getElementById('lblStatusFinanceiro');
@@ -1536,7 +1314,6 @@
                 statusFinanceiro.innerHTML = `<i class="fa fa-exclamation-triangle"></i> Faltam <b>R$ ${falta.toFixed(2).replace('.',',')}</b> para cobrir as contas fixas.`; 
             }
 
-            // Tabela Dash (Mês a Mês)
             if (mesesOrdenados.length === 0) { 
                 tbodyDash.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhuma venda registrada.</td></tr>'; 
             } else { 
@@ -1557,7 +1334,6 @@
                 }); 
             }
 
-            // Tabela Pedidos Recentes (Edição)
             if (ultimosPedidos.length === 0) { 
                 tbodyRecentes.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhuma venda recente.</td></tr>'; 
             } else { 
@@ -1586,6 +1362,7 @@
             console.error(e); 
         }
     }
+
     async function apagarVenda(id) {
         if (!confirm("⚠️ ATENÇÃO: Tem certeza que deseja APAGAR este pedido?\n\nO valor será removido do seu Dashboard financeiro e essa ação não pode ser desfeita.")) return;
         
@@ -1594,7 +1371,7 @@
         
         try {
             await db.collection("usuarios").doc(user.uid).collection("vendas").doc(id).delete();
-            abrirDashboard(); // Recarrega para atualizar os valores na tela
+            abrirDashboard(); 
         } catch (e) { 
             alert("Erro ao apagar: " + e.message); 
         }
@@ -1608,12 +1385,10 @@
             return;
         }
         
-        // Joga as informações de volta pra tela
         document.getElementById('cliNome').value = venda.cliente || "";
         pedidoItens = venda.itens_detalhes;
         window.vendaEditandoId = id;
         
-        // Ajusta a Interface do Usuário (UI)
         renderizarPedido();
         document.getElementById('dashboard-modal').style.display = 'none';
         document.getElementById('avisoEdicao').style.display = 'block';
@@ -1622,7 +1397,6 @@
         btnFechar.innerHTML = '<i class="fa fa-sync"></i> ATUALIZAR PEDIDO';
         btnFechar.style.background = '#f39c12';
         
-        // Rola a tela para o topo para o usuário ver o carrinho
         window.scrollTo(0, 0);
     }
 
@@ -1641,9 +1415,8 @@
 
 
     // =========================================================================
-    // 3. FUNÇÕES MATEMÁTICAS E DE DESENHO
+    // FUNÇÕES MATEMÁTICAS E DE DESENHO
     // =========================================================================
-    
     function calcMapRaw(w, h, sheet) { 
         let ap1 = Math.floor(sheet.w / w) * Math.floor(sheet.h / h); 
         let ap2 = Math.floor(sheet.w / h) * Math.floor(sheet.h / w); 
@@ -1680,12 +1453,7 @@
         }); 
         
         return { 
-            map: mapOut, 
-            mf: mfOut, 
-            ml: mlOut, 
-            ma: maOut, 
-            ap64: ap64Out, 
-            ap66: ap66Out 
+            map: mapOut, mf: mfOut, ml: mlOut, ma: maOut, ap64: ap64Out, ap66: ap66Out 
         }; 
     }
 
@@ -1816,7 +1584,6 @@
         ct.strokeStyle = "#e91e63"; 
         ct.lineWidth = 1.5; 
         
-        // Desenho do corpo da faca
         ct.moveTo(cx, cy); ct.lineTo(cx, cy - sH); ct.lineTo(cx + sC, cy - sH); ct.lineTo(cx + sC, cy); 
         ct.moveTo(cx, cy + sL); ct.lineTo(cx, cy + sL + sH); ct.lineTo(cx + sC, cy + sL + sH); ct.lineTo(cx + sC, cy + sL); 
         ct.moveTo(cx - sH, cy); ct.lineTo(cx - sH, cy + sL); 
@@ -1827,7 +1594,6 @@
         ct.moveTo(cx + sC, cy + sL); ct.lineTo(cx + sC, cy + sL + sA); ct.lineTo(cx + sC + sH - chamfer, cy + sL + sA); ct.lineTo(cx + sC + sH, cy + sL + sA - chamfer); ct.lineTo(cx + sC + sH, cy + sL); 
         ct.stroke(); 
         
-        // Linhas de dobra
         ct.beginPath(); 
         ct.setLineDash([4, 4]); 
         ct.strokeStyle = "#e91e63"; 
@@ -1895,11 +1661,9 @@
         } 
     }
 
-
     // =========================================================================
-    // 4. LÓGICA CORE (CÁLCULOS E INTEGRAÇÃO DOS PRODUTOS)
+    // LÓGICA CORE E CÁLCULOS
     // =========================================================================
-    
     function mudarModeloCaixa() { 
         const mod = document.getElementById('cxModelo').value; 
         const divAltF = document.getElementById('divAltFundo'); 
@@ -2048,13 +1812,11 @@
         const isNowM2 = isNowApenasServico || prod.includes("adesivo") || prod.includes("banner") || prod.includes("lona") || prod.includes("recorte") || prod.includes("vinil") || prod.includes("m²") || prod.includes("m2") || gramFull.includes("(m²)") || gramFull.includes("(m2)"); 
         const wasM2 = lastProd.includes("adesivo") || lastProd.includes("banner") || lastProd.includes("lona") || lastProd.includes("recorte") || lastProd.includes("vinil") || lastProd.includes("serviço") || lastProd.includes("servico") || lastProd.includes("acabamento") || lastProd.includes("m²") || lastProd.includes("m2"); 
         
-        // NOVIDADE: VERIFICA SE É COPIATIVO
         const isCopiativo = prod.includes("copiativo");
 
         if (!isCaixa) window.isBoxMode = false; 
         if (!isSacolaPapel) window.isBagMode = false; 
         
-        // Exibe Copiativo
         if (isCopiativo) {
             document.getElementById('wrapCopiativo').style.display = "block";
         } else {
@@ -2128,7 +1890,7 @@
 
     function calc() {
         const ts = document.getElementById('tipoServico'); 
-        if (!ts.value) return; 
+        if (!ts || !ts.value) return; 
         
         const nomeProduto = ts.value.toLowerCase(); 
         const gs = document.getElementById('gramSelect'); 
@@ -2144,13 +1906,12 @@
         const a = parseFloat(document.getElementById('alt').value) || 1; 
         const formats = [{n:"64x88", w:64, h:88}, {n:"66x96", w:66, h:96}]; 
         
-        // NOVIDADES: COPIATIVO E MÁQUINAS
         const isCopiativo = nomeProduto.includes("copiativo");
         let maq = document.getElementById('maquinaOffset') ? document.getElementById('maquinaOffset').value : 'padrao';
         let maqChapaMult = 1;
-        if(maq === 'F9') maqChapaMult = 0.6; // Menor custo de chapa
-        if(maq === 'F4') maqChapaMult = 1.0; // Custo Padrão
-        if(maq === 'F2') maqChapaMult = 1.8; // Custo Maior
+        if(maq === 'F9') maqChapaMult = 0.6;
+        if(maq === 'F4') maqChapaMult = 1.0;
+        if(maq === 'F2') maqChapaMult = 1.8;
 
         let viasCopiativas = isCopiativo ? (parseInt(document.getElementById('qtdVias').value) || 1) : 1;
 
@@ -2426,16 +2187,13 @@
                     fc = tpec; 
                 } else { 
                     fc = Math.ceil((tpec / map) * 1.1); 
-                    // NOVIDADE: MULTIPLICADOR DE PAPEL PARA COPIATIVO
                     cpap = ((pr / qr) * fc) * viasCopiativas; 
                 }
 
-                // NOVIDADE: MULTIPLICADOR DE CHAPA POR MÁQUINA
                 ccha = nc * (parseFloat(document.getElementById('baseChapa').value) || 0) * setupMult * maqChapaMult; 
                 ctin = (tpecReal / 1000) * gTintaProd * (pTintaKg / 1000) * (nc > 4 ? 2 : 1) * setupMult; 
                 cCoresExtrasAuto = isSacolaPlastica ? (extraCoresPassadas * 220.00 * (tpec / 1000)) : 0; 
                 
-                // NOVIDADE: F2 é máquina maior, exige mais tempo de lavagem e setup
                 const baseSetupFix = ((parseFloat(document.getElementById('baseSetup').value) || 0) + dynSetupTotal) * setupMult * (maq === 'F2' ? 1.5 : 1.0); 
                 cFrete = isSacolaPlastica ? 150 : 0;
 
@@ -2494,7 +2252,6 @@
 
                 if (isTargetRow) { 
                     let labelMaterial = isSacolaPlastica ? `Sacolas Plásticas (${fc} un)` : `Papel / Resma (${fc} fls)`; 
-                    // NOVIDADE NO RÓTULO DO PAPEL SE FOR COPIATIVO
                     if (isCopiativo) labelMaterial += ` x ${viasCopiativas} Vias`;
                     
                     htmlCustos = `<tr><td>${labelMaterial}</td><td class="val">R$ ${cpap.toFixed(2)}</td></tr>`; 
@@ -2503,7 +2260,6 @@
                         htmlCustos += `<tr><td>Frete Transportadora (SP)</td><td class="val">R$ ${cFrete.toFixed(2)}</td></tr>`; 
                     }
                     
-                    // NOVIDADE: AVISO SE É MÁQUINA ESPECÍFICA
                     let maqNameLabel = maq === 'padrao' ? '' : ` (${maq})`;
                     htmlCustos += `<tr><td>Telas/Chapas${maqNameLabel} (${nc * setupMult} un)</td><td class="val">R$ ${ccha.toFixed(2)}</td></tr>`; 
                     
@@ -2654,11 +2410,9 @@
         }
     }
 
-
     // =========================================================================
-    // 5. PDF, WHATSAPP, EXPORTAÇÃO E ADICIONAR AO PEDIDO
+    // UTILIDADES DE PEDIDO E EXPORTAÇÃO
     // =========================================================================
-    
     function adicionarAoPedido() { 
         const trAtiva = document.querySelector('#tabelaOrcamento tr.row-active'); 
         if (!trAtiva) { 
@@ -2711,9 +2465,8 @@
         const mapGlobal = window.currentMap || 1; 
         let textoEspecificacao = ""; 
         let mioloTexto = ""; 
-        
         let nomeVisualFormato = "";
-        
+           
         if (window.isBoxMode && window.boxData) {
             let bd = window.boxData;
             let altFinal = bd.hF !== undefined ? bd.hF : bd.h;
@@ -2779,7 +2532,6 @@
         renderizarPedido(); 
         alert("Item adicionado ao pedido com sucesso!"); 
         
-        // Limpa os campos após adicionar ao pedido
         document.getElementById('lar').value = "15"; 
         document.getElementById('alt').value = "21"; 
         document.getElementById('qtdInterna').value = "100"; 
@@ -2790,12 +2542,8 @@
         acabamentosAtivos = []; 
         renderAcab(); 
         
-        if (document.getElementById('tipoServico').options.length > 0) {
-            document.getElementById('tipoServico').selectedIndex = 0; 
-        }
-        if (document.getElementById('gramSelect').options.length > 0) {
-            document.getElementById('gramSelect').selectedIndex = 0; 
-        }
+        if (document.getElementById('tipoServico').options.length > 0) document.getElementById('tipoServico').selectedIndex = 0; 
+        if (document.getElementById('gramSelect').options.length > 0) document.getElementById('gramSelect').selectedIndex = 0; 
         document.getElementById('esquemaCores').selectedIndex = 0; 
         
         verificarProduto(false); 
